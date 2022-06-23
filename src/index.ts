@@ -7,6 +7,6 @@ import ExpressApp from './infrastructure/api/express-app';
 // eslint-disable-next-line import/first
 import { appConfig } from './config';
 
-const expressApp = new ExpressApp(appConfig.express);
+const expressApp = new ExpressApp(appConfig.express, appConfig.github);
 
 expressApp.start();

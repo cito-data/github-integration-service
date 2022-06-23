@@ -1,5 +1,10 @@
+const privateKey = process.env.GITHUB_PRIVATE_KEY || '';
+const appId = process.env.GITHUB_APP_IDENTIFIER || '';
+const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || '';
+const clientId = process.env.GITHUB_APP_CLIENT_ID || '';
+const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET || '';
 export const nodeEnv = process.env.NODE_ENV || 'development';
-export const defaultPort = 3000;
+export const defaultPort = 3002;
 export const port = process.env.PORT
   ? parseInt(process.env.PORT, 10)
   : defaultPort;
@@ -10,10 +15,10 @@ const getServiceDiscoveryNamespace = (): string => {
 
   switch (nodeEnv) {
     case 'test':
-      namespace = 'hivedive-test';
+      namespace = 'integration-staging';
       break;
     case 'production':
-      namespace = 'hivedive';
+      namespace = 'integration';
       break;
     default:
       break;
@@ -62,4 +67,11 @@ export const appConfig = {
   mongodb: {
     ...getMongodbConfig(),
   },
+  github: {
+    privateKey,
+    appId,
+    webhookSecret,
+    clientId,
+    clientSecret
+  }
 };

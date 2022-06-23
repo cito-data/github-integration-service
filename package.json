@@ -1,5 +1,5 @@
 {
-  "name": "lineage-analysis",
+  "name": "integration",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloud-hivedive-io/lineage-analysis.git"
+    "url": "git+https://github.com/cito-data/integration-service.git"
   },
   "author": "",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/cloud-hivedive-io/lineage-analysis/issues"
+    "url": "https://github.com/cito-data/integration-service/issues"
   },
-  "homepage": "https://github.com/cloud-hivedive-io/lineage-analysis#readme",
+  "homepage": "https://github.com/cito-data/integration-service#readme",
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",
     "@types/cors": "^2.8.12",
@@ -46,6 +46,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "@octokit/types": "^6.37.0",
     "awilix": "^6.1.0",
     "axios": "^0.26.0",
     "cors": "^2.8.5",
@@ -54,6 +55,7 @@
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongo-sanitize": "^1.1.0",
-    "mongodb": "^4.4.1"
+    "mongodb": "^4.4.1",
+    "octokit": "^1.8.1"
   }
 }
