@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@octokit/types": "^6.37.0",
+    "@types/snowflake-sdk": "^1.6.7",
     "awilix": "^6.1.0",
     "axios": "^0.26.0",
     "cors": "^2.8.5",
@@ -56,6 +57,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongo-sanitize": "^1.1.0",
     "mongodb": "^4.4.1",
-    "octokit": "^1.8.1"
+    "octokit": "^1.8.1",
+    "snowflake-sdk": "^1.6.11"
   }
 }

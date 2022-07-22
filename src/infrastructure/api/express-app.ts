@@ -4,8 +4,10 @@ import helmet from 'helmet';
 import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
 import v1Router from './routes/v1';
+import iocRegister from '../ioc-register';
+import Dbo from '../persistence/db/mongo-db';
 
-interface ExpressConfig {
+interface AppConfig {
   port: number;
   mode: string;
 }
@@ -78,29 +80,37 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 export default class ExpressApp {
   #expressApp: Application;
 
-  #expressConfig: ExpressConfig;
+  #config: AppConfig;
 
   #githubConfig: GithubConfig;
 
-  constructor(expressConfig: ExpressConfig, githubConfig: GithubConfig) {
+  constructor(config: AppConfig, githubConfig: GithubConfig) {
     this.#expressApp = express();
-    this.#expressConfig = expressConfig;
+    this.#config = config;
     this.#githubConfig = githubConfig;
   }
 
-  start(): Application {
+  start = (): Application => {
+    const dbo: Dbo = iocRegister.resolve('dbo');
+
+    dbo.connectToServer((err) => {
+      if (err) {
+        console.error(err);
+        process.exit();
+      }
+     
+      this.#expressApp.listen(this.#config.port, () => {
+        console.log(
+          `App listening on port: ${this.#config.port} in ${
+            this.#config.mode
+          } mode`
+        );
+      });
+    });
     this.configApp();
 
-    this.#expressApp.listen(this.#expressConfig.port, () => {
-      console.log(
-        `App listening on port: ${this.#expressConfig.port} in ${
-          this.#expressConfig.mode
-        } mode`
-      );
-    });
-
     return this.#expressApp;
-  }
+  };
 
   private configApp(): void {
     this.#expressApp.use(

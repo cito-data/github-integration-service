@@ -77,6 +77,9 @@ export const appConfig = {
   mongodb: {
     ...getMongodbConfig(),
   },
+  snowflake: {
+    applicationName: process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector'
+  },
   github: {
     privateKey,
     appId,
