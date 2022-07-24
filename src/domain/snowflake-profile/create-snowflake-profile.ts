@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection } from '../services/i-db';
+import { DbConnection, DbEncryption } from '../services/i-db';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
 import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 import { ReadSnowflakeProfile } from './read-snowflake-profile';
@@ -24,7 +24,8 @@ export class CreateSnowflakeProfile
       CreateSnowflakeProfileRequestDto,
       CreateSnowflakeProfileResponseDto,
       CreateSnowflakeProfileAuthDto,
-      DbConnection
+      DbConnection,
+      DbEncryption
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
@@ -32,6 +33,8 @@ export class CreateSnowflakeProfile
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
   #dbConnection: DbConnection;
+
+  #dbEncryption: DbEncryption;
 
   constructor(
     readSnowflakeProfile: ReadSnowflakeProfile,
@@ -44,10 +47,12 @@ export class CreateSnowflakeProfile
   async execute(
     request: CreateSnowflakeProfileRequestDto,
     auth: CreateSnowflakeProfileAuthDto,
-    dbConnection: DbConnection
+    dbConnection: DbConnection,
+    dbEncryption: DbEncryption
   ): Promise<CreateSnowflakeProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
+      this.#dbEncryption = dbEncryption;
 
       const snowflakeProfile = SnowflakeProfile.create({
         id: new ObjectId().toHexString(),
@@ -63,7 +68,8 @@ export class CreateSnowflakeProfile
             organizationId: auth.organizationId,
           },
           { organizationId: auth.organizationId },
-          this.#dbConnection
+          this.#dbConnection,
+          this.#dbEncryption
         );
 
       if (!readSnowflakeProfileResult.success)
@@ -73,7 +79,8 @@ export class CreateSnowflakeProfile
 
       await this.#snowflakeProfileRepo.insertOne(
         snowflakeProfile,
-        this.#dbConnection
+        this.#dbConnection,
+        this.#dbEncryption
       );
 
       // if (auth.organizationId !== 'TODO')

@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection } from '../services/i-db';
+import { DbConnection, DbEncryption } from '../services/i-db';
 import { SnowflakeResource } from '../value-types/snowflake-resource';
 import { ISnowflakeResourceRepo } from './i-snowflake-resource-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
@@ -21,7 +21,8 @@ export class CrudSnowflakeResource
       CrudSnowflakeResourceRequestDto,
       CrudSnowflakeResourceResponseDto,
       CrudSnowflakeResourceAuthDto,
-      DbConnection
+      DbConnection,
+      DbEncryption
     >
 {
   readonly #snowflakeResourceRepo: ISnowflakeResourceRepo;
@@ -29,6 +30,8 @@ export class CrudSnowflakeResource
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
   #dbConnection: DbConnection;
+
+  #dbEncryption: DbEncryption;
 
   constructor(
     snowflakeResourceRepo: ISnowflakeResourceRepo,
@@ -55,7 +58,8 @@ export class CrudSnowflakeResource
             organizationId: auth.organizationId,
           },
           { organizationId: auth.organizationId },
-          this.#dbConnection
+          this.#dbConnection,
+          this.#dbEncryption
         );
 
       if (!readSnowflakeProfileResult.success)

@@ -83,7 +83,8 @@ export default class CreateSnowflakeProfileController extends BaseController {
           {
             organizationId: 'todo',
           },
-          this.#dbo.dbConnection
+          this.#dbo.dbConnection,
+          this.#dbo.encryption
         );
 
       if (!useCaseResult.success) {

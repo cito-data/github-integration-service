@@ -21,21 +21,29 @@ export default class ReadSnowflakeProfileController extends BaseController {
 
   readonly #getAccounts: GetAccounts;
 
-  readonly #dbo: Dbo; 
+  readonly #dbo: Dbo;
 
-  constructor(readSnowflakeProfile: ReadSnowflakeProfile, getAccounts: GetAccounts, dbo: Dbo) {
+  constructor(
+    readSnowflakeProfile: ReadSnowflakeProfile,
+    getAccounts: GetAccounts,
+    dbo: Dbo
+  ) {
     super();
     this.#readSnowflakeProfile = readSnowflakeProfile;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {console.log(httpRequest.params);
-   return ({
-    organizationId: 'todo',
-  });};
+  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {
+    console.log(httpRequest.params);
+    return {
+      organizationId: 'todo',
+    };
+  };
 
-  #buildAuthDto = (userAccountInfo: UserAccountInfo): ReadSnowflakeProfileAuthDto => ({
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): ReadSnowflakeProfileAuthDto => ({
     organizationId: userAccountInfo.organizationId,
   });
 
@@ -62,7 +70,8 @@ export default class ReadSnowflakeProfileController extends BaseController {
       // if (!getUserAccountInfoResult.value)
       //   throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSnowflakeProfileRequestDto = this.#buildRequestDto(req);
+      const requestDto: ReadSnowflakeProfileRequestDto =
+        this.#buildRequestDto(req);
       // const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
       //   getUserAccountResult.value
       // );
@@ -73,11 +82,15 @@ export default class ReadSnowflakeProfileController extends BaseController {
           {
             organizationId: 'todo',
           },
-          this.#dbo.dbConnection
+          this.#dbo.dbConnection,
+          this.#dbo.encryption
         );
 
       if (!useCaseResult.success) {
-        return ReadSnowflakeProfileController.badRequest(res, useCaseResult.error);
+        return ReadSnowflakeProfileController.badRequest(
+          res,
+          useCaseResult.error
+        );
       }
 
       const resultValue = useCaseResult.value
@@ -88,7 +101,8 @@ export default class ReadSnowflakeProfileController extends BaseController {
     } catch (error: unknown) {
       if (typeof error === 'string')
         return ReadSnowflakeProfileController.fail(res, error);
-      if (error instanceof Error) return ReadSnowflakeProfileController.fail(res, error);
+      if (error instanceof Error)
+        return ReadSnowflakeProfileController.fail(res, error);
       return ReadSnowflakeProfileController.fail(res, 'Unknown error occured');
     }
   }

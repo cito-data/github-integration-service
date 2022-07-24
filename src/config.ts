@@ -1,17 +1,21 @@
-const privateKey = process.env.GITHUB_PRIVATE_KEY;
-if(!privateKey) throw new Error('Private key not available');
+import fs from 'fs';
 
-const appId = process.env.GITHUB_APP_IDENTIFIER ? (process.env.GITHUB_APP_IDENTIFIER, 10): '';
-if(!appId) throw new Error('App id not available');
+const privateKey = process.env.GITHUB_PRIVATE_KEY;
+if (!privateKey) throw new Error('Private key not available');
+
+const appId = process.env.GITHUB_APP_IDENTIFIER
+  ? (process.env.GITHUB_APP_IDENTIFIER, 10)
+  : '';
+if (!appId) throw new Error('App id not available');
 
 const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-if(!webhookSecret) throw new Error('Webhook secret not available');
+if (!webhookSecret) throw new Error('Webhook secret not available');
 
 const clientId = process.env.GITHUB_APP_CLIENT_ID;
-if(!clientId) throw new Error('Client id not available');
+if (!clientId) throw new Error('Client id not available');
 
 const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
-if(!clientSecret) throw new Error('Client secret not available');
+if (!clientSecret) throw new Error('Client secret not available');
 
 export const nodeEnv = process.env.NODE_ENV || 'development';
 export const defaultPort = 3002;
@@ -42,29 +46,60 @@ export const serviceDiscoveryNamespace = getServiceDiscoveryNamespace();
 export interface MongoDbConfig {
   url: string;
   dbName: string;
+  kmsProviders: any;
+  keyVaultNamespace: string;
+  dataKeyId: Buffer;
 }
 
-const getMongodbConfig = (): MongoDbConfig => {  
+const getMongodbConfig = (): MongoDbConfig => {
   switch (nodeEnv) {
-    case 'development':
+    case 'development': {
+      const key = fs.readFileSync('./master-key.txt');
       return {
         url: process.env.DATABASE_DEV_URL || '',
         dbName: process.env.DATABASE_DEV_NAME || '',
+        kmsProviders: { local: { key } },
+        keyVaultNamespace: process.env.DATABASE_DEV_KEY_VAULT_NAMESPACE || '',
+        dataKeyId: Buffer.from(
+          process.env.DATABASE_DEV_DATA_KEY_ID || '',
+          'base64'
+        ),
       };
+    }
     case 'test':
       return {
         url: process.env.DATABASE_TEST_URL || '',
         dbName: process.env.DATABASE_TEST_NAME || '',
+        kmsProviders: {},
+        keyVaultNamespace: process.env.DATABASE_TEST_KEY_VAULT_NAMESPACE || '',
+        dataKeyId: Buffer.from(
+          process.env.DATABASE_TEST_DATA_KEY_ID || '',
+          'base64'
+        ),
       };
     case 'production':
       return {
         url: process.env.DATABASE_URL || '',
         dbName: process.env.DATABASE_NAME || '',
+        kmsProviders: {},
+        keyVaultNamespace: process.env.DATABASE_KEY_VAULT_NAMESPACE || '',
+        dataKeyId: Buffer.from(
+          process.env.DATABASE_DATA_KEY_ID || '',
+          'base64'
+        ),
       };
     default:
       return {
         url: process.env.DATABASE_DEV_URL || '',
         dbName: process.env.DATABASE_DEV_URL || '',
+        kmsProviders: {
+          local: { key: process.env.DATABASE_DEV_KMS_KEY || '' },
+        },
+        keyVaultNamespace: process.env.DATABASE_DEV_KEY_VAULT_NAMESPACE || '',
+        dataKeyId: Buffer.from(
+          process.env.DATABASE_DEV_DATA_KEY_ID || '',
+          'base64'
+        ),
       };
   }
 };
@@ -78,13 +113,14 @@ export const appConfig = {
     ...getMongodbConfig(),
   },
   snowflake: {
-    applicationName: process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector'
+    applicationName:
+      process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector',
   },
   github: {
     privateKey,
     appId,
     webhookSecret,
     clientId,
-    clientSecret
-  }
+    clientSecret,
+  },
 };

@@ -2,7 +2,7 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
-import { DbConnection } from '../services/i-db';
+import { DbConnection, DbEncryption } from '../services/i-db';
 
 export interface ReadSnowflakeProfileRequestDto {
   organizationId: string;
@@ -20,12 +20,15 @@ export class ReadSnowflakeProfile
       ReadSnowflakeProfileRequestDto,
       ReadSnowflakeProfileResponseDto,
       ReadSnowflakeProfileAuthDto,
-      DbConnection
+      DbConnection,
+      DbEncryption
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
 
   #dbConnection: DbConnection;
+
+  #dbEncryption: DbEncryption;
 
   constructor(snowflakeProfileRepo: ISnowflakeProfileRepo) {
     this.#snowflakeProfileRepo = snowflakeProfileRepo;
@@ -34,7 +37,8 @@ export class ReadSnowflakeProfile
   async execute(
     request: ReadSnowflakeProfileRequestDto,
     auth: ReadSnowflakeProfileAuthDto,
-    dbConnection: DbConnection
+    dbConnection: DbConnection,
+    dbEncryption: DbEncryption
   ): Promise<ReadSnowflakeProfileResponseDto> {
     try {
       // todo -replace
@@ -42,9 +46,12 @@ export class ReadSnowflakeProfile
 
       this.#dbConnection = dbConnection;
 
+      this.#dbEncryption = dbEncryption;
+
       const snowflakeProfile = await this.#snowflakeProfileRepo.findOne(
         request.organizationId,
-        this.#dbConnection
+        this.#dbConnection,
+        this.#dbEncryption
       );
       if (!snowflakeProfile)
         throw new Error(`SnowflakeProfile with id ${request.organizationId} does not exist`);
