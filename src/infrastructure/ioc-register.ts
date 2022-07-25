@@ -3,7 +3,7 @@ import { InjectionMode, asClass, createContainer } from 'awilix';
 import { GetAccounts } from '../domain/account-api/get-accounts';
 import { CreateSnowflakeProfile } from '../domain/snowflake-profile/create-snowflake-profile';
 import { ReadSnowflakeProfile } from '../domain/snowflake-profile/read-snowflake-profile';
-import { CrudSnowflakeQuery } from '../domain/snowflake-query/query-snowflake';
+import { QuerySnowflake } from '../domain/snowflake-query/query-snowflake';
 import AccountApiRepo from './persistence/account-api-repo';
 import Dbo from './persistence/db/mongo-db';
 import SnowflakeProfileRepo from './persistence/snowflake-profile-repo';
@@ -16,7 +16,7 @@ iocRegister.register({
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   
-  crudSnowflakeQuery: asClass(CrudSnowflakeQuery),
+  querySnowflake: asClass(QuerySnowflake),
 
   getAccounts: asClass(GetAccounts),
 

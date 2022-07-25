@@ -5,22 +5,22 @@ import { SnowflakeQuery } from '../value-types/snowflake-query';
 import { ISnowflakeQueryRepo } from './i-snowflake-query-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 
-export interface CrudSnowflakeQueryRequestDto {
+export interface QuerySnowflakeRequestDto {
   query: string;
 }
 
-export interface CrudSnowflakeQueryAuthDto {
+export interface QuerySnowflakeAuthDto {
   organizationId: string;
 }
 
-export type CrudSnowflakeQueryResponseDto = Result<SnowflakeQuery>;
+export type QuerySnowflakeResponseDto = Result<SnowflakeQuery>;
 
-export class CrudSnowflakeQuery
+export class QuerySnowflake
   implements
     IUseCase<
-      CrudSnowflakeQueryRequestDto,
-      CrudSnowflakeQueryResponseDto,
-      CrudSnowflakeQueryAuthDto,
+      QuerySnowflakeRequestDto,
+      QuerySnowflakeResponseDto,
+      QuerySnowflakeAuthDto,
       DbConnection,
       DbEncryption
     >
@@ -42,10 +42,10 @@ export class CrudSnowflakeQuery
   }
 
   async execute(
-    request: CrudSnowflakeQueryRequestDto,
-    auth: CrudSnowflakeQueryAuthDto,
+    request: QuerySnowflakeRequestDto,
+    auth: QuerySnowflakeAuthDto,
     dbConnection: DbConnection
-  ): Promise<CrudSnowflakeQueryResponseDto> {
+  ): Promise<QuerySnowflakeResponseDto> {
     try {
       // todo -replace
       console.log(auth);

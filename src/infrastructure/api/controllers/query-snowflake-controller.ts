@@ -2,10 +2,10 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  CrudSnowflakeQuery,
-  CrudSnowflakeQueryAuthDto,
-  CrudSnowflakeQueryRequestDto,
-  CrudSnowflakeQueryResponseDto,
+  QuerySnowflake,
+  QuerySnowflakeAuthDto,
+  QuerySnowflakeRequestDto,
+  QuerySnowflakeResponseDto,
 } from '../../../domain/snowflake-query/query-snowflake';
 import { buildSnowflakeQueryDto } from '../../../domain/snowflake-query/snowflake-query-dto';
 import Dbo from '../../persistence/db/mongo-db';
@@ -16,25 +16,25 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class CrudSnowflakeQueryController extends BaseController {
-  readonly #crudSnowflakeQuery: CrudSnowflakeQuery;
+export default class QuerySnowflakeController extends BaseController {
+  readonly #querySnowflake: QuerySnowflake;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
-  constructor(crudSnowflakeQuery: CrudSnowflakeQuery, getAccounts: GetAccounts, dbo: Dbo) {
+  constructor(querySnowflake: QuerySnowflake, getAccounts: GetAccounts, dbo: Dbo) {
     super();
-    this.#crudSnowflakeQuery = crudSnowflakeQuery;
+    this.#querySnowflake = querySnowflake;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): CrudSnowflakeQueryRequestDto => ({
+  #buildRequestDto = (httpRequest: Request): QuerySnowflakeRequestDto => ({
     query: httpRequest.body.query,
   });
 
-  #buildAuthDto = (userAccountInfo: UserAccountInfo): CrudSnowflakeQueryAuthDto => ({
+  #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
     organizationId: userAccountInfo.organizationId,
   });
 
@@ -43,31 +43,31 @@ export default class CrudSnowflakeQueryController extends BaseController {
       // const authHeader = req.headers.authorization;
 
       // if (!authHeader)
-      //   return CrudSnowflakeQueryController.unauthorized(res, 'Unauthorized');
+      //   return SnowflakeQueryController.unauthorized(res, 'Unauthorized');
 
       // const jwt = authHeader.split(' ')[1];
 
       // const getUserAccountInfoResult: Result<UserAccountInfo> =
-      //   await CrudSnowflakeQueryInfoController.getUserAccountInfo(
+      //   await SnowflakeQueryInfoController.getUserAccountInfo(
       //     jwt,
       //     this.#getAccounts
       //   );
 
       // if (!getUserAccountInfoResult.success)
-      //   return CrudSnowflakeQueryInfoController.unauthorized(
+      //   return SnowflakeQueryInfoController.unauthorized(
       //     res,
       //     getUserAccountInfoResult.error
       //   );
       // if (!getUserAccountInfoResult.value)
       //   throw new ReferenceError('Authorization failed');
 
-      const requestDto: CrudSnowflakeQueryRequestDto = this.#buildRequestDto(req);
-      // const authDto: CrudSnowflakeQueryAuthDto = this.#buildAuthDto(
+      const requestDto: QuerySnowflakeRequestDto = this.#buildRequestDto(req);
+      // const authDto: SnowflakeQueryAuthDto = this.#buildAuthDto(
       //   getUserAccountResult.value
       // );
 
-      const useCaseResult: CrudSnowflakeQueryResponseDto =
-        await this.#crudSnowflakeQuery.execute(
+      const useCaseResult: QuerySnowflakeResponseDto =
+        await this.#querySnowflake.execute(
           requestDto,
           {
             organizationId: 'todo',
@@ -77,20 +77,20 @@ export default class CrudSnowflakeQueryController extends BaseController {
 
 
       if (!useCaseResult.success) {
-        return CrudSnowflakeQueryController.badRequest(res, useCaseResult.error);
+        return QuerySnowflakeController.badRequest(res, useCaseResult.error);
       }
 
       const resultValue = useCaseResult.value
         ? buildSnowflakeQueryDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CrudSnowflakeQueryController.ok(res, resultValue, CodeHttp.OK);
+      return QuerySnowflakeController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return CrudSnowflakeQueryController.fail(res, error);
+        return QuerySnowflakeController.fail(res, error);
       if (error instanceof Error)
-        return CrudSnowflakeQueryController.fail(res, error);
-      return CrudSnowflakeQueryController.fail(res, 'Unknown error occured');
+        return QuerySnowflakeController.fail(res, error);
+      return QuerySnowflakeController.fail(res, 'Unknown error occured');
     }
   }
 }
