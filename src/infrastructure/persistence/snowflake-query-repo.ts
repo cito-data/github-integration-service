@@ -3,17 +3,17 @@ import sanitize from 'mongo-sanitize';
 import { Connection, Statement } from 'snowflake-sdk';
 import { DbOptions } from '../../domain/services/i-db';
 import { connect, handleStreamError } from './db/snowflake';
-import { SnowflakeResource } from '../../domain/value-types/snowflake-resource';
-import { ISnowflakeResourceRepo } from '../../domain/snowflake-resource/i-snowflake-resource-repo';
+import { SnowflakeQuery } from '../../domain/value-types/snowflake-query';
+import { ISnowflakeQueryRepo } from '../../domain/snowflake-query/i-snowflake-query-repo';
 import { appConfig } from '../../config';
 
-export default class SnowflakeResourceRepo implements ISnowflakeResourceRepo {
+export default class SnowflakeQueryRepo implements ISnowflakeQueryRepo {
   runQuery = async (
     query: string,
     options: DbOptions
-  ): Promise<SnowflakeResource[]> =>
+  ): Promise<SnowflakeQuery[]> =>
     new Promise((resolve, reject) => {
-      const results: SnowflakeResource[] = [];
+      const results: SnowflakeQuery[] = [];
 
       const connection = connect({
         ...options,

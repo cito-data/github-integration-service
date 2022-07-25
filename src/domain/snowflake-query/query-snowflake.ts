@@ -1,31 +1,31 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
-import { SnowflakeResource } from '../value-types/snowflake-resource';
-import { ISnowflakeResourceRepo } from './i-snowflake-resource-repo';
+import { SnowflakeQuery } from '../value-types/snowflake-query';
+import { ISnowflakeQueryRepo } from './i-snowflake-query-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 
-export interface CrudSnowflakeResourceRequestDto {
+export interface CrudSnowflakeQueryRequestDto {
   query: string;
 }
 
-export interface CrudSnowflakeResourceAuthDto {
+export interface CrudSnowflakeQueryAuthDto {
   organizationId: string;
 }
 
-export type CrudSnowflakeResourceResponseDto = Result<SnowflakeResource>;
+export type CrudSnowflakeQueryResponseDto = Result<SnowflakeQuery>;
 
-export class CrudSnowflakeResource
+export class CrudSnowflakeQuery
   implements
     IUseCase<
-      CrudSnowflakeResourceRequestDto,
-      CrudSnowflakeResourceResponseDto,
-      CrudSnowflakeResourceAuthDto,
+      CrudSnowflakeQueryRequestDto,
+      CrudSnowflakeQueryResponseDto,
+      CrudSnowflakeQueryAuthDto,
       DbConnection,
       DbEncryption
     >
 {
-  readonly #snowflakeResourceRepo: ISnowflakeResourceRepo;
+  readonly #snowflakeQueryRepo: ISnowflakeQueryRepo;
 
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
@@ -34,18 +34,18 @@ export class CrudSnowflakeResource
   #dbEncryption: DbEncryption;
 
   constructor(
-    snowflakeResourceRepo: ISnowflakeResourceRepo,
+    snowflakeQueryRepo: ISnowflakeQueryRepo,
     readSnowflakeProfile: ReadSnowflakeProfile
   ) {
-    this.#snowflakeResourceRepo = snowflakeResourceRepo;
+    this.#snowflakeQueryRepo = snowflakeQueryRepo;
     this.#readSnowflakeProfile = readSnowflakeProfile;
   }
 
   async execute(
-    request: CrudSnowflakeResourceRequestDto,
-    auth: CrudSnowflakeResourceAuthDto,
+    request: CrudSnowflakeQueryRequestDto,
+    auth: CrudSnowflakeQueryAuthDto,
     dbConnection: DbConnection
-  ): Promise<CrudSnowflakeResourceResponseDto> {
+  ): Promise<CrudSnowflakeQueryResponseDto> {
     try {
       // todo -replace
       console.log(auth);
@@ -69,15 +69,15 @@ export class CrudSnowflakeResource
 
       const snowflakeProfile = readSnowflakeProfileResult.value;
 
-      const snowflakeResource = await this.#snowflakeResourceRepo.runQuery(
+      const snowflakeQuery = await this.#snowflakeQueryRepo.runQuery(
         request.query,
         {account: snowflakeProfile.accountId, username: snowflakeProfile.username, password: snowflakeProfile.password}
       );
 
-      // if (snowflakeResource.organizationId !== auth.organizationId)
+      // if (snowflakeQuery.organizationId !== auth.organizationId)
       //   throw new Error('Not authorized to perform action');
 
-      return Result.ok(snowflakeResource);
+      return Result.ok(snowflakeQuery);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);

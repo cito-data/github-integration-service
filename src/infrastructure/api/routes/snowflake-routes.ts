@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import app from '../../ioc-register';
 import CreateSnowflakeProfileController from '../controllers/create-snowflake-profile-controller';
-import CrudSnowflakeResourceController from '../controllers/crud-snowflake-resource-controller';
+import CrudSnowflakeQueryController from '../controllers/query-snowflake-controller';
 import ReadSnowflakeProfileController from '../controllers/read-snowflake-profile-controller';
 
 const snowflakeRoutes = Router();
@@ -21,8 +21,8 @@ const readSnowflakeProfileController = new ReadSnowflakeProfileController(
   dbo
 );
 
-const crudSnowflakeResourceController = new CrudSnowflakeResourceController(
-  app.resolve('crudSnowflakeResource'),
+const crudSnowflakeQueryController = new CrudSnowflakeQueryController(
+  app.resolve('crudSnowflakeQuery'),
   getAccounts,
   dbo
 );
@@ -35,8 +35,8 @@ snowflakeRoutes.get('/profile', (req, res) => {
   readSnowflakeProfileController.execute(req, res);
 });
 
-snowflakeRoutes.post('/resource', (req, res) => {
-  crudSnowflakeResourceController.execute(req, res);
+snowflakeRoutes.post('/query', (req, res) => {
+  crudSnowflakeQueryController.execute(req, res);
 });
 
 export default snowflakeRoutes;
