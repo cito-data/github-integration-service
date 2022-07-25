@@ -44,13 +44,16 @@ export class QuerySnowflake
   async execute(
     request: QuerySnowflakeRequestDto,
     auth: QuerySnowflakeAuthDto,
-    dbConnection: DbConnection
+    dbConnection: DbConnection,
+    dbEncryption: DbEncryption
   ): Promise<QuerySnowflakeResponseDto> {
     try {
       // todo -replace
       console.log(auth);
 
       this.#dbConnection = dbConnection;
+
+      this.#dbEncryption = dbEncryption;
 
       const readSnowflakeProfileResult =
         await this.#readSnowflakeProfile.execute(
@@ -71,7 +74,11 @@ export class QuerySnowflake
 
       const snowflakeQuery = await this.#snowflakeQueryRepo.runQuery(
         request.query,
-        {account: snowflakeProfile.accountId, username: snowflakeProfile.username, password: snowflakeProfile.password}
+        {
+          account: snowflakeProfile.accountId,
+          username: snowflakeProfile.username,
+          password: snowflakeProfile.password,
+        }
       );
 
       // if (snowflakeQuery.organizationId !== auth.organizationId)

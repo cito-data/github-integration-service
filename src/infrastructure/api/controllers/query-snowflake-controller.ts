@@ -72,7 +72,8 @@ export default class QuerySnowflakeController extends BaseController {
           {
             organizationId: 'todo',
           },
-          this.#dbo.dbConnection
+          this.#dbo.dbConnection,
+          this.#dbo.encryption
         );
 
 
