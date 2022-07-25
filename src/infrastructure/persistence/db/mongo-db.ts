@@ -3,20 +3,11 @@ import { ClientEncryption } from 'mongodb-client-encryption';
 import { appConfig } from '../../../config';
 
 export default class Dbo {
-  #client;
+  #client = new MongoClient(appConfig.mongodb.url, {
+    serverApi: ServerApiVersion.v1,
+  });
 
-  #encryption;
-
-  constructor() {
-    this.#client = new MongoClient(appConfig.mongodb.url, {
-      serverApi: ServerApiVersion.v1,
-    });
-
-    this.#encryption = new ClientEncryption(this.#client, {
-      keyVaultNamespace: appConfig.mongodb.keyVaultNamespace,
-      kmsProviders: appConfig.mongodb.kmsProviders,
-    });
-  }
+  #encryption?: ClientEncryption;
 
   #dbConnection: Db | undefined;
 
@@ -27,6 +18,8 @@ export default class Dbo {
   }
 
   get encryption(): ClientEncryption {
+    if (!this.#encryption)
+    throw Error('Undefined encryption object. Please define first');
     return this.#encryption;
   }
 
@@ -38,6 +31,11 @@ export default class Dbo {
 
       this.#dbConnection = db.db(appConfig.mongodb.dbName);
       console.log('Successfully connected to MongoDB.');
+
+      this.#encryption = new ClientEncryption(this.#client, {
+        keyVaultNamespace: appConfig.mongodb.keyVaultNamespace,
+        kmsProviders: appConfig.mongodb.kmsProviders,
+      });
 
       return callback();
     });

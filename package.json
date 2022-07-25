@@ -56,8 +56,8 @@
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongo-sanitize": "^1.1.0",
-    "mongodb": "^4.8.0",
-    "mongodb-client-encryption": "^2.1.0",
+    "mongodb": "^4.1.1",
+    "mongodb-client-encryption": "^1.2.6",
     "octokit": "^1.8.1",
     "snowflake-sdk": "^1.6.11"
   }

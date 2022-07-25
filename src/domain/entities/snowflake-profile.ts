@@ -53,6 +53,6 @@ export class SnowflakeProfile {
     if (!props.password) throw new TypeError('SnowflakeProfile must have password');
     
 
-    return SnowflakeProfile.create(props);
+    return new SnowflakeProfile(props);
   };
 }

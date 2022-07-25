@@ -52,7 +52,7 @@ export class CreateSnowflakeProfile
   ): Promise<CreateSnowflakeProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
+      this.#dbEncryption = dbEncryption;    
 
       const snowflakeProfile = SnowflakeProfile.create({
         id: new ObjectId().toHexString(),
@@ -72,9 +72,7 @@ export class CreateSnowflakeProfile
           this.#dbEncryption
         );
 
-      if (!readSnowflakeProfileResult.success)
-        throw new Error(readSnowflakeProfileResult.error);
-      if (readSnowflakeProfileResult.value)
+      if (readSnowflakeProfileResult.success)
         throw new Error('SnowflakeProfile already exists');
 
       await this.#snowflakeProfileRepo.insertOne(
