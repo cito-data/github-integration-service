@@ -1,6 +1,7 @@
 import { InjectionMode, asClass, createContainer } from 'awilix';
 
 import { GetAccounts } from '../domain/account-api/get-accounts';
+import { CreateCitoSnowflakeEnv } from '../domain/cito-snowflake-env/create-cito-snowflake-env';
 import { CreateSnowflakeProfile } from '../domain/snowflake-profile/create-snowflake-profile';
 import { ReadSnowflakeProfile } from '../domain/snowflake-profile/read-snowflake-profile';
 import { QuerySnowflake } from '../domain/snowflake-query/query-snowflake';
@@ -13,6 +14,7 @@ const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
 iocRegister.register({
   createSnowflakeProfile: asClass(CreateSnowflakeProfile),
+  createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   
