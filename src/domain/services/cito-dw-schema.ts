@@ -8,7 +8,7 @@ const schema = {
         { name: 'threshold', type: 'integer' },
         { name: 'materialization_address', type: 'string' },
         { name: 'column_name', type: 'string' },
-        { name: 'executed_on', type: 'date' },
+        { name: 'executed_on', type: 'datetime' },
         { name: 'execution_id', type: 'string' },
       ],
     },

@@ -36,7 +36,7 @@ export default class SnowflakeQueryRepo implements ISnowflakeQueryRepo {
 
           const complete = (error: any, stmt: Statement): void => {
             if (error)
-              throw new Error(
+              console.error(
                 `Failed to execute statement ${stmt.getStatementId()} due to the following error: ${
                   error.message
                 }`
