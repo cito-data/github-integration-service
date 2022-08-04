@@ -5,6 +5,7 @@ import {
   Db,
   DeleteResult,
   Document,
+  FindCursor,
   InsertOneResult,
   ObjectId,
   UpdateResult,
@@ -51,6 +52,32 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
       if (!result) return null;
 
       return this.#toEntity(await this.#buildProperties(result, encryption));
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  all = async (
+    dbConnection: Db,
+    encryption: ClientEncryption
+  ): Promise<SnowflakeProfile[]> => {
+    try {
+      const result: FindCursor = await dbConnection
+        .collection(collectionName)
+        .find();
+      const results = await result.toArray();
+
+      if (!results || !results.length) return [];
+
+      const profiles = await Promise.all(
+        results.map(async (element: any) =>
+          this.#toEntity(await this.#buildProperties(element, encryption))
+        )
+      );
+
+      return profiles;
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);

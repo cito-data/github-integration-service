@@ -21,6 +21,7 @@ export interface UserAccountInfo {
   userId: string;
   accountId: string;
   organizationId: string;
+  isAdmin: boolean;
 }
 
 export abstract class BaseController {
@@ -68,6 +69,9 @@ export abstract class BaseController {
         userId: authPayload.username,
         accountId: getAccountsResult.value[0].id,
         organizationId: getAccountsResult.value[0].organizationId,
+        isAdmin: authPayload['cognito:groups']
+        ? authPayload['cognito:groups'].includes('admin')
+        : false,
       });
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);

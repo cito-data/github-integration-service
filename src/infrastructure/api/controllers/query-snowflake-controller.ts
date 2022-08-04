@@ -61,16 +61,19 @@ export default class QuerySnowflakeController extends BaseController {
       // if (!getUserAccountInfoResult.value)
       //   throw new ReferenceError('Authorization failed');
 
+      
       const requestDto: QuerySnowflakeRequestDto = this.#buildRequestDto(req);
       // const authDto: SnowflakeQueryAuthDto = this.#buildAuthDto(
       //   getUserAccountResult.value
       // );
 
+      console.trace(requestDto);
+
       const useCaseResult: QuerySnowflakeResponseDto =
         await this.#querySnowflake.execute(
           requestDto,
           {
-            organizationId: 'todo',
+            organizationId: '62e1763a040383dd322daafd',
           },
           this.#dbo.dbConnection,
           this.#dbo.encryption

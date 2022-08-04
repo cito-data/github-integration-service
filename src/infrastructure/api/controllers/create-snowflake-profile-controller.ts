@@ -81,7 +81,7 @@ export default class CreateSnowflakeProfileController extends BaseController {
         await this.#createSnowflakeProfile.execute(
           requestDto,
           {
-            organizationId: 'todo',
+            organizationId: '62e1763a040383dd322daafd',
           },
           this.#dbo.dbConnection,
           this.#dbo.encryption

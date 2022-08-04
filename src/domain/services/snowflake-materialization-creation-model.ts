@@ -1,7 +1,8 @@
 import citoSchema from './cito-dw-schema';
 
 export const citoMaterializationTypes = [
-  'tests',
+  'test_suites',
+  'executions',
   'test_history',
   'test_results',
   'alerts',

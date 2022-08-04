@@ -28,11 +28,9 @@ export default class SnowflakeQueryRepo implements ISnowflakeQueryRepo {
             reject(new Error('Unknown error occured'));
           }
 
-          console.log(query);
-          console.log('connected');
           // Optional: store the connection ID.
           const connectionId = conn.getId();
-          console.log(connectionId);
+          console.log(`sf connection: ${connectionId}`);
 
           const complete = (error: any, stmt: Statement): void => {
             if (error)
@@ -50,7 +48,7 @@ export default class SnowflakeQueryRepo implements ISnowflakeQueryRepo {
 
           const stream = statement.streamRows();
 
-          stream.on('data', (row: any) => results.push(row));
+          stream.on('data', (row: any) => {if(row) results.push(row);});
           stream.on('error', handleStreamError);
           stream.on('end', () =>
             connection.destroy(

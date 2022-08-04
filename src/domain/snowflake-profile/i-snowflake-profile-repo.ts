@@ -13,6 +13,10 @@ export interface ISnowflakeProfileRepo {
     dbConnection: DbConnection,
     encryption: DbEncryption
   ): Promise<SnowflakeProfile | null>;
+  all(
+    dbConnection: DbConnection,
+    encryption: DbEncryption
+  ): Promise<SnowflakeProfile[]>;
   insertOne(
     snowflakeProfile: SnowflakeProfile,
     dbConnection: DbConnection,

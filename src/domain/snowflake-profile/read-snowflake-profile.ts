@@ -4,9 +4,7 @@ import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
 import { DbConnection, DbEncryption } from '../services/i-db';
 
-export interface ReadSnowflakeProfileRequestDto {
-  organizationId: string;
-}
+export type  ReadSnowflakeProfileRequestDto = null
 
 export interface ReadSnowflakeProfileAuthDto {
   organizationId: string;
@@ -49,12 +47,12 @@ export class ReadSnowflakeProfile
       this.#dbEncryption = dbEncryption;
 
       const snowflakeProfile = await this.#snowflakeProfileRepo.findOne(
-        request.organizationId,
+        auth.organizationId,
         this.#dbConnection,
         this.#dbEncryption
       );
       if (!snowflakeProfile)
-        throw new Error(`SnowflakeProfile with id ${request.organizationId} does not exist`);
+        throw new Error(`SnowflakeProfile with id ${auth.organizationId} does not exist`);
 
       // if (snowflakeProfile.organizationId !== auth.organizationId)
       //   throw new Error('Not authorized to perform action');

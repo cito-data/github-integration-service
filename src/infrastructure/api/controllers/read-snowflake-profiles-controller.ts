@@ -68,6 +68,9 @@ export default class ReadSnowflakeProfileController extends BaseController {
       // if (!getUserAccountInfoResult.value)
       //   throw new ReferenceError('Authorization failed');
 
+      // if(!getUserAccountInfoResult.value.isAdmin)
+      //     return ReadSnowflakeProfileController.unauthorized(res, 'Not authorized to perform action');
+
       const requestDto: ReadSnowflakeProfileRequestDto =
         this.#buildRequestDto(req);
       // const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
