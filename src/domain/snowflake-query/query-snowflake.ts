@@ -7,6 +7,7 @@ import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profil
 
 export interface QuerySnowflakeRequestDto {
   query: string;
+  targetOrganizationId?: string;
 }
 
 export interface QuerySnowflakeAuthDto {
@@ -58,7 +59,9 @@ export class QuerySnowflake
       const readSnowflakeProfileResult =
         await this.#readSnowflakeProfile.execute(
           null,
-          { organizationId: auth.organizationId },
+          {
+            organizationId: request.targetOrganizationId || auth.organizationId,
+          },
           this.#dbConnection,
           this.#dbEncryption
         );

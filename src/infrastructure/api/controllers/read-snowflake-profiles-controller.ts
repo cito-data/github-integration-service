@@ -3,65 +3,65 @@ import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import { buildSnowflakeProfileDto } from '../../../domain/snowflake-profile/snowflake-profile-dto';
 import {
-  ReadSnowflakeProfile,
-  ReadSnowflakeProfileAuthDto,
-  ReadSnowflakeProfileRequestDto,
-  ReadSnowflakeProfileResponseDto,
-} from '../../../domain/snowflake-profile/read-snowflake-profile';
+  ReadSnowflakeProfiles,
+  ReadSnowflakeProfilesRequestDto,
+  ReadSnowflakeProfilesResponseDto,
+} from '../../../domain/snowflake-profile/read-snowflake-profiles';
 import Dbo from '../../persistence/db/mongo-db';
 
 import {
   BaseController,
   CodeHttp,
-  UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class ReadSnowflakeProfileController extends BaseController {
-  readonly #readSnowflakeProfile: ReadSnowflakeProfile;
+export default class ReadSnowflakeProfilesController extends BaseController {
+  readonly #readSnowflakeProfiles: ReadSnowflakeProfiles;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    readSnowflakeProfile: ReadSnowflakeProfile,
+    readSnowflakeProfiles: ReadSnowflakeProfiles,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#readSnowflakeProfile = readSnowflakeProfile;
+    this.#readSnowflakeProfiles = readSnowflakeProfiles;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {
+  #buildRequestDto = (
+    httpRequest: Request
+  ): ReadSnowflakeProfilesRequestDto => {
     console.log(httpRequest.params);
     return null;
   };
 
-  #buildAuthDto = (
-    userAccountInfo: UserAccountInfo
-  ): ReadSnowflakeProfileAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
-  });
+  // #buildAuthDto = (
+  //   userAccountInfo: UserAccountInfo
+  // ): ReadSnowflakeProfilesAuthDto => ({
+  //   organizationId: userAccountInfo.organizationId,
+  // });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       // const authHeader = req.headers.authorization;
 
       // if (!authHeader)
-      //   return ReadSnowflakeProfileController.unauthorized(res, 'Unauthorized');
+      //   return ReadSnowflakeProfilesController.unauthorized(res, 'Unauthorized');
 
       // const jwt = authHeader.split(' ')[1];
 
       // const getUserAccountInfoResult: Result<UserAccountInfo> =
-      //   await ReadSnowflakeProfileInfoController.getUserAccountInfo(
+      //   await ReadSnowflakeProfilesInfoController.getUserAccountInfo(
       //     jwt,
       //     this.#getAccounts
       //   );
 
       // if (!getUserAccountInfoResult.success)
-      //   return ReadSnowflakeProfileInfoController.unauthorized(
+      //   return ReadSnowflakeProfilesInfoController.unauthorized(
       //     res,
       //     getUserAccountInfoResult.error
       //   );
@@ -69,42 +69,44 @@ export default class ReadSnowflakeProfileController extends BaseController {
       //   throw new ReferenceError('Authorization failed');
 
       // if(!getUserAccountInfoResult.value.isAdmin)
-      //     return ReadSnowflakeProfileController.unauthorized(res, 'Not authorized to perform action');
+      //     return ReadSnowflakeProfilesController.unauthorized(res, 'Not authorized to perform action');
 
-      const requestDto: ReadSnowflakeProfileRequestDto =
+      const requestDto: ReadSnowflakeProfilesRequestDto =
         this.#buildRequestDto(req);
-      // const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
+      // const authDto: ReadSnowflakeProfilesAuthDto = this.#buildAuthDto(
       //   getUserAccountResult.value
       // );
 
-      const useCaseResult: ReadSnowflakeProfileResponseDto =
-        await this.#readSnowflakeProfile.execute(
+      const useCaseResult: ReadSnowflakeProfilesResponseDto =
+        await this.#readSnowflakeProfiles.execute(
           requestDto,
           {
-            organizationId: 'todo',
+            isAdmin: true,
           },
           this.#dbo.dbConnection,
           this.#dbo.encryption
         );
 
       if (!useCaseResult.success) {
-        return ReadSnowflakeProfileController.badRequest(
+        return ReadSnowflakeProfilesController.badRequest(
           res,
           useCaseResult.error
         );
       }
+      if (!useCaseResult.value)
+        return ReadSnowflakeProfilesController.fail(res, 'Internal error');
 
-      const resultValue = useCaseResult.value
-        ? buildSnowflakeProfileDto(useCaseResult.value)
-        : useCaseResult.value;
+      const profileDtos = useCaseResult.value.map((element) =>
+        buildSnowflakeProfileDto(element)
+      );
 
-      return ReadSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
+      return ReadSnowflakeProfilesController.ok(res, profileDtos, CodeHttp.OK);
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return ReadSnowflakeProfileController.fail(res, error);
+        return ReadSnowflakeProfilesController.fail(res, error);
       if (error instanceof Error)
-        return ReadSnowflakeProfileController.fail(res, error);
-      return ReadSnowflakeProfileController.fail(res, 'Unknown error occured');
+        return ReadSnowflakeProfilesController.fail(res, error);
+      return ReadSnowflakeProfilesController.fail(res, 'Unknown error occured');
     }
   }
 }
