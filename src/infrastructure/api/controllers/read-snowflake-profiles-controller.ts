@@ -68,7 +68,7 @@ export default class ReadSnowflakeProfilesController extends BaseController {
       // if (!getUserAccountInfoResult.value)
       //   throw new ReferenceError('Authorization failed');
 
-      // if(!getUserAccountInfoResult.value.isAdmin)
+      // if(!getUserAccountInfoResult.value.isSystemInternal)
       //     return ReadSnowflakeProfilesController.unauthorized(res, 'Not authorized to perform action');
 
       const requestDto: ReadSnowflakeProfilesRequestDto =
@@ -81,7 +81,7 @@ export default class ReadSnowflakeProfilesController extends BaseController {
         await this.#readSnowflakeProfiles.execute(
           requestDto,
           {
-            isAdmin: true,
+            isSystemInternal: true,
           },
           this.#dbo.dbConnection,
           this.#dbo.encryption

@@ -7,7 +7,7 @@ import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 export type ReadSnowflakeProfilesRequestDto = null;
 
 export interface ReadSnowflakeProfilesAuthDto {
-  isAdmin: boolean;
+  isSystemInternal: boolean;
 }
 
 export type ReadSnowflakeProfilesResponseDto = Result<SnowflakeProfile[]>;
@@ -22,14 +22,14 @@ export class ReadSnowflakeProfiles
       DbEncryption
     >
 {
-  readonly #snowflakeprofileRepo: ISnowflakeProfileRepo;
+  readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
 
   #dbConnection: DbConnection;
 
   #dbEncryption: DbEncryption;
 
-  constructor(snowflakeprofileRepo: ISnowflakeProfileRepo) {
-    this.#snowflakeprofileRepo = snowflakeprofileRepo;
+  constructor(snowflakeProfileRepo: ISnowflakeProfileRepo) {
+    this.#snowflakeProfileRepo = snowflakeProfileRepo;
   }
 
   async execute(
@@ -39,22 +39,22 @@ export class ReadSnowflakeProfiles
     dbEncryption: DbEncryption
   ): Promise<ReadSnowflakeProfilesResponseDto> {
     try {
-      if (!auth.isAdmin) throw new Error('Not authorized to perform action');
+      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
 
       this.#dbConnection = dbConnection;
 
       this.#dbEncryption = dbEncryption;
 
-      const snowflakeprofiles: SnowflakeProfile[] =
-        await this.#snowflakeprofileRepo.all(
+      const snowflakeProfiles: SnowflakeProfile[] =
+        await this.#snowflakeProfileRepo.all(
           this.#dbConnection, 
         this.#dbEncryption
           
         );
-      if (!snowflakeprofiles)
-        throw new Error(`Queried snowflakeprofiles do not exist`);
+      if (!snowflakeProfiles)
+        throw new Error(`Queried snowflakeProfiles do not exist`);
 
-      return Result.ok(snowflakeprofiles);
+      return Result.ok(snowflakeProfiles);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);
