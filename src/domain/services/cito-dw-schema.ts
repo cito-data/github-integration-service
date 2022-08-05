@@ -11,6 +11,7 @@ const schema = {
         { name: 'database_name', type: 'string' },
         { name: 'schema_name', type: 'string' },
         { name: 'materialization_name', type: 'string' },
+        { name: 'materialization_type', type: 'string' },
         { name: 'column_name', type: 'string' },
         { name: 'organization_id', type: 'string' },
       ],
