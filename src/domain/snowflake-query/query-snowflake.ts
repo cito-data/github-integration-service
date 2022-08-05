@@ -9,6 +9,7 @@ import { SnowflakeProfile } from '../entities/snowflake-profile';
 
 export interface QuerySnowflakeRequestDto {
   query: string;
+  targetOrganizationId?: string;
 }
 
 export interface QuerySnowflakeAuthDto {
@@ -103,9 +104,14 @@ export class QuerySnowflake
 
       this.#dbEncryption = dbEncryption;
 
-      const snowflakeProfiles = auth.isSystemInternal
-        ? await this.#getSnowflakeProfiles(auth.isSystemInternal)
-        : [await this.#getSnowflakeProfile(auth.organizationId)];
+
+      let snowflakeProfiles: SnowflakeProfile[];
+      if(auth.isSystemInternal && request.targetOrganizationId)
+        snowflakeProfiles = [await this.#getSnowflakeProfile(request.targetOrganizationId)];
+      else if (auth.isSystemInternal)
+        snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isSystemInternal);
+      else
+        snowflakeProfiles = [await this.#getSnowflakeProfile(auth.organizationId)];
 
       const snowflakeQuery: {[key: string]: any[]} = {};
       

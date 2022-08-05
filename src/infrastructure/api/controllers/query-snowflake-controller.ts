@@ -33,6 +33,7 @@ export default class QuerySnowflakeController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): QuerySnowflakeRequestDto => ({
     query: httpRequest.body.query,
+    targetOrganizationId: httpRequest.body.targetOrganizationId
   });
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
