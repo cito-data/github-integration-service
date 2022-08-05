@@ -41,7 +41,7 @@ export default class QuerySnowflakeController extends BaseController {
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
-    try {
+    try {     
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
@@ -88,7 +88,7 @@ export default class QuerySnowflakeController extends BaseController {
         ? buildSnowflakeQueryDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return QuerySnowflakeController.ok(res, resultValue, CodeHttp.OK);
+      return QuerySnowflakeController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       if (typeof error === 'string')
         return QuerySnowflakeController.fail(res, error);

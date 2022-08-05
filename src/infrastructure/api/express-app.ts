@@ -101,7 +101,7 @@ export default class ExpressApp {
      
       this.#expressApp.listen(this.#config.port, () => {
         console.log(
-          `App listening on port: ${this.#config.port} in ${
+          `App running under pid ${process.pid} listening on port: ${this.#config.port} in ${
             this.#config.mode
           } mode`
         );
