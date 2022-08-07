@@ -70,8 +70,6 @@ export default class QuerySnowflakeController extends BaseController {
         getUserAccountInfoResult.value
       );
 
-      console.trace(requestDto);
-
       const useCaseResult: QuerySnowflakeResponseDto =
         await this.#querySnowflake.execute(
           requestDto,

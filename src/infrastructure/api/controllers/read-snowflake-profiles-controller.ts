@@ -4,6 +4,7 @@ import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import { buildSnowflakeProfileDto } from '../../../domain/snowflake-profile/snowflake-profile-dto';
 import {
   ReadSnowflakeProfiles,
+  ReadSnowflakeProfilesAuthDto,
   ReadSnowflakeProfilesRequestDto,
   ReadSnowflakeProfilesResponseDto,
 } from '../../../domain/snowflake-profile/read-snowflake-profiles';
@@ -12,7 +13,9 @@ import Dbo from '../../persistence/db/mongo-db';
 import {
   BaseController,
   CodeHttp,
+  UserAccountInfo,
 } from '../../shared/base-controller';
+import Result from '../../../domain/value-types/transient-types/result';
 
 export default class ReadSnowflakeProfilesController extends BaseController {
   readonly #readSnowflakeProfiles: ReadSnowflakeProfiles;
@@ -39,50 +42,48 @@ export default class ReadSnowflakeProfilesController extends BaseController {
     return null;
   };
 
-  // #buildAuthDto = (
-  //   userAccountInfo: UserAccountInfo
-  // ): ReadSnowflakeProfilesAuthDto => ({
-  //   organizationId: userAccountInfo.organizationId,
-  // });
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): ReadSnowflakeProfilesAuthDto => ({
+    isSystemInternal: userAccountInfo.isSystemInternal
+  });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      // const authHeader = req.headers.authorization;
+      const authHeader = req.headers.authorization;
 
-      // if (!authHeader)
-      //   return ReadSnowflakeProfilesController.unauthorized(res, 'Unauthorized');
+      if (!authHeader)
+        return ReadSnowflakeProfilesController.unauthorized(res, 'Unauthorized');
 
-      // const jwt = authHeader.split(' ')[1];
+      const jwt = authHeader.split(' ')[1];
 
-      // const getUserAccountInfoResult: Result<UserAccountInfo> =
-      //   await ReadSnowflakeProfilesInfoController.getUserAccountInfo(
-      //     jwt,
-      //     this.#getAccounts
-      //   );
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await ReadSnowflakeProfilesController.getUserAccountInfo(
+          jwt,
+          this.#getAccounts
+        );
 
-      // if (!getUserAccountInfoResult.success)
-      //   return ReadSnowflakeProfilesInfoController.unauthorized(
-      //     res,
-      //     getUserAccountInfoResult.error
-      //   );
-      // if (!getUserAccountInfoResult.value)
-      //   throw new ReferenceError('Authorization failed');
+      if (!getUserAccountInfoResult.success)
+        return ReadSnowflakeProfilesController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new ReferenceError('Authorization failed');
 
-      // if(!getUserAccountInfoResult.value.isSystemInternal)
-      //     return ReadSnowflakeProfilesController.unauthorized(res, 'Not authorized to perform action');
+      if(!getUserAccountInfoResult.value.isSystemInternal)
+          return ReadSnowflakeProfilesController.unauthorized(res, 'Not authorized to perform action');
 
       const requestDto: ReadSnowflakeProfilesRequestDto =
         this.#buildRequestDto(req);
-      // const authDto: ReadSnowflakeProfilesAuthDto = this.#buildAuthDto(
-      //   getUserAccountResult.value
-      // );
+      const authDto: ReadSnowflakeProfilesAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value
+      );
 
       const useCaseResult: ReadSnowflakeProfilesResponseDto =
         await this.#readSnowflakeProfiles.execute(
           requestDto,
-          {
-            isSystemInternal: true,
-          },
+          authDto,
           this.#dbo.dbConnection,
           this.#dbo.encryption
         );
