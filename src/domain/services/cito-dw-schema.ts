@@ -20,7 +20,7 @@ const schema = {
       name: 'executions',
       columns: [
         { name: 'id', type: 'string' },
-        { name: 'executed_on', type: 'timestamp_ltz' },
+        { name: 'executed_on', type: 'timestamp_ntz' },
         { name: 'test_suite_id', type: 'string' },
       ],
     },
