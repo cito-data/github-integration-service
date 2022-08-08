@@ -4,6 +4,7 @@ import { GetAccounts } from '../domain/account-api/get-accounts';
 import { CreateCitoSnowflakeEnv } from '../domain/cito-snowflake-env/create-cito-snowflake-env';
 import { CreateSlackProfile } from '../domain/slack-profile/create-slack-profile';
 import { ReadSlackProfile } from '../domain/slack-profile/read-slack-profile';
+import { UpdateSlackProfile } from '../domain/slack-profile/update-slack-profile';
 import { CreateSnowflakeProfile } from '../domain/snowflake-profile/create-snowflake-profile';
 import { ReadSnowflakeProfile } from '../domain/snowflake-profile/read-snowflake-profile';
 import { ReadSnowflakeProfiles } from '../domain/snowflake-profile/read-snowflake-profiles';
@@ -20,6 +21,8 @@ iocRegister.register({
   createSnowflakeProfile: asClass(CreateSnowflakeProfile),
   createSlackProfile: asClass(CreateSlackProfile),
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
+
+  updateSlackProfile: asClass(UpdateSlackProfile),
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   readSlackProfile: asClass(ReadSlackProfile),

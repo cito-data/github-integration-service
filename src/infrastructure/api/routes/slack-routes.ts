@@ -1,31 +1,42 @@
 import { Router } from 'express';
 import app from '../../ioc-register';
-import CreateSnowflakeProfileController from '../controllers/create-snowflake-profile-controller';
-import ReadSnowflakeProfileController from '../controllers/read-snowflake-profile-controller';
+import CreateSlackProfileController from '../controllers/create-slack-profile-controller';
+import ReadSlackProfileController from '../controllers/read-slack-profile-controller';
+import UpdateSlackProfileController from '../controllers/update-slack-profile-controller';
 
-const snowflakeRoutes = Router();
+const slackRoutes = Router();
 
 const getAccounts = app.resolve('getAccounts');
 const dbo = app.resolve('dbo');
 
-const createSnowflakeProfileController = new CreateSnowflakeProfileController(
-  app.resolve('createSnowflakeProfile'),
+const createSlackProfileController = new CreateSlackProfileController(
+  app.resolve('createSlackProfile'),
   getAccounts,
   dbo
 );
 
-const readSnowflakeProfileController = new ReadSnowflakeProfileController(
-  app.resolve('readSnowflakeProfile'),
+const updateSlackProfileController = new UpdateSlackProfileController(
+  app.resolve('updateSlackProfile'),
   getAccounts,
   dbo
 );
 
-snowflakeRoutes.post('/profile', (req, res) => {
-  createSnowflakeProfileController.execute(req, res);
+const readSlackProfileController = new ReadSlackProfileController(
+  app.resolve('readSlackProfile'),
+  getAccounts,
+  dbo
+);
+
+slackRoutes.post('/profile', (req, res) => {
+  createSlackProfileController.execute(req, res);
 });
 
-snowflakeRoutes.get('/profile', (req, res) => {
-  readSnowflakeProfileController.execute(req, res);
+slackRoutes.get('/profile', (req, res) => {
+  readSlackProfileController.execute(req, res);
 });
 
-export default snowflakeRoutes;
+slackRoutes.patch('/profile', (req, res) => {
+  updateSlackProfileController.execute(req, res);
+});
+
+export default slackRoutes;
