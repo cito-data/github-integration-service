@@ -2,7 +2,7 @@ export interface SlackProfileProperties {
   id:string;
   channelId: string;
   workspaceId: string;
-  token: string;
+  accessToken: string;
   organizationId: string;
 }
 
@@ -14,7 +14,7 @@ export class SlackProfile {
 
   #workspaceId: string;
   
-  #token: string;
+  #accessToken: string;
 
   #organizationId: string;
 
@@ -30,8 +30,8 @@ export class SlackProfile {
     return this.#workspaceId;
   }
 
-  get token(): string {
-    return this.#token;
+  get accessToken(): string {
+    return this.#accessToken;
   }
   
   get organizationId():string{
@@ -42,7 +42,7 @@ export class SlackProfile {
     this.#id = props.id;
     this.#channelId = props.channelId;
     this.#workspaceId = props.workspaceId;
-    this.#token = props.token;
+    this.#accessToken = props.accessToken;
     this.#organizationId = props.organizationId;
   }
 
@@ -50,7 +50,7 @@ export class SlackProfile {
     if (!props.id) throw new TypeError('SlackProfile must have Id');
     if (!props.channelId) throw new TypeError('SlackProfile must have Channel Id');
     if (!props.workspaceId) throw new TypeError('SlackProfile must have Workspace Id');
-    if (!props.token) throw new TypeError('SlackProfile must have Token');
+    if (!props.accessToken) throw new TypeError('SlackProfile must have Token');
     if (!props.organizationId) throw new TypeError('SnowflakeProfile must have organizationId');
 
     return new SlackProfile(props);
