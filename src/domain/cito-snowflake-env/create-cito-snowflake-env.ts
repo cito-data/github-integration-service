@@ -1,7 +1,7 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
-import { QuerySnowflake } from '../snowflake-query/query-snowflake';
+import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
   citoMaterializationTypes,
   getCreateTableQuery,

@@ -8,8 +8,8 @@ import { ReadSlackProfile } from './read-slack-profile';
 
 export interface CreateSlackProfileRequestDto {
 channelId: string,
+channelName: string,
 accessToken: string, 
-workspaceId: string,
 }
 
 export interface CreateSlackProfileAuthDto {
@@ -58,7 +58,7 @@ export class CreateSlackProfile
         id: new ObjectId().toHexString(),
         organizationId: auth.organizationId,
         channelId: request.channelId,
-        workspaceId: request.workspaceId,
+        channelName: request.channelName,
         accessToken: request.accessToken
       });
 

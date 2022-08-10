@@ -4,8 +4,8 @@ export interface SlackProfileDto {
   id: string;
   organizationId: string;
   channelId: string;
+  channelName: string;
   accessToken: string;
-  workspaceId: string;
 }
 
 export const buildSlackProfileDto = (
@@ -13,7 +13,7 @@ export const buildSlackProfileDto = (
 ): SlackProfileDto => ({
   id: slackProfile.id,
   organizationId: slackProfile.organizationId,
-  workspaceId: slackProfile.workspaceId,
   channelId: slackProfile.channelId,
+  channelName: slackProfile.channelName,
   accessToken: slackProfile.accessToken,
 });

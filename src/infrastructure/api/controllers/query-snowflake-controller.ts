@@ -6,8 +6,8 @@ import {
   QuerySnowflakeAuthDto,
   QuerySnowflakeRequestDto,
   QuerySnowflakeResponseDto,
-} from '../../../domain/snowflake-query/query-snowflake';
-import { buildSnowflakeQueryDto } from '../../../domain/snowflake-query/snowflake-query-dto';
+} from '../../../domain/snowflake-api/query-snowflake';
+import { buildSnowflakeQueryDto } from '../../../domain/snowflake-api/snowflake-query-dto';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 

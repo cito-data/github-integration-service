@@ -3,8 +3,8 @@ import { DbConnection, DbEncryption } from '../services/i-db';
 
 export interface SlackProfileUpdateDto {
   channelId?: string;
+  channelName?: string;
   accessToken?: string;
-  workspaceId?: string;
 }
 
 export interface ISlackProfileRepo {

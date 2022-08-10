@@ -37,8 +37,8 @@ export default class UpdateSlackProfileController extends BaseController {
   #buildRequestDto = (
     httpRequest: Request
   ): UpdateSlackProfileRequestDto => ({
-    workspaceId: httpRequest.body.workspaceId || undefined,
     channelId: httpRequest.body.channelId || undefined,
+    channelName: httpRequest.body.channelName || undefined,
     accessToken: httpRequest.body.accessToken || undefined,
   });
 

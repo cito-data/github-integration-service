@@ -38,8 +38,8 @@ export default class CreateSlackProfileController extends BaseController {
   #buildRequestDto = (
     httpRequest: Request
   ): CreateSlackProfileRequestDto => ({
-    workspaceId: httpRequest.body.workspaceId,
     channelId: httpRequest.body.channelId,
+    channelName: httpRequest.body.channelName,
     accessToken: httpRequest.body.accessToken,
   });
 

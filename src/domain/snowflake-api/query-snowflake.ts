@@ -2,7 +2,7 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
 import { SnowflakeQuery } from '../value-types/snowflake-query';
-import { ISnowflakeQueryRepo } from './i-snowflake-query-repo';
+import { ISnowflakeApiRepo } from './i-snowflake-api-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 import { ReadSnowflakeProfiles } from '../snowflake-profile/read-snowflake-profiles';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
@@ -29,7 +29,7 @@ export class QuerySnowflake
       DbEncryption
     >
 {
-  readonly #snowflakeQueryRepo: ISnowflakeQueryRepo;
+  readonly #snowflakeApiRepo: ISnowflakeApiRepo;
 
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
@@ -40,11 +40,11 @@ export class QuerySnowflake
   #dbEncryption: DbEncryption;
 
   constructor(
-    snowflakeQueryRepo: ISnowflakeQueryRepo,
+    snowflakeApiRepo: ISnowflakeApiRepo,
     readSnowflakeProfile: ReadSnowflakeProfile,
     readSnowflakeProfiles: ReadSnowflakeProfiles
   ) {
-    this.#snowflakeQueryRepo = snowflakeQueryRepo;
+    this.#snowflakeApiRepo = snowflakeApiRepo;
     this.#readSnowflakeProfile = readSnowflakeProfile;
     this.#readSnowflakeProfiles = readSnowflakeProfiles;
   }
@@ -117,7 +117,7 @@ export class QuerySnowflake
       
       await Promise.all(
         snowflakeProfiles.map(async (profile) => {
-          const queryResult = await this.#snowflakeQueryRepo.runQuery(
+          const queryResult = await this.#snowflakeApiRepo.runQuery(
             request.query,
             {
               account: profile.accountId,

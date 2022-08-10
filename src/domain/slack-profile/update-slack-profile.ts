@@ -9,8 +9,8 @@ import { ReadSlackProfile } from './read-slack-profile';
 
 export interface UpdateSlackProfileRequestDto {
   channelId?: string;
+  channelName?: string;
   accessToken?: string;
-  workspaceId?: string;
 }
 
 export interface UpdateSlackProfileAuthDto {
