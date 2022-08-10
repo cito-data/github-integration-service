@@ -97,8 +97,6 @@ export class QuerySnowflake
     dbEncryption: DbEncryption
   ): Promise<QuerySnowflakeResponseDto> {
     try {
-      // todo -replace
-      console.log(auth);
 
       this.#dbConnection = dbConnection;
 

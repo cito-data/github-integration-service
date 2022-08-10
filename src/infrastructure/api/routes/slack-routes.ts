@@ -4,6 +4,7 @@ import CreateSlackProfileController from '../controllers/create-slack-profile-co
 import JoinSlackConversationController from '../controllers/join-slack-conversation-controller';
 import ReadSlackConversationsController from '../controllers/read-slack-conversations-controller';
 import ReadSlackProfileController from '../controllers/read-slack-profile-controller';
+import SendSlackAlertController from '../controllers/send-slack-alert-controller';
 import UpdateSlackProfileController from '../controllers/update-slack-profile-controller';
 
 const slackRoutes = Router();
@@ -25,6 +26,12 @@ const updateSlackProfileController = new UpdateSlackProfileController(
 
 const readSlackProfileController = new ReadSlackProfileController(
   app.resolve('readSlackProfile'),
+  getAccounts,
+  dbo
+);
+
+const sendSlackAlertController = new SendSlackAlertController(
+  app.resolve('sendSlackAlert'),
   getAccounts,
   dbo
 );
@@ -51,6 +58,10 @@ slackRoutes.get('/profile', (req, res) => {
 
 slackRoutes.patch('/profile', (req, res) => {
   updateSlackProfileController.execute(req, res);
+});
+
+slackRoutes.post('/alert', (req, res) => {
+  sendSlackAlertController.execute(req, res);
 });
 
 slackRoutes.post('/conversation/join', (req, res) => {

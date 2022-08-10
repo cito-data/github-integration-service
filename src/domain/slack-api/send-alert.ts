@@ -1,16 +1,17 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
-import { ISlackApiRepo } from './i-slack-api-repo';
+import { ISlackApiRepo, SlackMessageConfig } from './i-slack-api-repo';
 import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
 
 export interface SendSlackAlertRequestDto {
-  message: string;
+  messageConfig: SlackMessageConfig,
+  targetOrganizationId: string;
 }
 
 export interface SendSlackAlertAuthDto {
-  organizationId: string;
+  isSystemInternal: boolean;
 }
 
 export type SendSlackAlertResponseDto = Result<null>;
@@ -67,16 +68,18 @@ export class SendSlackAlert
 
       this.#dbEncryption = dbEncryption;
 
-      const slackProfile = await this.#getSlackProfile(auth.organizationId);
+      if (!auth.isSystemInternal)
+        throw new Error('Not authorized to perform action');
+
+      const slackProfile = await this.#getSlackProfile(
+        request.targetOrganizationId
+      );
 
       await this.#slackApiRepo.sendAlert(
         slackProfile.accessToken,
         slackProfile.channelName,
-        request.message
+        request.messageConfig,
       );
-
-      // if (slackQuery.organizationId !== auth.organizationId)
-      //   throw new Error('Not authorized to perform action');
 
       return Result.ok(null);
     } catch (error: unknown) {

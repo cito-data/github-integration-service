@@ -2,11 +2,11 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  JoinSlackConversation,
-  JoinSlackConversationAuthDto,
-  JoinSlackConversationRequestDto,
-  JoinSlackConversationResponseDto,
-} from '../../../domain/slack-api/join-conversation';
+  SendSlackAlert,
+  SendSlackAlertAuthDto,
+  SendSlackAlertRequestDto,
+  SendSlackAlertResponseDto,
+} from '../../../domain/slack-api/send-alert';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -16,28 +16,33 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class JoinSlackConversationController extends BaseController {
-  readonly #joinSlackConversation: JoinSlackConversation;
+export default class SendSlackAlertController extends BaseController {
+  readonly #sendSlackAlert: SendSlackAlert;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    joinSlackConversation: JoinSlackConversation,
+    sendSlackAlert: SendSlackAlert,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#joinSlackConversation = joinSlackConversation;
+    this.#sendSlackAlert = sendSlackAlert;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
+  #buildRequestDto = (httpRequest: Request): SendSlackAlertRequestDto => ({
+    targetOrganizationId: httpRequest.body.targetOrganizationId,
+    messageConfig: httpRequest.body.messageConfig,
+  });
+
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): JoinSlackConversationAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+  ): SendSlackAlertAuthDto => ({
+    isSystemInternal: userAccountInfo.isSystemInternal,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -45,34 +50,34 @@ export default class JoinSlackConversationController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return JoinSlackConversationController.unauthorized(
-          res,
-          'Unauthorized'
-        );
+        return SendSlackAlertController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await JoinSlackConversationController.getUserAccountInfo(
+        await SendSlackAlertController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return JoinSlackConversationController.unauthorized(
+        return SendSlackAlertController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: JoinSlackConversationRequestDto = null;
-      const authDto: JoinSlackConversationAuthDto = this.#buildAuthDto(
+      if (!getUserAccountInfoResult.value.isSystemInternal)
+        return SendSlackAlertController.unauthorized(res, 'Not authorized');
+
+      const requestDto: SendSlackAlertRequestDto = this.#buildRequestDto(req);
+      const authDto: SendSlackAlertAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: JoinSlackConversationResponseDto =
-        await this.#joinSlackConversation.execute(
+      const useCaseResult: SendSlackAlertResponseDto =
+        await this.#sendSlackAlert.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection,
@@ -80,21 +85,18 @@ export default class JoinSlackConversationController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return JoinSlackConversationController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return SendSlackAlertController.badRequest(res, useCaseResult.error);
       }
 
       const resultValue = useCaseResult.value;
 
-      return JoinSlackConversationController.ok(res, resultValue, CodeHttp.CREATED);
+      return SendSlackAlertController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return JoinSlackConversationController.fail(res, error);
+        return SendSlackAlertController.fail(res, error);
       if (error instanceof Error)
-        return JoinSlackConversationController.fail(res, error);
-      return JoinSlackConversationController.fail(res, 'Unknown error occured');
+        return SendSlackAlertController.fail(res, error);
+      return SendSlackAlertController.fail(res, 'Unknown error occured');
     }
   }
 }
