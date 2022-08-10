@@ -17,6 +17,7 @@ import SnowflakeApiRepo from './persistence/snowflake-api-repo';
 import { SendSlackAlert } from '../domain/slack-api/send-alert';
 import { GetSlackConversations } from '../domain/slack-api/get-conversations';
 import SlackApiRepo from './persistence/slack-api-repo';
+import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -35,6 +36,7 @@ iocRegister.register({
 
   sendSlackAlert: asClass(SendSlackAlert),
   getSlackConversations: asClass(GetSlackConversations),
+  joinSlackConversation: asClass(JoinSlackConversation),
 
   getAccounts: asClass(GetAccounts),
 

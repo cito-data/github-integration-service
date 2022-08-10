@@ -50,4 +50,20 @@ export default class SlackApiRepo implements ISlackApiRepo {
       return Promise.reject(new Error('Unknown error occured'));
     }
   };
+
+  joinConversation = async (accessToken: string, channelId: string): Promise<void> => {
+    try {
+      const client = new WebClient(accessToken);
+
+      const result = await client.conversations.join({channel: channelId, token: accessToken });
+
+      if (!result.ok) throw new Error('Joining channel failed');
+
+      return await Promise.resolve();
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
 }

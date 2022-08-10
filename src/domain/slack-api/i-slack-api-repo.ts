@@ -7,4 +7,5 @@ export interface ISlackApiRepo {
     message: string
   ): Promise<void>;
   getConversations(accessToken: string): Promise<SlackConversationInfo[]>;
+  joinConversation(accessToken: string, channelId: string): Promise<void>;
 }
