@@ -46,10 +46,6 @@ export class CreateCitoSnowflakeEnv
     dbEncryption: DbEncryption
   ): Promise<CreateCitoSnowflakeEnvResponseDto> {
     try {
-      // todo -replace
-      console.log(request);
-      
-      console.log(auth);
 
       this.#dbConnection = dbConnection;
 

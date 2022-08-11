@@ -38,9 +38,9 @@ export class ReadSnowflakeProfiles
     dbConnection: DbConnection,
     dbEncryption: DbEncryption
   ): Promise<ReadSnowflakeProfilesResponseDto> {
-    try {
-      if (!auth.isAdmin) throw new Error('Not authorized to perform action');
+    if (!auth.isAdmin) throw new Error('Not authorized to perform action');
 
+    try {
       this.#dbConnection = dbConnection;
 
       this.#dbEncryption = dbEncryption;

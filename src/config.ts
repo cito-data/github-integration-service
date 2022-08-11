@@ -22,8 +22,10 @@ const defaultPort = 3002;
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : defaultPort;
 const apiRoot = process.env.API_ROOT || 'api';
 
-const getServiceDiscoveryNamespace = (): string => {
+const getServiceDiscoveryNamespace = (): string | null => {
   switch (nodeEnv) {
+    case 'development':
+      return null;
     case 'test':
       return 'integration-staging';
     case 'production':

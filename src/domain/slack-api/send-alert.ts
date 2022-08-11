@@ -6,7 +6,7 @@ import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
 
 export interface SendSlackAlertRequestDto {
-  messageConfig: SlackMessageConfig,
+  messageConfig: SlackMessageConfig;
   targetOrganizationId: string;
 }
 
@@ -63,13 +63,11 @@ export class SendSlackAlert
     dbConnection: DbConnection,
     dbEncryption: DbEncryption
   ): Promise<SendSlackAlertResponseDto> {
+    if (!auth.isAdmin) throw new Error('Not authorized to perform action');
     try {
       this.#dbConnection = dbConnection;
 
       this.#dbEncryption = dbEncryption;
-
-      if (!auth.isAdmin)
-        throw new Error('Not authorized to perform action');
 
       const slackProfile = await this.#getSlackProfile(
         request.targetOrganizationId
@@ -78,7 +76,7 @@ export class SendSlackAlert
       await this.#slackApiRepo.sendAlert(
         slackProfile.accessToken,
         slackProfile.channelName,
-        request.messageConfig,
+        request.messageConfig
       );
 
       return Result.ok(null);
