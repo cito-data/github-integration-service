@@ -45,7 +45,7 @@ export default class ReadSnowflakeProfilesController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSnowflakeProfilesAuthDto => ({
-    isSystemInternal: userAccountInfo.isSystemInternal
+    isAdmin: userAccountInfo.isAdmin
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -71,7 +71,7 @@ export default class ReadSnowflakeProfilesController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      if(!getUserAccountInfoResult.value.isSystemInternal)
+      if(!getUserAccountInfoResult.value.isAdmin)
           return ReadSnowflakeProfilesController.unauthorized(res, 'Not authorized to perform action');
 
       const requestDto: ReadSnowflakeProfilesRequestDto =

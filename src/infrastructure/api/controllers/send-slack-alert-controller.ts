@@ -42,7 +42,7 @@ export default class SendSlackAlertController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): SendSlackAlertAuthDto => ({
-    isSystemInternal: userAccountInfo.isSystemInternal,
+    isAdmin: userAccountInfo.isAdmin,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -68,7 +68,7 @@ export default class SendSlackAlertController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      if (!getUserAccountInfoResult.value.isSystemInternal)
+      if (!getUserAccountInfoResult.value.isAdmin)
         return SendSlackAlertController.unauthorized(res, 'Not authorized');
 
       const requestDto: SendSlackAlertRequestDto = this.#buildRequestDto(req);

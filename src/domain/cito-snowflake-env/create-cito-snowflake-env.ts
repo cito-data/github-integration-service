@@ -11,7 +11,7 @@ export type CreateCitoSnowflakeEnvRequestDto = null;
 
 export interface CreateCitoSnowflakeEnvAuthDto {
   organizationId: string;
-  isSystemInternal: boolean
+  isAdmin: boolean
 }
 
 export type CreateCitoSnowflakeEnvResponseDto = Result<{
@@ -63,7 +63,7 @@ export class CreateCitoSnowflakeEnv
             {
               query,
             },
-            { organizationId: auth.organizationId, isSystemInternal: auth.isSystemInternal },
+            { organizationId: auth.organizationId, isAdmin: auth.isAdmin },
             this.#dbConnection,
             this.#dbEncryption
           );

@@ -11,7 +11,7 @@ export interface SendSlackAlertRequestDto {
 }
 
 export interface SendSlackAlertAuthDto {
-  isSystemInternal: boolean;
+  isAdmin: boolean;
 }
 
 export type SendSlackAlertResponseDto = Result<null>;
@@ -68,7 +68,7 @@ export class SendSlackAlert
 
       this.#dbEncryption = dbEncryption;
 
-      if (!auth.isSystemInternal)
+      if (!auth.isAdmin)
         throw new Error('Not authorized to perform action');
 
       const slackProfile = await this.#getSlackProfile(

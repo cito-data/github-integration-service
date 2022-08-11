@@ -7,7 +7,7 @@ import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 export type ReadSnowflakeProfilesRequestDto = null;
 
 export interface ReadSnowflakeProfilesAuthDto {
-  isSystemInternal: boolean;
+  isAdmin: boolean;
 }
 
 export type ReadSnowflakeProfilesResponseDto = Result<SnowflakeProfile[]>;
@@ -39,7 +39,7 @@ export class ReadSnowflakeProfiles
     dbEncryption: DbEncryption
   ): Promise<ReadSnowflakeProfilesResponseDto> {
     try {
-      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
+      if (!auth.isAdmin) throw new Error('Not authorized to perform action');
 
       this.#dbConnection = dbConnection;
 

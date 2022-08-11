@@ -23,20 +23,14 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : defaultPort;
 const apiRoot = process.env.API_ROOT || 'api';
 
 const getServiceDiscoveryNamespace = (): string => {
-  let namespace = '';
-
   switch (nodeEnv) {
     case 'test':
-      namespace = 'integration-staging';
-      break;
+      return 'integration-staging';
     case 'production':
-      namespace = 'integration';
-      break;
+      return 'integration';
     default:
-      break;
+      throw new Error('No valid nodenv value provided');
   }
-
-  return namespace;
 };
 
 const getSlackMessageButtonBaseUrl = (): string => {
@@ -113,6 +107,19 @@ const getMongodbConfig = (): MongoDbConfig => {
   }
 };
 
+const getCognitoUserPoolId = (): string => {
+  switch (nodeEnv) {
+    case 'development':
+      return 'eu-central-1_HYLD4MoTL';
+    case 'test':
+      return 'eu-central-1_htA4V0E1g';
+    case 'production':
+      return 'eu-central-1_fttc090sQ';
+    default:
+      throw new Error('No valid nodenv provided');
+  }
+};
+
 export const appConfig = {
   express: {
     port,
@@ -121,6 +128,8 @@ export const appConfig = {
   },
   cloud: {
     serviceDiscoveryNamespace: getServiceDiscoveryNamespace(),
+    userPoolId: getCognitoUserPoolId(),
+    region: 'eu-central-1',
   },
   mongodb: {
     ...getMongodbConfig(),
