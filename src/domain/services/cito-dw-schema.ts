@@ -13,6 +13,7 @@ const schema = {
         { name: 'materialization_name', type: 'string' },
         { name: 'materialization_type', type: 'string' },
         { name: 'column_name', type: 'string' },
+        { name: 'resource_id', tpye: 'string'},
         { name: 'organization_id', type: 'string' },
       ],
     },
