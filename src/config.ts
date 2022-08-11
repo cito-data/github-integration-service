@@ -17,12 +17,10 @@ if (!clientId) throw new Error('Client id not available');
 const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
 if (!clientSecret) throw new Error('Client secret not available');
 
-export const nodeEnv = process.env.NODE_ENV || 'development';
-export const defaultPort = 3002;
-export const port = process.env.PORT
-  ? parseInt(process.env.PORT, 10)
-  : defaultPort;
-export const apiRoot = process.env.API_ROOT || 'api';
+const nodeEnv = process.env.NODE_ENV || 'development';
+const defaultPort = 3002;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : defaultPort;
+const apiRoot = process.env.API_ROOT || 'api';
 
 const getServiceDiscoveryNamespace = (): string => {
   let namespace = '';
@@ -41,7 +39,18 @@ const getServiceDiscoveryNamespace = (): string => {
   return namespace;
 };
 
-export const serviceDiscoveryNamespace = getServiceDiscoveryNamespace();
+const getSlackMessageButtonBaseUrl = (): string => {
+  switch (nodeEnv) {
+    case 'development':
+      return `http://localhost:3006/test`;
+    case 'test':
+      return `https://www.app-staging.citodata.com/test`;
+    case 'production':
+      return `https://www.app.citodata.com/test`;
+    default:
+      throw new Error('nodenv type not found');
+  }
+};
 
 export interface MongoDbConfig {
   url: string;
@@ -108,9 +117,16 @@ export const appConfig = {
   express: {
     port,
     mode: nodeEnv,
+    apiRoot,
+  },
+  cloud: {
+    serviceDiscoveryNamespace: getServiceDiscoveryNamespace(),
   },
   mongodb: {
     ...getMongodbConfig(),
+  },
+  slack: {
+    buttonBaseUrl: getSlackMessageButtonBaseUrl(),
   },
   snowflake: {
     applicationName:

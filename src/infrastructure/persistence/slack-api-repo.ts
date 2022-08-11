@@ -1,4 +1,5 @@
 import { WebClient } from '@slack/web-api';
+import { appConfig } from '../../config';
 import {
   ISlackApiRepo,
   SlackMessageConfig,
@@ -58,22 +59,24 @@ export default class SlackApiRepo implements ISlackApiRepo {
               {
                 type: 'button',
                 style: 'danger',
+                url: `${appConfig.slack.buttonBaseUrl}?alertId=${messageConfig.alertId}&userFeedbackIsAnomaly=1`,
                 text: {
                   type: 'plain_text',
                   text: 'Mark as Anomaly',
                 },
                 value: 'click_me_123',
-                action_id: 'button',
+                action_id: 'mark-anomaly-button',
               },
               {
                 type: 'button',
                 style: 'primary',
+                url: `${appConfig.slack.buttonBaseUrl}?alertId=${messageConfig.alertId}&userFeedbackIsAnomaly=0`,
                 text: {
                   type: 'plain_text',
                   text: 'Mark as Normal',
                 },
                 value: 'click_me_123',
-                action_id: 'button1',
+                action_id: 'mark-normal-button',
               },
             ],
           },
