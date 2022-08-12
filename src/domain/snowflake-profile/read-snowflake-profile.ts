@@ -7,7 +7,7 @@ import { DbConnection, DbEncryption } from '../services/i-db';
 export type  ReadSnowflakeProfileRequestDto = null
 
 export interface ReadSnowflakeProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type ReadSnowflakeProfileResponseDto = Result<SnowflakeProfile>;
@@ -47,15 +47,15 @@ export class ReadSnowflakeProfile
       this.#dbEncryption = dbEncryption;
 
       const snowflakeProfile = await this.#snowflakeProfileRepo.findOne(
-        auth.organizationId,
+        auth.callerOrganizationId,
         this.#dbConnection,
         this.#dbEncryption
       );
       if (!snowflakeProfile)
-        throw new Error(`SnowflakeProfile with id ${auth.organizationId} does not exist`);
+        throw new Error(`SnowflakeProfile with id ${auth.callerOrganizationId} does not exist`);
 
-      // if (snowflakeProfile.organizationId !== auth.organizationId)
-      //   throw new Error('Not authorized to perform action');
+      if (snowflakeProfile.organizationId !== auth.callerOrganizationId)
+        throw new Error('Not authorized to perform action');
 
       return Result.ok(snowflakeProfile);
     } catch (error: unknown) {

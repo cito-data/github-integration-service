@@ -37,7 +37,7 @@ export default class JoinSlackConversationController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): JoinSlackConversationAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

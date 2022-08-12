@@ -9,7 +9,7 @@ import { SlackConversationInfo } from '../value-types/slack-conversation-info';
 export type GetSlackConversationsRequestDto = null
 
 export interface GetSlackConversationsAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type GetSlackConversationsResponseDto = Result<SlackConversationInfo[]>;
@@ -41,7 +41,7 @@ export class GetSlackConversations
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
-        organizationId,
+        callerOrganizationId: organizationId,
       },
       this.#dbConnection,
       this.#dbEncryption
@@ -66,7 +66,7 @@ export class GetSlackConversations
 
       this.#dbEncryption = dbEncryption;
 
-      const slackProfile = await this.#getSlackProfile(auth.organizationId);
+      const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
 
       const conversations = await this.#slackApiRepo.getConversations(
         slackProfile.accessToken,

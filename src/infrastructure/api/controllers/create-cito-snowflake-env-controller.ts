@@ -40,7 +40,7 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): CreateCitoSnowflakeEnvAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
     isSystemInternal: userAccountInfo.isSystemInternal
   });
 

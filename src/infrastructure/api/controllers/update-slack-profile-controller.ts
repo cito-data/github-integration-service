@@ -34,9 +34,7 @@ export default class UpdateSlackProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (
-    httpRequest: Request
-  ): UpdateSlackProfileRequestDto => ({
+  #buildRequestDto = (httpRequest: Request): UpdateSlackProfileRequestDto => ({
     channelId: httpRequest.body.channelId || undefined,
     channelName: httpRequest.body.channelName || undefined,
     accessToken: httpRequest.body.accessToken || undefined,
@@ -45,7 +43,7 @@ export default class UpdateSlackProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): UpdateSlackProfileAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -92,16 +90,17 @@ export default class UpdateSlackProfileController extends BaseController {
         );
       }
 
-      return UpdateSlackProfileController.ok(res, useCaseResult.value, CodeHttp.OK);
+      return UpdateSlackProfileController.ok(
+        res,
+        useCaseResult.value,
+        CodeHttp.OK
+      );
     } catch (error: unknown) {
       if (typeof error === 'string')
         return UpdateSlackProfileController.fail(res, error);
       if (error instanceof Error)
         return UpdateSlackProfileController.fail(res, error);
-      return UpdateSlackProfileController.fail(
-        res,
-        'Unknown error occured'
-      );
+      return UpdateSlackProfileController.fail(res, 'Unknown error occured');
     }
   }
 }

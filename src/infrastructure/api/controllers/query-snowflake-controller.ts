@@ -37,7 +37,7 @@ export default class QuerySnowflakeController extends BaseController {
   });
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
     isSystemInternal: userAccountInfo.isSystemInternal
   });
 

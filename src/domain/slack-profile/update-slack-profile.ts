@@ -14,7 +14,7 @@ export interface UpdateSlackProfileRequestDto {
 }
 
 export interface UpdateSlackProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type UpdateSlackProfileResponseDto = Result<string>;
@@ -57,7 +57,7 @@ export class UpdateSlackProfile
 
       const readSlackProfileResult = await this.#readSlackProfile.execute(
         null,
-        { organizationId: auth.organizationId },
+        { callerOrganizationId: auth.callerOrganizationId },
         this.#dbConnection,
         this.#dbEncryption
       );
@@ -67,7 +67,7 @@ export class UpdateSlackProfile
       if (!readSlackProfileResult.value)
         throw new Error('Slack profile retrieval went wrong');
 
-      if (readSlackProfileResult.value.organizationId !== auth.organizationId)
+      if (readSlackProfileResult.value.organizationId !== auth.callerOrganizationId)
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#slackProfileRepo.updateOne(

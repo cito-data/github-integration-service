@@ -7,7 +7,7 @@ import { DbConnection, DbEncryption } from '../services/i-db';
 export type  ReadSlackProfileRequestDto = null
 
 export interface ReadSlackProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type ReadSlackProfileResponseDto = Result<SlackProfile>;
@@ -47,15 +47,15 @@ export class ReadSlackProfile
       this.#dbEncryption = dbEncryption;
 
       const slackProfile = await this.#slackProfileRepo.findOne(
-        auth.organizationId,
+        auth.callerOrganizationId,
         this.#dbConnection,
         this.#dbEncryption
       );
       if (!slackProfile)
-        throw new Error(`SlackProfile with id ${auth.organizationId} does not exist`);
+        throw new Error(`SlackProfile with id ${auth.callerOrganizationId} does not exist`);
 
-      // if (slackProfile.organizationId !== auth.organizationId)
-      //   throw new Error('Not authorized to perform action');
+      if (slackProfile.organizationId !== auth.callerOrganizationId)
+        throw new Error('Not authorized to perform action');
 
       return Result.ok(slackProfile);
     } catch (error: unknown) {

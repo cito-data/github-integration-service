@@ -8,7 +8,7 @@ import { SlackProfile } from '../entities/slack-profile';
 export type JoinSlackConversationRequestDto = null;
 
 export interface JoinSlackConversationAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type JoinSlackConversationResponseDto = Result<null>;
@@ -40,7 +40,7 @@ export class JoinSlackConversation
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
-        organizationId,
+        callerOrganizationId: organizationId,
       },
       this.#dbConnection,
       this.#dbEncryption
@@ -65,7 +65,7 @@ export class JoinSlackConversation
 
       this.#dbEncryption = dbEncryption;
 
-      const slackProfile = await this.#getSlackProfile(auth.organizationId);
+      const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
 
       await this.#slackApiRepo.joinConversation(
         slackProfile.accessToken,

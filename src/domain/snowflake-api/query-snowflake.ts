@@ -13,7 +13,7 @@ export interface QuerySnowflakeRequestDto {
 }
 
 export interface QuerySnowflakeAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
   isSystemInternal: boolean;
 }
 
@@ -55,7 +55,7 @@ export class QuerySnowflake
     const readSnowflakeProfileResult = await this.#readSnowflakeProfile.execute(
       null,
       {
-        organizationId,
+        callerOrganizationId: organizationId,
       },
       this.#dbConnection,
       this.#dbEncryption
@@ -109,7 +109,7 @@ export class QuerySnowflake
       else if (auth.isSystemInternal)
         snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isSystemInternal);
       else
-        snowflakeProfiles = [await this.#getSnowflakeProfile(auth.organizationId)];
+        snowflakeProfiles = [await this.#getSnowflakeProfile(auth.callerOrganizationId)];
 
       const snowflakeQuery: {[key: string]: any[]} = {};
       

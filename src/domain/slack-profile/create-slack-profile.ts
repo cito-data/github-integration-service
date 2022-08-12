@@ -13,7 +13,7 @@ accessToken: string,
 }
 
 export interface CreateSlackProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type CreateSlackProfileResponseDto = Result<SlackProfile>;
@@ -56,7 +56,7 @@ export class CreateSlackProfile
 
       const slackProfile = SlackProfile.create({
         id: new ObjectId().toHexString(),
-        organizationId: auth.organizationId,
+        organizationId: auth.callerOrganizationId,
         channelId: request.channelId,
         channelName: request.channelName,
         accessToken: request.accessToken
@@ -66,7 +66,7 @@ export class CreateSlackProfile
         await this.#readSlackProfile.execute(
          null 
          ,
-          { organizationId: auth.organizationId },
+          { callerOrganizationId: auth.callerOrganizationId },
           this.#dbConnection,
           this.#dbEncryption
         );

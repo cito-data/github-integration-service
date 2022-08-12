@@ -43,7 +43,7 @@ export class SendSlackAlert
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
-        organizationId,
+        callerOrganizationId: organizationId,
       },
       this.#dbConnection,
       this.#dbEncryption
@@ -63,8 +63,9 @@ export class SendSlackAlert
     dbConnection: DbConnection,
     dbEncryption: DbEncryption
   ): Promise<SendSlackAlertResponseDto> {
-    if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
     try {
+      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
+
       this.#dbConnection = dbConnection;
 
       this.#dbEncryption = dbEncryption;

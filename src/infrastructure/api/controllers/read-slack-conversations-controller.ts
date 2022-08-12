@@ -32,7 +32,7 @@ export default class ReadSlackConversationsController extends BaseController {
   }
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): GetSlackConversationsAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
