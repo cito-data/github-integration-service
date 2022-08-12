@@ -46,7 +46,7 @@ export default class CreateSnowflakeProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): CreateSnowflakeProfileAuthDto => ({
-    callerOrganizationId: userAccountInfo.organizationId,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
