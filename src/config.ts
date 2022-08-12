@@ -4,7 +4,7 @@ const privateKey = process.env.GITHUB_PRIVATE_KEY;
 if (!privateKey) throw new Error('Private key not available');
 
 const appId = process.env.GITHUB_APP_IDENTIFIER
-  ? (process.env.GITHUB_APP_IDENTIFIER, 10)
+  ? parseInt(process.env.GITHUB_APP_IDENTIFIER, 10)
   : '';
 if (!appId) throw new Error('App id not available');
 

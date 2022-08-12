@@ -80,9 +80,6 @@ export class CreateSnowflakeProfile
         this.#dbEncryption
       );
 
-      // if (auth.organizationId !== 'TODO')
-      //   throw new Error('Not authorized to perform action');
-
       return Result.ok(snowflakeProfile);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);

@@ -41,7 +41,7 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
     userAccountInfo: UserAccountInfo
   ): CreateCitoSnowflakeEnvAuthDto => ({
     organizationId: userAccountInfo.organizationId,
-    isAdmin: userAccountInfo.isAdmin
+    isSystemInternal: userAccountInfo.isSystemInternal
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

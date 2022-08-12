@@ -80,9 +80,6 @@ export class CreateSlackProfile
         this.#dbEncryption
       );
 
-      // if (auth.organizationId !== 'TODO')
-      //   throw new Error('Not authorized to perform action');
-
       return Result.ok(slackProfile);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);

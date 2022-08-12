@@ -38,7 +38,7 @@ export default class QuerySnowflakeController extends BaseController {
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
     organizationId: userAccountInfo.organizationId,
-    isAdmin: userAccountInfo.isAdmin
+    isSystemInternal: userAccountInfo.isSystemInternal
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

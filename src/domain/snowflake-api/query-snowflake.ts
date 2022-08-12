@@ -14,7 +14,7 @@ export interface QuerySnowflakeRequestDto {
 
 export interface QuerySnowflakeAuthDto {
   organizationId: string;
-  isAdmin: boolean;
+  isSystemInternal: boolean;
 }
 
 export type QuerySnowflakeResponseDto = Result<SnowflakeQuery>;
@@ -70,13 +70,13 @@ export class QuerySnowflake
   };
 
   #getSnowflakeProfiles = async (
-    isAdmin: boolean
+    isSystemInternal: boolean
   ): Promise<SnowflakeProfile[]> => {
     const readSnowflakeProfilesResult =
       await this.#readSnowflakeProfiles.execute(
         null,
         {
-          isAdmin,
+          isSystemInternal,
         },
         this.#dbConnection,
         this.#dbEncryption
@@ -104,10 +104,10 @@ export class QuerySnowflake
 
 
       let snowflakeProfiles: SnowflakeProfile[];
-      if(auth.isAdmin && request.targetOrganizationId)
+      if(auth.isSystemInternal && request.targetOrganizationId)
         snowflakeProfiles = [await this.#getSnowflakeProfile(request.targetOrganizationId)];
-      else if (auth.isAdmin)
-        snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isAdmin);
+      else if (auth.isSystemInternal)
+        snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isSystemInternal);
       else
         snowflakeProfiles = [await this.#getSnowflakeProfile(auth.organizationId)];
 
