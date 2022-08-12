@@ -57,13 +57,13 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     }
   };
 
-  githubApp.webhooks.on('push', async ({ payload }) => {
+  githubApp.webhooks.on('push', async ({octokit, payload }) => {
 
-    const octokit = new Octokit({
-      auth:
-        // token
-        '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'
-    });
+    // const octokit = new Octokit({
+    //   auth:
+    //     // token
+    //     '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'
+    // });
 
     const catalogRes = await octokit.request('GET /search/code', {
       q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
