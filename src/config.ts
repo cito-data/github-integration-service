@@ -112,11 +112,11 @@ const getMongodbConfig = (): MongoDbConfig => {
 const getCognitoUserPoolId = (): string => {
   switch (nodeEnv) {
     case 'development':
-      return 'eu-central-1_HYLD4MoTL';
+      return 'eu-central-1_0Z8JhFj8z';
     case 'test':
-      return 'eu-central-1_htA4V0E1g';
+      return '';
     case 'production':
-      return 'eu-central-1_fttc090sQ';
+      return '';
     default:
       throw new Error('No valid nodenv provided');
   }
