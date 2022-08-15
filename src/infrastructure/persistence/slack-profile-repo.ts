@@ -14,40 +14,40 @@ import sanitize from 'mongo-sanitize';
 
 import { ClientEncryption } from 'mongodb-client-encryption';
 import {
-  ISnowflakeProfileRepo,
-  SnowflakeProfileUpdateDto,
-} from '../../domain/snowflake-profile/i-snowflake-profile-repo';
+  ISlackProfileRepo,
+  SlackProfileUpdateDto,
+} from '../../domain/slack-profile/i-slack-profile-repo';
 import {
-  SnowflakeProfile,
-  SnowflakeProfileProperties,
-} from '../../domain/entities/snowflake-profile';
+  SlackProfile,
+  SlackProfileProperties,
+} from '../../domain/entities/slack-profile';
 import { appConfig } from '../../config';
 
-interface SnowflakeProfilePersistence {
+interface SlackProfilePersistence {
   _id: ObjectId;
-  accountId: string;
-  username: string;
-  password: Binary;
+  channelId: string;
+  workspaceId: string;
+  token: Binary;
   organizationId: string;
 }
 
-interface SnowflakeProfileUpdateFilter {
+interface SlackProfileUpdateFilter {
   $set: { [key: string]: unknown };
   $push: { [key: string]: unknown };
 }
 
-const collectionName = 'snowflakeProfile';
+const collectionName = 'slackProfile';
 
-export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
+export default class SlackProfileRepo implements ISlackProfileRepo {
   findOne = async (
     organizationId: string,
     dbConnection: Db,
     encryption: ClientEncryption
-  ): Promise<SnowflakeProfile | null> => {
+  ): Promise<SlackProfile | null> => {
     try {
       const result: any = await dbConnection
         .collection(collectionName)
-        .findOne({ organizationId: sanitize('62e1763a040383dd322daafd') });
+        .findOne({ organizationId: sanitize(organizationId) });
 
       if (!result) return null;
 
@@ -62,7 +62,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
   all = async (
     dbConnection: Db,
     encryption: ClientEncryption
-  ): Promise<SnowflakeProfile[]> => {
+  ): Promise<SlackProfile[]> => {
     try {
       const result: FindCursor = await dbConnection
         .collection(collectionName)
@@ -86,7 +86,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
   };
 
   insertOne = async (
-    snowflakeProfile: SnowflakeProfile,
+    slackProfile: SlackProfile,
     dbConnection: Db,
     encryption: ClientEncryption
   ): Promise<string> => {
@@ -94,12 +94,12 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
       const result: InsertOneResult<Document> = await dbConnection
         .collection(collectionName)
         .insertOne(
-          await this.#toPersistence(sanitize(snowflakeProfile), encryption)
+          await this.#toPersistence(sanitize(slackProfile), encryption)
         );
 
       if (!result.acknowledged)
         throw new Error(
-          'SnowflakeProfile creation failed. Insert not acknowledged'
+          'SlackProfile creation failed. Insert not acknowledged'
         );
 
       return result.insertedId.toHexString();
@@ -111,21 +111,21 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
   };
 
   #buildUpdateFilter = async (
-    updateDto: SnowflakeProfileUpdateDto,
+    updateDto: SlackProfileUpdateDto,
     encryption?: ClientEncryption
-  ): Promise<SnowflakeProfileUpdateFilter> => {
+  ): Promise<SlackProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
-    if (updateDto.accountId) setFilter.accountId = updateDto.accountId;
-    if (updateDto.username) setFilter.username = updateDto.username;
-    if (updateDto.password) {
+    if (updateDto.workspaceId) setFilter.workspaceId = updateDto.workspaceId;
+    if (updateDto.channelId) setFilter.username = updateDto.channelId;
+    if (updateDto.token) {
       if (!encryption) throw new Error('Encryption object missing');
-      const encryptedPassword = await encryption.encrypt(updateDto.password, {
+      const encryptedToken = await encryption.encrypt(updateDto.token, {
         algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
         keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
       });
-      setFilter.password = encryptedPassword;
+      setFilter.token = encryptedToken;
     }
 
     return { $set: setFilter, $push: pushFilter };
@@ -133,7 +133,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
   updateOne = async (
     id: string,
-    updateDto: SnowflakeProfileUpdateDto,
+    updateDto: SlackProfileUpdateDto,
     dbConnection: Db,
     encryption?: ClientEncryption
   ): Promise<string> => {
@@ -163,9 +163,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
         .deleteOne({ _id: new ObjectId(sanitize(id)) });
 
       if (!result.acknowledged)
-        throw new Error(
-          'SnowflakeProfile delete failed. Delete not acknowledged'
-        );
+        throw new Error('SlackProfile delete failed. Delete not acknowledged');
 
       return result.deletedCount.toString();
     } catch (error: unknown) {
@@ -175,45 +173,40 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
     }
   };
 
-  #toEntity = (props: SnowflakeProfileProperties): SnowflakeProfile =>
-    SnowflakeProfile.create(props);
+  #toEntity = (props: SlackProfileProperties): SlackProfile =>
+    SlackProfile.create(props);
 
   #buildProperties = async (
-    snowflakeProfile: SnowflakeProfilePersistence,
+    slackProfile: SlackProfilePersistence,
     encryption: ClientEncryption
-  ): Promise<SnowflakeProfileProperties> => {
-    const decryptedPassword = await encryption.decrypt(
-      snowflakeProfile.password
-    );
+  ): Promise<SlackProfileProperties> => {
+    const decryptedToken = await encryption.decrypt(slackProfile.token);
 
     return {
       // eslint-disable-next-line no-underscore-dangle
-      id: snowflakeProfile._id.toHexString(),
-      organizationId: snowflakeProfile.organizationId,
-      accountId: snowflakeProfile.accountId,
-      username: snowflakeProfile.username,
-      password: decryptedPassword,
+      id: slackProfile._id.toHexString(),
+      organizationId: slackProfile.organizationId,
+      workspaceId: slackProfile.workspaceId,
+      channelId: slackProfile.channelId,
+      token: decryptedToken,
     };
   };
 
   #toPersistence = async (
-    snowflakeProfile: SnowflakeProfile,
+    slackProfile: SlackProfile,
     encryption: ClientEncryption
   ): Promise<Document> => {
-    const encryptedPassword = await encryption.encrypt(
-      snowflakeProfile.password,
-      {
-        algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
-        keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
-      }
-    );
+    const encryptedToken = await encryption.encrypt(slackProfile.token, {
+      algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
+      keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
+    });
 
-    const persistenceObject: SnowflakeProfilePersistence = {
-      _id: ObjectId.createFromHexString(snowflakeProfile.id),
-      organizationId: snowflakeProfile.organizationId,
-      accountId: snowflakeProfile.accountId,
-      username: snowflakeProfile.username,
-      password: encryptedPassword,
+    const persistenceObject: SlackProfilePersistence = {
+      _id: ObjectId.createFromHexString(slackProfile.id),
+      organizationId: slackProfile.organizationId,
+      workspaceId: slackProfile.workspaceId,
+      channelId: slackProfile.channelId,
+      token: encryptedToken,
     };
 
     return persistenceObject;

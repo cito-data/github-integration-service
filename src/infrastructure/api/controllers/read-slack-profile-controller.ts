@@ -1,13 +1,13 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
-import { buildSnowflakeProfileDto } from '../../../domain/snowflake-profile/snowflake-profile-dto';
+import { buildSlackProfileDto } from '../../../domain/slack-profile/slack-profile-dto';
 import {
-  ReadSnowflakeProfile,
-  ReadSnowflakeProfileAuthDto,
-  ReadSnowflakeProfileRequestDto,
-  ReadSnowflakeProfileResponseDto,
-} from '../../../domain/snowflake-profile/read-snowflake-profile';
+  ReadSlackProfile,
+  ReadSlackProfileAuthDto,
+  ReadSlackProfileRequestDto,
+  ReadSlackProfileResponseDto,
+} from '../../../domain/slack-profile/read-slack-profile';
 import Dbo from '../../persistence/db/mongo-db';
 
 import {
@@ -17,32 +17,32 @@ import {
 } from '../../shared/base-controller';
 import Result from '../../../domain/value-types/transient-types/result';
 
-export default class ReadSnowflakeProfileController extends BaseController {
-  readonly #readSnowflakeProfile: ReadSnowflakeProfile;
+export default class ReadSlackProfileController extends BaseController {
+  readonly #readSlackProfile: ReadSlackProfile;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    readSnowflakeProfile: ReadSnowflakeProfile,
+    readSlackProfile: ReadSlackProfile,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#readSnowflakeProfile = readSnowflakeProfile;
+    this.#readSlackProfile = readSlackProfile;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {
+  #buildRequestDto = (httpRequest: Request): ReadSlackProfileRequestDto => {
     console.log(httpRequest.params);
     return null;
   };
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): ReadSnowflakeProfileAuthDto => ({
+  ): ReadSlackProfileAuthDto => ({
     organizationId: userAccountInfo.organizationId,
   });
 
@@ -51,32 +51,32 @@ export default class ReadSnowflakeProfileController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return ReadSnowflakeProfileController.unauthorized(res, 'Unauthorized');
+        return ReadSlackProfileController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await ReadSnowflakeProfileController.getUserAccountInfo(
+        await ReadSlackProfileController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return ReadSnowflakeProfileController.unauthorized(
+        return ReadSlackProfileController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSnowflakeProfileRequestDto =
+      const requestDto: ReadSlackProfileRequestDto =
         this.#buildRequestDto(req);
-      const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
+      const authDto: ReadSlackProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: ReadSnowflakeProfileResponseDto =
-        await this.#readSnowflakeProfile.execute(
+      const useCaseResult: ReadSlackProfileResponseDto =
+        await this.#readSlackProfile.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection,
@@ -84,23 +84,23 @@ export default class ReadSnowflakeProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return ReadSnowflakeProfileController.badRequest(
+        return ReadSlackProfileController.badRequest(
           res,
           useCaseResult.error
         );
       }
 
       const resultValue = useCaseResult.value
-        ? buildSnowflakeProfileDto(useCaseResult.value)
+        ? buildSlackProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return ReadSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
+      return ReadSlackProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return ReadSnowflakeProfileController.fail(res, error);
+        return ReadSlackProfileController.fail(res, error);
       if (error instanceof Error)
-        return ReadSnowflakeProfileController.fail(res, error);
-      return ReadSnowflakeProfileController.fail(res, 'Unknown error occured');
+        return ReadSlackProfileController.fail(res, error);
+      return ReadSlackProfileController.fail(res, 'Unknown error occured');
     }
   }
 }

@@ -21,6 +21,7 @@ export interface UserAccountInfo {
   userId: string;
   accountId: string;
   organizationId: string;
+  isSystemInternal: boolean;
 }
 
 export abstract class BaseController {
@@ -68,6 +69,9 @@ export abstract class BaseController {
         userId: authPayload.username,
         accountId: getAccountsResult.value[0].id,
         organizationId: getAccountsResult.value[0].organizationId,
+        isSystemInternal: authPayload['cognito:groups']
+        ? authPayload['cognito:groups'].includes('system-internal')
+        : false,
       });
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);

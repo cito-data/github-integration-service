@@ -1,30 +1,26 @@
-import { SnowflakeProfile } from '../entities/snowflake-profile';
+import { SlackProfile } from '../entities/slack-profile';
 import { DbConnection, DbEncryption } from '../services/i-db';
 
-export interface SnowflakeProfileUpdateDto {
-  accountId?: string;
-  username?: string;
-  password?: string;
+export interface SlackProfileUpdateDto {
+  channelId?: string;
+  token?: string;
+  workspaceId?: string;
 }
 
-export interface ISnowflakeProfileRepo {
+export interface ISlackProfileRepo {
   findOne(
     organizationId: string,
     dbConnection: DbConnection,
     encryption: DbEncryption
-  ): Promise<SnowflakeProfile | null>;
-  all(
-    dbConnection: DbConnection,
-    encryption: DbEncryption
-  ): Promise<SnowflakeProfile[]>;
+  ): Promise<SlackProfile | null>;
   insertOne(
-    snowflakeProfile: SnowflakeProfile,
+    slackProfile: SlackProfile,
     dbConnection: DbConnection,
     encryption: DbEncryption
   ): Promise<string>;
   updateOne(
     id: string,
-    updateDto: SnowflakeProfileUpdateDto,
+    updateDto: SlackProfileUpdateDto,
     dbConnection: DbConnection,
     encryption?: DbEncryption
   ): Promise<string>;

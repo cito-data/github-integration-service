@@ -7,6 +7,7 @@ import {
   CreateCitoSnowflakeEnvRequestDto,
   CreateCitoSnowflakeEnvResponseDto,
 } from '../../../domain/cito-snowflake-env/create-cito-snowflake-env';
+import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
 import {
@@ -40,43 +41,42 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
     userAccountInfo: UserAccountInfo
   ): CreateCitoSnowflakeEnvAuthDto => ({
     organizationId: userAccountInfo.organizationId,
+    isSystemInternal: userAccountInfo.isSystemInternal
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      // const authHeader = req.headers.authorization;
+      const authHeader = req.headers.authorization;
 
-      // if (!authHeader)
-      //   return CreateCitoSnowflakeEnvController.unauthorized(res, 'Unauthorized');
+      if (!authHeader)
+        return CreateCitoSnowflakeEnvController.unauthorized(res, 'Unauthorized');
 
-      // const jwt = authHeader.split(' ')[1];
+      const jwt = authHeader.split(' ')[1];
 
-      // const getUserAccountInfoResult: Result<UserAccountInfo> =
-      //   await CreateCitoSnowflakeEnvInfoController.getUserAccountInfo(
-      //     jwt,
-      //     this.#getAccounts
-      //   );
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await CreateCitoSnowflakeEnvController.getUserAccountInfo(
+          jwt,
+          this.#getAccounts
+        );
 
-      // if (!getUserAccountInfoResult.success)
-      //   return CreateCitoSnowflakeEnvInfoController.unauthorized(
-      //     res,
-      //     getUserAccountInfoResult.error
-      //   );
-      // if (!getUserAccountInfoResult.value)
-      //   throw new ReferenceError('Authorization failed');
+      if (!getUserAccountInfoResult.success)
+        return CreateCitoSnowflakeEnvController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new ReferenceError('Authorization failed');
 
       const requestDto: CreateCitoSnowflakeEnvRequestDto =
         this.#buildRequestDto();
-      // const authDto: CreateCitoSnowflakeEnvAuthDto = this.#buildAuthDto(
-      //   getUserAccountResult.value
-      // );
+      const authDto: CreateCitoSnowflakeEnvAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value
+      );
 
       const useCaseResult: CreateCitoSnowflakeEnvResponseDto =
         await this.#createCitoSnowflakeEnv.execute(
           requestDto,
-          {
-            organizationId: 'todo',
-          },
+          authDto,
           this.#dbo.dbConnection,
           this.#dbo.encryption
         );

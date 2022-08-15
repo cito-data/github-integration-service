@@ -8,6 +8,7 @@ import {
   QuerySnowflakeResponseDto,
 } from '../../../domain/snowflake-query/query-snowflake';
 import { buildSnowflakeQueryDto } from '../../../domain/snowflake-query/snowflake-query-dto';
+import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
 import {
@@ -32,46 +33,47 @@ export default class QuerySnowflakeController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): QuerySnowflakeRequestDto => ({
     query: httpRequest.body.query,
+    targetOrganizationId: httpRequest.body.targetOrganizationId
   });
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
     organizationId: userAccountInfo.organizationId,
+    isSystemInternal: userAccountInfo.isSystemInternal
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
-    try {
-      // const authHeader = req.headers.authorization;
+    try {     
+      const authHeader = req.headers.authorization;
 
-      // if (!authHeader)
-      //   return SnowflakeQueryController.unauthorized(res, 'Unauthorized');
+      if (!authHeader)
+        return QuerySnowflakeController.unauthorized(res, 'Unauthorized');
 
-      // const jwt = authHeader.split(' ')[1];
+      const jwt = authHeader.split(' ')[1];
 
-      // const getUserAccountInfoResult: Result<UserAccountInfo> =
-      //   await SnowflakeQueryInfoController.getUserAccountInfo(
-      //     jwt,
-      //     this.#getAccounts
-      //   );
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await QuerySnowflakeController.getUserAccountInfo(
+          jwt,
+          this.#getAccounts
+        );
 
-      // if (!getUserAccountInfoResult.success)
-      //   return SnowflakeQueryInfoController.unauthorized(
-      //     res,
-      //     getUserAccountInfoResult.error
-      //   );
-      // if (!getUserAccountInfoResult.value)
-      //   throw new ReferenceError('Authorization failed');
+      if (!getUserAccountInfoResult.success)
+        return QuerySnowflakeController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new ReferenceError('Authorization failed');
 
+      
       const requestDto: QuerySnowflakeRequestDto = this.#buildRequestDto(req);
-      // const authDto: SnowflakeQueryAuthDto = this.#buildAuthDto(
-      //   getUserAccountResult.value
-      // );
+      const authDto: QuerySnowflakeAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value
+      );
 
       const useCaseResult: QuerySnowflakeResponseDto =
         await this.#querySnowflake.execute(
           requestDto,
-          {
-            organizationId: 'todo',
-          },
+          authDto,
           this.#dbo.dbConnection,
           this.#dbo.encryption
         );
@@ -85,7 +87,7 @@ export default class QuerySnowflakeController extends BaseController {
         ? buildSnowflakeQueryDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return QuerySnowflakeController.ok(res, resultValue, CodeHttp.OK);
+      return QuerySnowflakeController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       if (typeof error === 'string')
         return QuerySnowflakeController.fail(res, error);

@@ -2,12 +2,12 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  CreateSnowflakeProfile,
-  CreateSnowflakeProfileAuthDto,
-  CreateSnowflakeProfileRequestDto,
-  CreateSnowflakeProfileResponseDto,
-} from '../../../domain/snowflake-profile/create-snowflake-profile';
-import { buildSnowflakeProfileDto } from '../../../domain/snowflake-profile/snowflake-profile-dto';
+  CreateSlackProfile,
+  CreateSlackProfileAuthDto,
+  CreateSlackProfileRequestDto,
+  CreateSlackProfileResponseDto,
+} from '../../../domain/slack-profile/create-slack-profile';
+import { buildSlackProfileDto } from '../../../domain/slack-profile/slack-profile-dto';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -17,35 +17,35 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class CreateSnowflakeProfileController extends BaseController {
-  readonly #createSnowflakeProfile: CreateSnowflakeProfile;
+export default class CreateSlackProfileController extends BaseController {
+  readonly #createSlackProfile: CreateSlackProfile;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    createSnowflakeProfile: CreateSnowflakeProfile,
+    createSlackProfile: CreateSlackProfile,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#createSnowflakeProfile = createSnowflakeProfile;
+    this.#createSlackProfile = createSlackProfile;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
   #buildRequestDto = (
     httpRequest: Request
-  ): CreateSnowflakeProfileRequestDto => ({
-    accountId: httpRequest.body.accountId,
-    username: httpRequest.body.username,
-    password: httpRequest.body.password,
+  ): CreateSlackProfileRequestDto => ({
+    workspaceId: httpRequest.body.workspaceId,
+    channelId: httpRequest.body.channelId,
+    token: httpRequest.body.token,
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): CreateSnowflakeProfileAuthDto => ({
+  ): CreateSlackProfileAuthDto => ({
     organizationId: userAccountInfo.organizationId,
   });
 
@@ -54,32 +54,32 @@ export default class CreateSnowflakeProfileController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return CreateSnowflakeProfileController.unauthorized(res, 'Unauthorized');
+        return CreateSlackProfileController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await CreateSnowflakeProfileController.getUserAccountInfo(
+        await CreateSlackProfileController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return CreateSnowflakeProfileController.unauthorized(
+        return CreateSlackProfileController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: CreateSnowflakeProfileRequestDto =
+      const requestDto: CreateSlackProfileRequestDto =
         this.#buildRequestDto(req);
-      const authDto: CreateSnowflakeProfileAuthDto = this.#buildAuthDto(
+      const authDto: CreateSlackProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: CreateSnowflakeProfileResponseDto =
-        await this.#createSnowflakeProfile.execute(
+      const useCaseResult: CreateSlackProfileResponseDto =
+        await this.#createSlackProfile.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection,
@@ -87,23 +87,23 @@ export default class CreateSnowflakeProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return CreateSnowflakeProfileController.badRequest(
+        return CreateSlackProfileController.badRequest(
           res,
           useCaseResult.error
         );
       }
 
       const resultValue = useCaseResult.value
-        ? buildSnowflakeProfileDto(useCaseResult.value)
+        ? buildSlackProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CreateSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
+      return CreateSlackProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return CreateSnowflakeProfileController.fail(res, error);
+        return CreateSlackProfileController.fail(res, error);
       if (error instanceof Error)
-        return CreateSnowflakeProfileController.fail(res, error);
-      return CreateSnowflakeProfileController.fail(
+        return CreateSlackProfileController.fail(res, error);
+      return CreateSlackProfileController.fail(
         res,
         'Unknown error occured'
       );

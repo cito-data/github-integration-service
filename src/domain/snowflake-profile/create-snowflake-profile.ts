@@ -64,9 +64,8 @@ export class CreateSnowflakeProfile
 
       const readSnowflakeProfileResult =
         await this.#readSnowflakeProfile.execute(
-          {
-            organizationId: auth.organizationId,
-          },
+         null 
+         ,
           { organizationId: auth.organizationId },
           this.#dbConnection,
           this.#dbEncryption
