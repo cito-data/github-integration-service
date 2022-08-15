@@ -13,7 +13,7 @@ export interface CreateSnowflakeProfileRequestDto {
 }
 
 export interface CreateSnowflakeProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type CreateSnowflakeProfileResponseDto = Result<SnowflakeProfile>;
@@ -56,7 +56,7 @@ export class CreateSnowflakeProfile
 
       const snowflakeProfile = SnowflakeProfile.create({
         id: new ObjectId().toHexString(),
-        organizationId: auth.organizationId,
+        organizationId: auth.callerOrganizationId,
         accountId: request.accountId,
         username: request.username,
         password: request.password,
@@ -66,7 +66,7 @@ export class CreateSnowflakeProfile
         await this.#readSnowflakeProfile.execute(
          null 
          ,
-          { organizationId: auth.organizationId },
+          { callerOrganizationId: auth.callerOrganizationId },
           this.#dbConnection,
           this.#dbEncryption
         );
@@ -79,9 +79,6 @@ export class CreateSnowflakeProfile
         this.#dbConnection,
         this.#dbEncryption
       );
-
-      // if (auth.organizationId !== 'TODO')
-      //   throw new Error('Not authorized to perform action');
 
       return Result.ok(snowflakeProfile);
     } catch (error: unknown) {

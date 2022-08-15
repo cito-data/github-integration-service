@@ -13,6 +13,7 @@ const schema = {
         { name: 'materialization_name', type: 'string' },
         { name: 'materialization_type', type: 'string' },
         { name: 'column_name', type: 'string' },
+        { name: 'target_resource_id', type: 'string'},
         { name: 'organization_id', type: 'string' },
       ],
     },
@@ -34,6 +35,7 @@ const schema = {
         { name: 'user_feedback_is_anomaly', type: 'integer' },
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
+        { name: 'alert_id', type: 'string'}
       ],
     },
     {

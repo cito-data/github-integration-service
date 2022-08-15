@@ -34,22 +34,28 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (
-  ): CreateCitoSnowflakeEnvRequestDto => null;
+  #buildRequestDto = (): CreateCitoSnowflakeEnvRequestDto => null;
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): CreateCitoSnowflakeEnvAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
-    isSystemInternal: userAccountInfo.isSystemInternal
-  });
+  ): CreateCitoSnowflakeEnvAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      isSystemInternal: userAccountInfo.isSystemInternal,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return CreateCitoSnowflakeEnvController.unauthorized(res, 'Unauthorized');
+        return CreateCitoSnowflakeEnvController.unauthorized(
+          res,
+          'Unauthorized'
+        );
 
       const jwt = authHeader.split(' ')[1];
 

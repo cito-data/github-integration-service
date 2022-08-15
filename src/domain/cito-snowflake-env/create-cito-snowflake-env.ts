@@ -1,7 +1,7 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
-import { QuerySnowflake } from '../snowflake-query/query-snowflake';
+import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
   citoMaterializationTypes,
   getCreateTableQuery,
@@ -10,7 +10,7 @@ import {
 export type CreateCitoSnowflakeEnvRequestDto = null;
 
 export interface CreateCitoSnowflakeEnvAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
   isSystemInternal: boolean
 }
 
@@ -46,10 +46,6 @@ export class CreateCitoSnowflakeEnv
     dbEncryption: DbEncryption
   ): Promise<CreateCitoSnowflakeEnvResponseDto> {
     try {
-      // todo -replace
-      console.log(request);
-      
-      console.log(auth);
 
       this.#dbConnection = dbConnection;
 
@@ -63,7 +59,7 @@ export class CreateCitoSnowflakeEnv
             {
               query,
             },
-            { organizationId: auth.organizationId, isSystemInternal: auth.isSystemInternal },
+            { callerOrganizationId: auth.callerOrganizationId, isSystemInternal: auth.isSystemInternal },
             this.#dbConnection,
             this.#dbEncryption
           );
@@ -78,7 +74,7 @@ export class CreateCitoSnowflakeEnv
       // if (snowflakeCreate.organizationId !== auth.organizationId)
       //   throw new Error('Not authorized to perform action');
 
-      return Result.ok({ organizationId: auth.organizationId, success: true });
+      return Result.ok({ organizationId: auth.callerOrganizationId, success: true });
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);

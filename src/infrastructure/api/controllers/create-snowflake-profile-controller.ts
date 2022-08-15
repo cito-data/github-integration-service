@@ -45,16 +45,23 @@ export default class CreateSnowflakeProfileController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): CreateSnowflakeProfileAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
-  });
+  ): CreateSnowflakeProfileAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return CreateSnowflakeProfileController.unauthorized(res, 'Unauthorized');
+        return CreateSnowflakeProfileController.unauthorized(
+          res,
+          'Unauthorized'
+        );
 
       const jwt = authHeader.split(' ')[1];
 

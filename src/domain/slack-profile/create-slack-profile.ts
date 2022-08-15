@@ -8,12 +8,12 @@ import { ReadSlackProfile } from './read-slack-profile';
 
 export interface CreateSlackProfileRequestDto {
 channelId: string,
-token: string, 
-workspaceId: string,
+channelName: string,
+accessToken: string, 
 }
 
 export interface CreateSlackProfileAuthDto {
-  organizationId: string;
+  callerOrganizationId: string;
 }
 
 export type CreateSlackProfileResponseDto = Result<SlackProfile>;
@@ -56,17 +56,17 @@ export class CreateSlackProfile
 
       const slackProfile = SlackProfile.create({
         id: new ObjectId().toHexString(),
-        organizationId: auth.organizationId,
+        organizationId: auth.callerOrganizationId,
         channelId: request.channelId,
-        workspaceId: request.workspaceId,
-        token: request.token
+        channelName: request.channelName,
+        accessToken: request.accessToken
       });
 
       const readSlackProfileResult =
         await this.#readSlackProfile.execute(
          null 
          ,
-          { organizationId: auth.organizationId },
+          { callerOrganizationId: auth.callerOrganizationId },
           this.#dbConnection,
           this.#dbEncryption
         );
@@ -79,9 +79,6 @@ export class CreateSlackProfile
         this.#dbConnection,
         this.#dbEncryption
       );
-
-      // if (auth.organizationId !== 'TODO')
-      //   throw new Error('Not authorized to perform action');
 
       return Result.ok(slackProfile);
     } catch (error: unknown) {

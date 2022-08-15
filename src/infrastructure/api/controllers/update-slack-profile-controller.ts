@@ -2,12 +2,11 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  CreateSlackProfile,
-  CreateSlackProfileAuthDto,
-  CreateSlackProfileRequestDto,
-  CreateSlackProfileResponseDto,
-} from '../../../domain/slack-profile/create-slack-profile';
-import { buildSlackProfileDto } from '../../../domain/slack-profile/slack-profile-dto';
+  UpdateSlackProfile,
+  UpdateSlackProfileAuthDto,
+  UpdateSlackProfileRequestDto,
+  UpdateSlackProfileResponseDto,
+} from '../../../domain/slack-profile/update-slack-profile';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -17,33 +16,33 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class CreateSlackProfileController extends BaseController {
-  readonly #createSlackProfile: CreateSlackProfile;
+export default class UpdateSlackProfileController extends BaseController {
+  readonly #updateSlackProfile: UpdateSlackProfile;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    createSlackProfile: CreateSlackProfile,
+    updateSlackProfile: UpdateSlackProfile,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#createSlackProfile = createSlackProfile;
+    this.#updateSlackProfile = updateSlackProfile;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): CreateSlackProfileRequestDto => ({
-    channelId: httpRequest.body.channelId,
-    channelName: httpRequest.body.channelName,
-    accessToken: httpRequest.body.accessToken,
+  #buildRequestDto = (httpRequest: Request): UpdateSlackProfileRequestDto => ({
+    channelId: httpRequest.body.channelId || undefined,
+    channelName: httpRequest.body.channelName || undefined,
+    accessToken: httpRequest.body.accessToken || undefined,
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): CreateSlackProfileAuthDto => {
+  ): UpdateSlackProfileAuthDto => {
     if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
 
     return {
@@ -56,32 +55,32 @@ export default class CreateSlackProfileController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return CreateSlackProfileController.unauthorized(res, 'Unauthorized');
+        return UpdateSlackProfileController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await CreateSlackProfileController.getUserAccountInfo(
+        await UpdateSlackProfileController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return CreateSlackProfileController.unauthorized(
+        return UpdateSlackProfileController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: CreateSlackProfileRequestDto =
+      const requestDto: UpdateSlackProfileRequestDto =
         this.#buildRequestDto(req);
-      const authDto: CreateSlackProfileAuthDto = this.#buildAuthDto(
+      const authDto: UpdateSlackProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: CreateSlackProfileResponseDto =
-        await this.#createSlackProfile.execute(
+      const useCaseResult: UpdateSlackProfileResponseDto =
+        await this.#updateSlackProfile.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection,
@@ -89,23 +88,23 @@ export default class CreateSlackProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return CreateSlackProfileController.badRequest(
+        return UpdateSlackProfileController.badRequest(
           res,
           useCaseResult.error
         );
       }
 
-      const resultValue = useCaseResult.value
-        ? buildSlackProfileDto(useCaseResult.value)
-        : useCaseResult.value;
-
-      return CreateSlackProfileController.ok(res, resultValue, CodeHttp.OK);
+      return UpdateSlackProfileController.ok(
+        res,
+        useCaseResult.value,
+        CodeHttp.OK
+      );
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return CreateSlackProfileController.fail(res, error);
+        return UpdateSlackProfileController.fail(res, error);
       if (error instanceof Error)
-        return CreateSlackProfileController.fail(res, error);
-      return CreateSlackProfileController.fail(res, 'Unknown error occured');
+        return UpdateSlackProfileController.fail(res, error);
+      return UpdateSlackProfileController.fail(res, 'Unknown error occured');
     }
   }
 }

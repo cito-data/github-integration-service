@@ -6,8 +6,8 @@ import {
   QuerySnowflakeAuthDto,
   QuerySnowflakeRequestDto,
   QuerySnowflakeResponseDto,
-} from '../../../domain/snowflake-query/query-snowflake';
-import { buildSnowflakeQueryDto } from '../../../domain/snowflake-query/snowflake-query-dto';
+} from '../../../domain/snowflake-api/query-snowflake';
+import { buildSnowflakeQueryDto } from '../../../domain/snowflake-api/snowflake-query-dto';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -24,7 +24,11 @@ export default class QuerySnowflakeController extends BaseController {
 
   readonly #dbo: Dbo;
 
-  constructor(querySnowflake: QuerySnowflake, getAccounts: GetAccounts, dbo: Dbo) {
+  constructor(
+    querySnowflake: QuerySnowflake,
+    getAccounts: GetAccounts,
+    dbo: Dbo
+  ) {
     super();
     this.#querySnowflake = querySnowflake;
     this.#getAccounts = getAccounts;
@@ -33,16 +37,16 @@ export default class QuerySnowflakeController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): QuerySnowflakeRequestDto => ({
     query: httpRequest.body.query,
-    targetOrganizationId: httpRequest.body.targetOrganizationId
+    targetOrganizationId: httpRequest.body.targetOrganizationId,
   });
 
   #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
-    organizationId: userAccountInfo.organizationId,
-    isSystemInternal: userAccountInfo.isSystemInternal
-  });
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      isSystemInternal: userAccountInfo.isSystemInternal,
+    });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
-    try {     
+    try {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
@@ -64,7 +68,6 @@ export default class QuerySnowflakeController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      
       const requestDto: QuerySnowflakeRequestDto = this.#buildRequestDto(req);
       const authDto: QuerySnowflakeAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
@@ -77,7 +80,6 @@ export default class QuerySnowflakeController extends BaseController {
           this.#dbo.dbConnection,
           this.#dbo.encryption
         );
-
 
       if (!useCaseResult.success) {
         return QuerySnowflakeController.badRequest(res, useCaseResult.error);

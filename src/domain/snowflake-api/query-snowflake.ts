@@ -2,7 +2,7 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
 import { SnowflakeQuery } from '../value-types/snowflake-query';
-import { ISnowflakeQueryRepo } from './i-snowflake-query-repo';
+import { ISnowflakeApiRepo } from './i-snowflake-api-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 import { ReadSnowflakeProfiles } from '../snowflake-profile/read-snowflake-profiles';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
@@ -13,7 +13,7 @@ export interface QuerySnowflakeRequestDto {
 }
 
 export interface QuerySnowflakeAuthDto {
-  organizationId: string;
+  callerOrganizationId?: string;
   isSystemInternal: boolean;
 }
 
@@ -29,7 +29,7 @@ export class QuerySnowflake
       DbEncryption
     >
 {
-  readonly #snowflakeQueryRepo: ISnowflakeQueryRepo;
+  readonly #snowflakeApiRepo: ISnowflakeApiRepo;
 
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
@@ -40,11 +40,11 @@ export class QuerySnowflake
   #dbEncryption: DbEncryption;
 
   constructor(
-    snowflakeQueryRepo: ISnowflakeQueryRepo,
+    snowflakeApiRepo: ISnowflakeApiRepo,
     readSnowflakeProfile: ReadSnowflakeProfile,
     readSnowflakeProfiles: ReadSnowflakeProfiles
   ) {
-    this.#snowflakeQueryRepo = snowflakeQueryRepo;
+    this.#snowflakeApiRepo = snowflakeApiRepo;
     this.#readSnowflakeProfile = readSnowflakeProfile;
     this.#readSnowflakeProfiles = readSnowflakeProfiles;
   }
@@ -55,7 +55,7 @@ export class QuerySnowflake
     const readSnowflakeProfileResult = await this.#readSnowflakeProfile.execute(
       null,
       {
-        organizationId,
+        callerOrganizationId: organizationId,
       },
       this.#dbConnection,
       this.#dbEncryption
@@ -97,8 +97,6 @@ export class QuerySnowflake
     dbEncryption: DbEncryption
   ): Promise<QuerySnowflakeResponseDto> {
     try {
-      // todo -replace
-      console.log(auth);
 
       this.#dbConnection = dbConnection;
 
@@ -110,14 +108,16 @@ export class QuerySnowflake
         snowflakeProfiles = [await this.#getSnowflakeProfile(request.targetOrganizationId)];
       else if (auth.isSystemInternal)
         snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isSystemInternal);
-      else
-        snowflakeProfiles = [await this.#getSnowflakeProfile(auth.organizationId)];
+      else if (auth.callerOrganizationId)
+        snowflakeProfiles = [await this.#getSnowflakeProfile(auth.callerOrganizationId)];
+      else 
+        throw new Error('Unhandled authorization');
 
       const snowflakeQuery: {[key: string]: any[]} = {};
       
       await Promise.all(
         snowflakeProfiles.map(async (profile) => {
-          const queryResult = await this.#snowflakeQueryRepo.runQuery(
+          const queryResult = await this.#snowflakeApiRepo.runQuery(
             request.query,
             {
               account: profile.accountId,

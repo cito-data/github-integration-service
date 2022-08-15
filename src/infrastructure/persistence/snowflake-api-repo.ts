@@ -2,10 +2,10 @@ import { Connection, Statement } from 'snowflake-sdk';
 import { DbOptions } from '../../domain/services/i-db';
 import { connect, handleStreamError } from './db/snowflake';
 import { SnowflakeQuery } from '../../domain/value-types/snowflake-query';
-import { ISnowflakeQueryRepo } from '../../domain/snowflake-query/i-snowflake-query-repo';
+import { ISnowflakeApiRepo } from '../../domain/snowflake-api/i-snowflake-api-repo';
 import { appConfig } from '../../config';
 
-export default class SnowflakeQueryRepo implements ISnowflakeQueryRepo {
+export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
   runQuery = async (
     query: string,
     options: DbOptions

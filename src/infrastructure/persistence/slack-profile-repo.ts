@@ -26,8 +26,8 @@ import { appConfig } from '../../config';
 interface SlackProfilePersistence {
   _id: ObjectId;
   channelId: string;
-  workspaceId: string;
-  token: Binary;
+  channelName: string;
+  accessToken: Binary;
   organizationId: string;
 }
 
@@ -117,15 +117,15 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
-    if (updateDto.workspaceId) setFilter.workspaceId = updateDto.workspaceId;
-    if (updateDto.channelId) setFilter.username = updateDto.channelId;
-    if (updateDto.token) {
+    if (updateDto.channelId) setFilter.channelId = updateDto.channelId;
+    if (updateDto.channelName) setFilter.channelName = updateDto.channelName;
+    if (updateDto.accessToken) {
       if (!encryption) throw new Error('Encryption object missing');
-      const encryptedToken = await encryption.encrypt(updateDto.token, {
+      const encryptedToken = await encryption.encrypt(updateDto.accessToken, {
         algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
         keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
       });
-      setFilter.token = encryptedToken;
+      setFilter.accessToken = encryptedToken;
     }
 
     return { $set: setFilter, $push: pushFilter };
@@ -180,15 +180,15 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     slackProfile: SlackProfilePersistence,
     encryption: ClientEncryption
   ): Promise<SlackProfileProperties> => {
-    const decryptedToken = await encryption.decrypt(slackProfile.token);
+    const decryptedToken = await encryption.decrypt(slackProfile.accessToken);
 
     return {
       // eslint-disable-next-line no-underscore-dangle
       id: slackProfile._id.toHexString(),
       organizationId: slackProfile.organizationId,
-      workspaceId: slackProfile.workspaceId,
       channelId: slackProfile.channelId,
-      token: decryptedToken,
+      channelName: slackProfile.channelName,
+      accessToken: decryptedToken,
     };
   };
 
@@ -196,7 +196,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     slackProfile: SlackProfile,
     encryption: ClientEncryption
   ): Promise<Document> => {
-    const encryptedToken = await encryption.encrypt(slackProfile.token, {
+    const encryptedToken = await encryption.encrypt(slackProfile.accessToken, {
       algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
       keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
     });
@@ -204,9 +204,9 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     const persistenceObject: SlackProfilePersistence = {
       _id: ObjectId.createFromHexString(slackProfile.id),
       organizationId: slackProfile.organizationId,
-      workspaceId: slackProfile.workspaceId,
       channelId: slackProfile.channelId,
-      token: encryptedToken,
+      channelName: slackProfile.channelName,
+      accessToken: encryptedToken,
     };
 
     return persistenceObject;

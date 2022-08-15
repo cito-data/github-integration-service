@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@octokit/types": "^6.37.0",
+    "@slack/web-api": "^6.7.2",
     "@types/snowflake-sdk": "^1.6.7",
     "awilix": "^6.1.0",
     "axios": "^0.26.0",
@@ -55,6 +56,7 @@
     "express": "^4.17.3",
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^2.1.4",
     "mongo-sanitize": "^1.1.0",
     "mongodb": "^4.1.1",
     "mongodb-client-encryption": "^1.2.6",
