@@ -1,9 +1,9 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import fetch from 'node-fetch';
 import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
+import axios from 'axios';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
@@ -36,7 +36,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   const requestLineageCreation = async (catalogText: string, manifestText: string): Promise<void> => {
     try {
-      const response = await fetch('http://localhost:3000/api/v1/lineage', {
+      const response = await axios.post('http://localhost:3000/api/v1/lineage', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -45,16 +45,16 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
         }),
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(`Error with status: ${response.status}`);
       }
-      response.text().then((res) => console.log(res));
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log('error message: ', error.message);
-      } else {
-        console.log('unexpected error: ', error);
-      }
+      console.log(response.data);
+      return response.data;
+      
+    } catch (error: unknown) {
+      if(typeof error === 'string') return Promise.reject(error);
+      if(error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
     }
   };
 
@@ -64,7 +64,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
     });
 
-
     let { data }: any = catalogRes;
     let { items } = data;
 
@@ -73,7 +72,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     let [ item ] = items;
     let { path } = item;
-    console.log(path);
 
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
 
@@ -113,8 +111,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     ([ item ] = items);
     ({path} = item);
-    console.log(path);
-
 
     const manifestResponse: ContentResponseType = await octokit.request(endpoint, {
       owner: payload.repository.owner.login,
@@ -140,7 +136,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     const manifestBuffer = Buffer.from(content, encoding);
     const manifestText = manifestBuffer.toString('utf-8');
 
-    console.log("done");
     requestLineageCreation(catalogText, manifestText);
 
   });
