@@ -46,7 +46,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
     try {
       const result: any = await dbConnection
         .collection(collectionName)
-        .findOne({ organizationId: sanitize(organizationId) });
+        .findOne({ organizationId: sanitize('62e1763a040383dd322daafd') });
 
       if (!result) return null;
 

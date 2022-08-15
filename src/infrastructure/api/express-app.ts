@@ -1,9 +1,8 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import fetch from 'node-fetch';
-import { App, createNodeMiddleware, Octokit } from 'octokit';
+import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
@@ -39,6 +38,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     try {
       const response = await fetch('http://localhost:3000/api/v1/lineage', {
         method: 'POST',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           catalog: catalogText,
           manifest: manifestText,
@@ -48,6 +48,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       if (!response.ok) {
         throw new Error(`Error with status: ${response.status}`);
       }
+      response.text().then((res) => console.log(res));
     } catch (error) {
       if (error instanceof Error) {
         console.log('error message: ', error.message);
@@ -58,12 +59,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   };
 
   githubApp.webhooks.on('push', async ({octokit, payload }) => {
-
-    // const octokit = new Octokit({
-    //   auth:
-    //     // token
-    //     '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'
-    // });
 
     const catalogRes = await octokit.request('GET /search/code', {
       q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
@@ -79,7 +74,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     let [ item ] = items;
     let { path } = item;
     console.log(path);
-
 
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
 
@@ -106,9 +100,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     const catalogBuffer = Buffer.from(content, encoding);
     const catalogText = catalogBuffer.toString('utf-8');
-
-    console.log(catalogText);
-
 
     const manifestRes = await octokit.request('GET /search/code', {
       q: `filename:manifest+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
@@ -149,8 +140,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     const manifestBuffer = Buffer.from(content, encoding);
     const manifestText = manifestBuffer.toString('utf-8');
 
-    console.log(manifestText);
-
+    console.log("done");
     requestLineageCreation(catalogText, manifestText);
 
   });
@@ -159,6 +149,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     console.log(payload.action, 'installation-action');
     console.log(payload.repositories, 'target-repositories');
     console.log('hello');
+    // add logic to map installationId to organisationId
   });
 
   // githubApp.oauth.on("token", async ({ token, octokit }) => {
