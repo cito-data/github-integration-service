@@ -40,14 +40,10 @@ export default class QuerySnowflakeController extends BaseController {
     targetOrganizationId: httpRequest.body.targetOrganizationId,
   });
 
-  #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
-
-    return {
+  #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
       callerOrganizationId: userAccountInfo.callerOrganizationId,
       isSystemInternal: userAccountInfo.isSystemInternal,
-    };
-  };
+    });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {

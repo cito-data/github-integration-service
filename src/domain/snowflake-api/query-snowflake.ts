@@ -13,7 +13,7 @@ export interface QuerySnowflakeRequestDto {
 }
 
 export interface QuerySnowflakeAuthDto {
-  callerOrganizationId: string;
+  callerOrganizationId?: string;
   isSystemInternal: boolean;
 }
 
@@ -108,8 +108,10 @@ export class QuerySnowflake
         snowflakeProfiles = [await this.#getSnowflakeProfile(request.targetOrganizationId)];
       else if (auth.isSystemInternal)
         snowflakeProfiles = await this.#getSnowflakeProfiles(auth.isSystemInternal);
-      else
+      else if (auth.callerOrganizationId)
         snowflakeProfiles = [await this.#getSnowflakeProfile(auth.callerOrganizationId)];
+      else 
+        throw new Error('Unhandled authorization');
 
       const snowflakeQuery: {[key: string]: any[]} = {};
       
