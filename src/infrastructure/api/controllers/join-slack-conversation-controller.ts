@@ -36,9 +36,13 @@ export default class JoinSlackConversationController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): JoinSlackConversationAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
-  });
+  ): JoinSlackConversationAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
@@ -88,7 +92,11 @@ export default class JoinSlackConversationController extends BaseController {
 
       const resultValue = useCaseResult.value;
 
-      return JoinSlackConversationController.ok(res, resultValue, CodeHttp.CREATED);
+      return JoinSlackConversationController.ok(
+        res,
+        resultValue,
+        CodeHttp.CREATED
+      );
     } catch (error: unknown) {
       if (typeof error === 'string')
         return JoinSlackConversationController.fail(res, error);

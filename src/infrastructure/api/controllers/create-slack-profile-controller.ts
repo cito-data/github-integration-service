@@ -35,9 +35,7 @@ export default class CreateSlackProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (
-    httpRequest: Request
-  ): CreateSlackProfileRequestDto => ({
+  #buildRequestDto = (httpRequest: Request): CreateSlackProfileRequestDto => ({
     channelId: httpRequest.body.channelId,
     channelName: httpRequest.body.channelName,
     accessToken: httpRequest.body.accessToken,
@@ -45,9 +43,13 @@ export default class CreateSlackProfileController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): CreateSlackProfileAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
-  });
+  ): CreateSlackProfileAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
@@ -103,10 +105,7 @@ export default class CreateSlackProfileController extends BaseController {
         return CreateSlackProfileController.fail(res, error);
       if (error instanceof Error)
         return CreateSlackProfileController.fail(res, error);
-      return CreateSlackProfileController.fail(
-        res,
-        'Unknown error occured'
-      );
+      return CreateSlackProfileController.fail(res, 'Unknown error occured');
     }
   }
 }

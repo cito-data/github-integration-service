@@ -42,9 +42,13 @@ export default class ReadSlackProfileController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): ReadSlackProfileAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
-  });
+  ): ReadSlackProfileAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
@@ -69,8 +73,7 @@ export default class ReadSlackProfileController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSlackProfileRequestDto =
-        this.#buildRequestDto(req);
+      const requestDto: ReadSlackProfileRequestDto = this.#buildRequestDto(req);
       const authDto: ReadSlackProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
@@ -84,10 +87,7 @@ export default class ReadSlackProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return ReadSlackProfileController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return ReadSlackProfileController.badRequest(res, useCaseResult.error);
       }
 
       const resultValue = useCaseResult.value

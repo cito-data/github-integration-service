@@ -42,9 +42,13 @@ export default class ReadSnowflakeProfileController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): ReadSnowflakeProfileAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
-  });
+  ): ReadSnowflakeProfileAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {

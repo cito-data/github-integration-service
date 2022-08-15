@@ -24,23 +24,36 @@ export default class ReadSlackConversationsController extends BaseController {
 
   readonly #dbo: Dbo;
 
-  constructor(getslackconversations: GetSlackConversations, getAccounts: GetAccounts, dbo: Dbo) {
+  constructor(
+    getslackconversations: GetSlackConversations,
+    getAccounts: GetAccounts,
+    dbo: Dbo
+  ) {
     super();
     this.#getslackconversations = getslackconversations;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildAuthDto = (userAccountInfo: UserAccountInfo): GetSlackConversationsAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
-  });
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): GetSlackConversationsAuthDto => {
+    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+
+    return {
+      callerOrganizationId: userAccountInfo.callerOrganizationId,
+    };
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
-    try {     
+    try {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return ReadSlackConversationsController.unauthorized(res, 'Unauthorized');
+        return ReadSlackConversationsController.unauthorized(
+          res,
+          'Unauthorized'
+        );
 
       const jwt = authHeader.split(' ')[1];
 
@@ -58,7 +71,6 @@ export default class ReadSlackConversationsController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      
       const requestDto: GetSlackConversationsRequestDto = null;
       const authDto: GetSlackConversationsAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
@@ -72,13 +84,17 @@ export default class ReadSlackConversationsController extends BaseController {
           this.#dbo.encryption
         );
 
-
       if (!useCaseResult.success) {
-        return ReadSlackConversationsController.badRequest(res, useCaseResult.error);
+        return ReadSlackConversationsController.badRequest(
+          res,
+          useCaseResult.error
+        );
       }
 
       const resultValue = useCaseResult.value
-        ? useCaseResult.value.map(element =>  buildConversationInfoDto(element))
+        ? useCaseResult.value.map((element) =>
+            buildConversationInfoDto(element)
+          )
         : useCaseResult.value;
 
       return ReadSlackConversationsController.ok(res, resultValue, CodeHttp.OK);
@@ -87,7 +103,10 @@ export default class ReadSlackConversationsController extends BaseController {
         return ReadSlackConversationsController.fail(res, error);
       if (error instanceof Error)
         return ReadSlackConversationsController.fail(res, error);
-      return ReadSlackConversationsController.fail(res, 'Unknown error occured');
+      return ReadSlackConversationsController.fail(
+        res,
+        'Unknown error occured'
+      );
     }
   }
 }
