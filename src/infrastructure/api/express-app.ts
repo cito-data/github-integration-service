@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
@@ -33,23 +33,26 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       clientSecret: config.clientSecret,
     },
   });
-
-  const requestLineageCreation = async (catalogText: string, manifestText: string): Promise<void> => {
+  
+  const requestLineageCreation = async (catalogText: string, manifestText: string): Promise<any> => {
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/lineage', {
-        method: 'POST',
+      
+      const configuration: AxiosRequestConfig = {
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
+      };
+      
+      const response = await axios.post(
+        'http://localhost:3000/api/v1/lineage',
+        {
           catalog: catalogText,
           manifest: manifestText,
-        }),
-      });
+        },
+        configuration
+      );
 
-      if (response.status !== 200) {
-        throw new Error(`Error with status: ${response.status}`);
-      }
-      console.log(response.data);
-      return response.data;
+      const jsonResponse = response.data;
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse.message);
       
     } catch (error: unknown) {
       if(typeof error === 'string') return Promise.reject(error);
