@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import githubRoutes from './github-routes';
 import snowflakeRoutes from './snowflake-routes';
 import slackRoutes from './slack-routes';
 import { appConfig } from '../../../config';
@@ -14,5 +15,7 @@ v1Router.get(`/${appConfig.express.apiRoot}/${version}/`, (req, res) => res.json
 v1Router.use(`/${appConfig.express.apiRoot}/${version}/snowflake`, snowflakeRoutes);
 
 v1Router.use(`/${appConfig.express.apiRoot}/${version}/slack`, slackRoutes);
+
+v1Router.use(`/${appConfig.express.apiRoot}/github`, githubRoutes);
 
 export default v1Router;
