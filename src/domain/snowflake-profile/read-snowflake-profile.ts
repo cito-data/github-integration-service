@@ -39,9 +39,6 @@ export class ReadSnowflakeProfile
     dbEncryption: DbEncryption
   ): Promise<ReadSnowflakeProfileResponseDto> {
     try {
-      // todo -replace
-      console.log(auth);
-
       this.#dbConnection = dbConnection;
 
       this.#dbEncryption = dbEncryption;
