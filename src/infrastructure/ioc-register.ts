@@ -8,11 +8,14 @@ import { UpdateSlackProfile } from '../domain/slack-profile/update-slack-profile
 import { CreateSnowflakeProfile } from '../domain/snowflake-profile/create-snowflake-profile';
 import { ReadSnowflakeProfile } from '../domain/snowflake-profile/read-snowflake-profile';
 import { ReadSnowflakeProfiles } from '../domain/snowflake-profile/read-snowflake-profiles';
+import { CreateGithubProfile } from '../domain/github-profile/create-github-profile';
+import { ReadGithubProfile } from '../domain/github-profile/read-github-profile';
 import { QuerySnowflake } from '../domain/snowflake-api/query-snowflake';
 import AccountApiRepo from './persistence/account-api-repo';
 import Dbo from './persistence/db/mongo-db';
 import SlackProfileRepo from './persistence/slack-profile-repo';
 import SnowflakeProfileRepo from './persistence/snowflake-profile-repo';
+import GithubProfileRepo from './persistence/github-profile-repo';
 import SnowflakeApiRepo from './persistence/snowflake-api-repo';
 import { SendSlackAlert } from '../domain/slack-api/send-alert';
 import { GetSlackConversations } from '../domain/slack-api/get-conversations';
@@ -24,12 +27,14 @@ const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 iocRegister.register({
   createSnowflakeProfile: asClass(CreateSnowflakeProfile),
   createSlackProfile: asClass(CreateSlackProfile),
+  createGithubProfile: asClass(CreateGithubProfile),
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
 
   updateSlackProfile: asClass(UpdateSlackProfile),
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   readSlackProfile: asClass(ReadSlackProfile),
+  readGithubProfile: asClass(ReadGithubProfile),
   readSnowflakeProfiles: asClass(ReadSnowflakeProfiles),
 
   querySnowflake: asClass(QuerySnowflake),
@@ -42,6 +47,7 @@ iocRegister.register({
 
   snowflakeProfileRepo: asClass(SnowflakeProfileRepo),
   slackProfileRepo: asClass(SlackProfileRepo),
+  githubProfileRepo: asClass(GithubProfileRepo),
 
   snowflakeApiRepo: asClass(SnowflakeApiRepo),
   slackApiRepo: asClass(SlackApiRepo),
