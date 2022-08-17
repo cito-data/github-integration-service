@@ -101,7 +101,11 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
 };
 
-const requestLineageCreation = async (catalogText: string, manifestText: string, organisationId: string): Promise<any> => {
+const requestLineageCreation = async (
+  catalogText: string,
+  manifestText: string,
+  organisationId: string
+  ): Promise<any> => {
   try {
 
     const jwt = await getJwt();
@@ -223,22 +227,6 @@ githubApp.webhooks.on('push', async ({ octokit, payload }) => {
   requestLineageCreation(catalogText, manifestText, organizationId);
 
 });
-
-githubApp.webhooks.on('installation.created', async ({ payload }) => {
-  console.log(payload.action, 'installation-action');
-  console.log(payload.repositories, 'target-repositories');
-  console.log('hello');
-  console.log(payload.installation.id);
-
-  // add logic to map installationId to organisationId
-});
-
-// githubApp.oauth.on("token", async ({ token, octokit }) => {
-//   const { data } = await octokit.request("GET /user");
-//   console.log(`Token retrieved for ${data.login}`);
-//   console.log(token, 'received token');
-
-// });
 
 return githubApp;
 };
