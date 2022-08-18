@@ -42,13 +42,12 @@ export default class ReadGithubProfileController extends BaseController {
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): ReadGithubProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
-
-    return {
+  ): ReadGithubProfileAuthDto => ({
+    
       callerOrganizationId: userAccountInfo.callerOrganizationId,
-    };
-  };
+      isSystemInternal: userAccountInfo.isSystemInternal,
+    
+  });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {

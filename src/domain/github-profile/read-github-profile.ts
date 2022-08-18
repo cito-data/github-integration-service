@@ -6,23 +6,25 @@ import { DbConnection, DbEncryption } from '../services/i-db';
 
 export type ReadGithubProfileRequestDto = {
   installationId: string;
+  targetOrganizationId?: string
 }
 
 export interface ReadGithubProfileAuthDto {
-  callerOrganizationId: string;
+  callerOrganizationId?: string;
+  isSystemInternal?: boolean,
 }
 
 export type ReadGithubProfileResponseDto = Result<GithubProfile>;
 
 export class ReadGithubProfile
   implements
-    IUseCase<
-      ReadGithubProfileRequestDto,
-      ReadGithubProfileResponseDto,
-      ReadGithubProfileAuthDto,
-      DbConnection,
-      DbEncryption
-    >
+  IUseCase<
+  ReadGithubProfileRequestDto,
+  ReadGithubProfileResponseDto,
+  ReadGithubProfileAuthDto,
+  DbConnection,
+  DbEncryption
+  >
 {
   readonly #githubProfileRepo: IGithubProfileRepo;
 
@@ -43,6 +45,20 @@ export class ReadGithubProfile
     try {
       // todo -replace
       console.log(auth);
+      if (auth.isSystemInternal && !request.targetOrganizationId)
+        throw new Error('Target organization id missing');
+      if (!auth.isSystemInternal && !auth.callerOrganizationId)
+        throw new Error('Caller organization id missing');
+      if (!request.targetOrganizationId && !auth.callerOrganizationId)
+        throw new Error('No organization Id instance provided');
+
+      let organizationId;
+      if (auth.isSystemInternal && request.targetOrganizationId)
+        organizationId = request.targetOrganizationId;
+      else if (auth.callerOrganizationId)
+        organizationId = auth.callerOrganizationId;
+      else
+        throw new Error('Unhandled organizationId allocation');
 
       this.#dbConnection = dbConnection;
 
@@ -54,9 +70,9 @@ export class ReadGithubProfile
         this.#dbEncryption
       );
       if (!githubProfile)
-        throw new Error(`SlackProfile with id ${auth.callerOrganizationId} does not exist`);
+        throw new Error(`Github profile with id ${organizationId} does not exist`);
 
-      if (githubProfile.organizationId !== auth.callerOrganizationId)
+      if (githubProfile.organizationId !== organizationId)
         throw new Error('Not authorized to perform action');
 
       return Result.ok(githubProfile);

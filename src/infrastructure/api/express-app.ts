@@ -103,7 +103,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   };
 
   const updateGithubProfile = async (
-    installationId: string
+    installationId: string,
+    targetOrganizationId: string
   ): Promise<any> => {
     try {
 
@@ -120,6 +121,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
         'http://localhost:3002/api/v1/github/profile/update',
         {
           installationId,
+          targetOrganizationId
         },
         configuration
       );
@@ -265,7 +267,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     const result = await requestLineageCreation(catalogText, manifestText, organizationId);
 
-    if (result) updateGithubProfile(currentInstallation.toString(10));
+    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId);
 
   });
 

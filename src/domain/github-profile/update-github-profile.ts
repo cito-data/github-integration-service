@@ -8,10 +8,11 @@ import { ReadGithubProfile } from './read-github-profile';
 
 export interface UpdateGithubProfileRequestDto {
   installationId: string;
+  targetOrganizationId: string;
 }
 
 export interface UpdateGithubProfileAuthDto {
-  callerOrganizationId: string;
+  isSystemInternal: boolean
 }
 
 export type UpdateGithubProfileResponseDto = Result<string>;
@@ -49,13 +50,17 @@ export class UpdateGithubProfile
     dbEncryption: DbEncryption
   ): Promise<UpdateGithubProfileResponseDto> {
     try {
+      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
       this.#dbConnection = dbConnection;
       this.#dbEncryption = dbEncryption;
 
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
-          { installationId: request.installationId },
-          { callerOrganizationId: auth.callerOrganizationId },
+          {
+            installationId: request.installationId,
+            targetOrganizationId: request.targetOrganizationId
+          },
+          { isSystemInternal: auth.isSystemInternal },
           this.#dbConnection,
           this.#dbEncryption
         );
@@ -65,7 +70,7 @@ export class UpdateGithubProfile
       if (!readGithubProfileResult.value)
         throw new Error('Github profile retrieval went wrong');
 
-      if (readGithubProfileResult.value.organizationId !== auth.callerOrganizationId)
+      if (readGithubProfileResult.value.organizationId !== request.targetOrganizationId)
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#githubProfileRepo.updateOne(

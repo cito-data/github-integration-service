@@ -36,17 +36,14 @@ export default class UpdateGithubProfileController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): UpdateGithubProfileRequestDto => ({
     installationId: httpRequest.body.installationId,
+    targetOrganizationId: httpRequest.body.targetOrganizationId
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): UpdateGithubProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
-
-    return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
-    };
-  };
+  ): UpdateGithubProfileAuthDto => ({
+    isSystemInternal: userAccountInfo.isSystemInternal,
+  });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
