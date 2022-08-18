@@ -35,10 +35,10 @@ export default class ReadGithubProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadGithubProfileRequestDto => {
+  #buildRequestDto = (httpRequest: Request): ReadGithubProfileRequestDto => ({
     
-    return {installationId: httpRequest.params.installationId};
-  };
+   installationId: httpRequest.params.installationId
+  });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo

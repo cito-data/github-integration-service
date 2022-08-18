@@ -2,6 +2,7 @@ import { Router } from 'express';
 import app from '../../ioc-register';
 import CreateGithubProfileController from '../controllers/create-github-profile-controller';
 import ReadGithubProfileController from '../controllers/read-github-profile-controller';
+import UpdateGithubProfileController from '../controllers/update-github-profile-controller';
 
 const githubRoutes = Router();
 
@@ -16,6 +17,12 @@ const createGithubProfileController = new CreateGithubProfileController(
 
 const readGithubProfileController = new ReadGithubProfileController(
     app.resolve('createGithubProfile'),
+    getAccounts,
+    dbo
+  );
+
+  const updateGithubProfileController = new UpdateGithubProfileController(
+    app.resolve('updateGithubProfile'),
     getAccounts,
     dbo
   );
@@ -36,6 +43,10 @@ githubRoutes.post('/profile', (req, res) => {
 
 githubRoutes.get('/profile', (req, res) => {
     readGithubProfileController.execute(req, res);    
+});
+
+githubRoutes.post('/profile/update', (req, res) => {
+  updateGithubProfileController.execute(req, res);    
 });
 
 export default githubRoutes;

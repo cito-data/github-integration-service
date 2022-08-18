@@ -21,6 +21,7 @@ import { SendSlackAlert } from '../domain/slack-api/send-alert';
 import { GetSlackConversations } from '../domain/slack-api/get-conversations';
 import SlackApiRepo from './persistence/slack-api-repo';
 import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
+import { UpdateGithubProfile } from '../domain/github-profile/update-github-profile';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -31,6 +32,7 @@ iocRegister.register({
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
 
   updateSlackProfile: asClass(UpdateSlackProfile),
+  updateGithubProfile: asClass(UpdateGithubProfile),
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   readSlackProfile: asClass(ReadSlackProfile),

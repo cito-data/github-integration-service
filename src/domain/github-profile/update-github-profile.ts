@@ -1,28 +1,27 @@
-import { ObjectId } from 'mongodb';
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
-import { GithubProfile } from '../entities/github-profile';
-import { IGithubProfileRepo } from './i-github-profile-repo';
+import {
+  IGithubProfileRepo
+} from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
 
-export interface CreateGithubProfileRequestDto {
-  installationId: string,
-  organizationId: string,
+export interface UpdateGithubProfileRequestDto {
+  installationId: string;
 }
 
-export interface CreateGithubProfileAuthDto {
+export interface UpdateGithubProfileAuthDto {
   callerOrganizationId: string;
 }
 
-export type CreateGithubProfileResponseDto = Result<GithubProfile>;
+export type UpdateGithubProfileResponseDto = Result<string>;
 
-export class CreateGithubProfile
+export class UpdateGithubProfile
   implements
   IUseCase<
-  CreateGithubProfileRequestDto,
-  CreateGithubProfileResponseDto,
-  CreateGithubProfileAuthDto,
+  UpdateGithubProfileRequestDto,
+  UpdateGithubProfileResponseDto,
+  UpdateGithubProfileAuthDto,
   DbConnection,
   DbEncryption
   >
@@ -44,21 +43,14 @@ export class CreateGithubProfile
   }
 
   async execute(
-    request: CreateGithubProfileRequestDto,
-    auth: CreateGithubProfileAuthDto,
+    request: UpdateGithubProfileRequestDto,
+    auth: UpdateGithubProfileAuthDto,
     dbConnection: DbConnection,
     dbEncryption: DbEncryption
-  ): Promise<CreateGithubProfileResponseDto> {
+  ): Promise<UpdateGithubProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
       this.#dbEncryption = dbEncryption;
-
-      const githubProfile = GithubProfile.create({
-        id: new ObjectId().toHexString(),
-        installationId: request.installationId,
-        organizationId: request.organizationId,
-        firstLineageCreated: false,
-      });
 
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
@@ -68,20 +60,26 @@ export class CreateGithubProfile
           this.#dbEncryption
         );
 
-      if (readGithubProfileResult.success)
-        throw new Error('Github profile already exists');
+      if (!readGithubProfileResult.success)
+        throw new Error('No such Github profile found');
+      if (!readGithubProfileResult.value)
+        throw new Error('Github profile retrieval went wrong');
 
-      await this.#githubProfileRepo.insertOne(
-        githubProfile,
+      if (readGithubProfileResult.value.organizationId !== auth.callerOrganizationId)
+        throw new Error('Not allowed to perform action');
+
+      const updateResult = await this.#githubProfileRepo.updateOne(
+        readGithubProfileResult.value.id,
         this.#dbConnection,
         this.#dbEncryption
       );
 
-      return Result.ok(githubProfile);
+      return Result.ok(updateResult);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);
       return Result.fail('Unknown error occured');
     }
   }
+
 }

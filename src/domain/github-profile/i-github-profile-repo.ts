@@ -13,5 +13,11 @@ export interface IGithubProfileRepo {
     dbConnection: DbConnection,
     encryption: DbEncryption
   ): Promise<string>;
+
+  updateOne(
+    id: string,
+    dbConnection: DbConnection,
+    encryption?: DbEncryption
+  ): Promise<string>;
   
 }
