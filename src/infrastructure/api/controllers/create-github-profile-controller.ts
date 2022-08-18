@@ -47,6 +47,7 @@ export default class CreateGithubProfileController extends BaseController {
 
     return {
       callerOrganizationId: userAccountInfo.callerOrganizationId,
+      isSystemInternal: userAccountInfo.isSystemInternal
     };
   };
 

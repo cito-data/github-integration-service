@@ -13,6 +13,7 @@ export interface CreateGithubProfileRequestDto {
 
 export interface CreateGithubProfileAuthDto {
   callerOrganizationId: string;
+  isSystemInternal: boolean;
 }
 
 export type CreateGithubProfileResponseDto = Result<GithubProfile>;
@@ -63,7 +64,10 @@ export class CreateGithubProfile
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
           { installationId: request.installationId },
-          { callerOrganizationId: auth.callerOrganizationId },
+          { 
+            callerOrganizationId: auth.callerOrganizationId,
+            isSystemInternal: auth.isSystemInternal,
+          },
           this.#dbConnection,
           this.#dbEncryption
         );

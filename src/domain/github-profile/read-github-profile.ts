@@ -11,7 +11,7 @@ export type ReadGithubProfileRequestDto = {
 
 export interface ReadGithubProfileAuthDto {
   callerOrganizationId?: string;
-  isSystemInternal?: boolean,
+  isSystemInternal: boolean,
 }
 
 export type ReadGithubProfileResponseDto = Result<GithubProfile>;
