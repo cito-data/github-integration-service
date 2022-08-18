@@ -4,9 +4,12 @@ import helmet from 'helmet';
 import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
 import axios, { AxiosRequestConfig } from 'axios';
+import { appConfig } from '../../config';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
+import { GithubProfile } from '../../domain/entities/github-profile';
+
 
 interface AppConfig {
   port: number;
@@ -33,35 +36,158 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       clientSecret: config.clientSecret,
     },
   });
-  
-  const requestLineageCreation = async (catalogText: string, manifestText: string): Promise<any> => {
+
+  const getJwt = async (): Promise<string> => {
     try {
-      
       const configuration: AxiosRequestConfig = {
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${appConfig.cloud.authSchedulerEnvConfig.clientIdSchedule}:${appConfig.cloud.authSchedulerEnvConfig.clientSecretSchedule}`
+          ).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        params: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: appConfig.cloud.authSchedulerEnvConfig.clientIdSchedule,
+        }),
       };
-      
+
       const response = await axios.post(
-        'http://localhost:3000/api/v1/lineage',
+        appConfig.cloud.authSchedulerEnvConfig.tokenUrl,
+        undefined,
+        configuration
+      );
+      const jsonResponse = response.data;
+      if (response.status !== 200) throw new Error(jsonResponse.message);
+      if (!jsonResponse.access_token)
+        throw new Error('Did not receive an access token');
+      return jsonResponse.access_token;
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  const getGithubProfile = async (installationId: string): Promise<GithubProfile> => {
+
+    try {
+      const jwt = await getJwt();
+
+      const configuration: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        },
+        params: {
+          installationId
+        }
+      };
+
+      const response = await axios.get(
+        'http://localhost:3002/api/v1/github/profile',
+        configuration
+      );
+
+      const jsonResponse = response.data;
+      console.log(jsonResponse);
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse.message);
+
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+
+  };
+
+  const updateGithubProfile = async (
+    installationId: string,
+    targetOrganizationId: string
+  ): Promise<any> => {
+    try {
+
+      const jwt = await getJwt();
+
+      const configuration: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        },
+      };
+
+      const response = await axios.post(
+        'http://localhost:3002/api/v1/github/profile/update',
         {
-          catalog: catalogText,
-          manifest: manifestText,
+          installationId,
+          targetOrganizationId
         },
         configuration
       );
 
       const jsonResponse = response.data;
+      console.log(jsonResponse);
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
-      
+
     } catch (error: unknown) {
-      if(typeof error === 'string') return Promise.reject(error);
-      if(error instanceof Error) return Promise.reject(error.message);
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
       return Promise.reject(new Error('Unknown error occured'));
     }
   };
 
-  githubApp.webhooks.on('push', async ({octokit, payload }) => {
+  const requestLineageCreation = async (
+    catalogText: string,
+    manifestText: string,
+    organizationId: string
+  ): Promise<any> => {
+    try {
+
+      const jwt = await getJwt();
+
+      const configuration: AxiosRequestConfig = {
+
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        },
+      };
+
+      const response = await axios.post(
+        'http://localhost:3000/api/v1/lineage',
+        {
+          catalog: catalogText,
+          manifest: manifestText,
+          targetOrganizationId: organizationId
+        },
+        configuration
+      );
+
+      const jsonResponse = response.data;
+      console.log(jsonResponse);
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse.message);
+
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  githubApp.webhooks.on('push', async ({ octokit, payload }) => {
+
+    const currentInstallation = payload.installation?.id;
+    if (!currentInstallation)
+      throw Error('Current installation not found');
+
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+
+    const {organizationId, firstLineageCreated} = githubProfile;
+
+    if (firstLineageCreated) return;
 
     const catalogRes = await octokit.request('GET /search/code', {
       q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
@@ -73,7 +199,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     if (items.length > 1)
       throw Error('More than 1 catalog found');
 
-    let [ item ] = items;
+    let [item] = items;
     let { path } = item;
 
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
@@ -112,8 +238,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     if (items.length > 1)
       throw Error('More than 1 manifest found');
 
-    ([ item ] = items);
-    ({path} = item);
+    ([item] = items);
+    ({ path } = item);
 
     const manifestResponse: ContentResponseType = await octokit.request(endpoint, {
       owner: payload.repository.owner.login,
@@ -139,23 +265,11 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     const manifestBuffer = Buffer.from(content, encoding);
     const manifestText = manifestBuffer.toString('utf-8');
 
-    requestLineageCreation(catalogText, manifestText);
+    const result = await requestLineageCreation(catalogText, manifestText, organizationId);
+
+    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId);
 
   });
-
-  githubApp.webhooks.on('installation', async ({ payload }) => {
-    console.log(payload.action, 'installation-action');
-    console.log(payload.repositories, 'target-repositories');
-    console.log('hello');
-    // add logic to map installationId to organisationId
-  });
-
-  // githubApp.oauth.on("token", async ({ token, octokit }) => {
-  //   const { data } = await octokit.request("GET /user");
-  //   console.log(`Token retrieved for ${data.login}`);
-  //   console.log(token, 'received token');
-
-  // });
 
   return githubApp;
 };
@@ -184,8 +298,7 @@ export default class ExpressApp {
 
       this.#expressApp.listen(this.#config.port, () => {
         console.log(
-          `App running under pid ${process.pid} listening on port: ${this.#config.port} in ${
-            this.#config.mode
+          `App running under pid ${process.pid} listening on port: ${this.#config.port} in ${this.#config.mode
           } mode`
         );
       });

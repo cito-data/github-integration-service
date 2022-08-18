@@ -121,6 +121,44 @@ const getCognitoUserPoolId = (): string => {
       throw new Error('No valid nodenv provided');
   }
 };
+export interface AuthSchedulerEnvConfig {
+  clientSecretSchedule: string;
+  clientIdSchedule: string;
+  tokenUrl: string;
+}
+
+const getAuthSchedulerEnvConfig = (): AuthSchedulerEnvConfig => {
+  switch (nodeEnv) {
+    case 'development': {
+      const clientSecretSchedule = process.env.AUTH_SCHEDULER_CLIENT_SECRET_DEV || '';
+      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+
+      const clientIdSchedule = '3o029nji154v0bm109hkvkoi5h';
+      const tokenUrl =
+        'https://auth-cito-dev.auth.eu-central-1.amazoncognito.com/oauth2/token';
+      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+    }
+    case 'test': {
+      const clientSecretSchedule =
+        process.env.AUTH_SCHEDULER_CLIENT_SECRET_STAGING || '';
+      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+
+      const clientIdSchedule = '';
+      const tokenUrl = '';
+      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+    }
+    case 'production': {
+      const clientSecretSchedule = process.env.AUTH_SCHEDULER_CLIENT_SECRET_PROD || '';
+      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+
+      const clientIdSchedule = '';
+      const tokenUrl = '';
+      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+    }
+    default:
+      throw new Error('node env misconfiguration');
+  }
+};
 
 export const appConfig = {
   express: {
@@ -129,6 +167,7 @@ export const appConfig = {
     apiRoot,
   },
   cloud: {
+    authSchedulerEnvConfig: getAuthSchedulerEnvConfig(),
     serviceDiscoveryNamespace: getServiceDiscoveryNamespace(),
     userPoolId: getCognitoUserPoolId(),
     region: 'eu-central-1',
