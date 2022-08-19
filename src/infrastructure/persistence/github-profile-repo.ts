@@ -19,6 +19,7 @@ interface GithubProfilePersistence {
   _id: ObjectId;
   installationId: string;
   organizationId: string;
+  repositoryNames: string[];
   firstLineageCreated: boolean;
 }
 
@@ -119,6 +120,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     id: githubProfile._id.toHexString(),
     installationId: githubProfile.installationId,
     organizationId: githubProfile.organizationId,
+    repositoryNames: githubProfile.repositoryNames,
     firstLineageCreated: githubProfile.firstLineageCreated,
 
   });
@@ -131,6 +133,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
       _id: ObjectId.createFromHexString(githubProfile.id),
       installationId: githubProfile.installationId,
       organizationId: githubProfile.organizationId,
+      repositoryNames: githubProfile.repositoryNames,
       firstLineageCreated: githubProfile.firstLineageCreated,
     };
 

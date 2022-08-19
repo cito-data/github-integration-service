@@ -2,6 +2,7 @@ export interface GithubProfileProperties {
   id: string;
   installationId: string;
   organizationId: string;
+  repositoryNames: string[];
   firstLineageCreated: boolean;
 }
 
@@ -12,6 +13,8 @@ export class GithubProfile {
   #installationId: string;
 
   #organizationId: string;
+
+  #repositoryNames: string[];
 
   #firstLineageCreated: boolean;
 
@@ -27,6 +30,10 @@ export class GithubProfile {
     return this.#organizationId;
   }
 
+  get repositoryNames(): string[] {
+    return this.#repositoryNames;
+  }
+
   get firstLineageCreated(): boolean {
     return this.#firstLineageCreated;
   }
@@ -35,6 +42,7 @@ export class GithubProfile {
     this.#id = properties.id;
     this.#installationId = properties.installationId;
     this.#organizationId = properties.organizationId;
+    this.#repositoryNames = properties.repositoryNames;
     this.#firstLineageCreated = properties.firstLineageCreated;
   }
 
@@ -42,6 +50,7 @@ export class GithubProfile {
     if (!properties.id) throw new TypeError('GithubProfile must have Id');
     if (!properties.installationId) throw new TypeError('GithubProfile must have installationId');
     if (!properties.organizationId) throw new TypeError('GithubProfile must have organizationId');
+    if (!properties.repositoryNames) throw new TypeError('GithubProfile must have repositoryNames');
     if (!properties.firstLineageCreated) throw new TypeError('GithubProfile must have firstLineageCreated');
 
     return new GithubProfile(properties);

@@ -9,6 +9,7 @@ import { ReadGithubProfile } from './read-github-profile';
 export interface CreateGithubProfileRequestDto {
   installationId: string,
   organizationId: string,
+  repositoryNames: string[]
 }
 
 export interface CreateGithubProfileAuthDto {
@@ -58,6 +59,7 @@ export class CreateGithubProfile
         id: new ObjectId().toHexString(),
         installationId: request.installationId,
         organizationId: request.organizationId,
+        repositoryNames: request.repositoryNames,
         firstLineageCreated: false,
       });
 
