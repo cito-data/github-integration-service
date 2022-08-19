@@ -2,6 +2,7 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
 import {
+  GithubProfileUpdateDto,
   IGithubProfileRepo
 } from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
@@ -9,6 +10,9 @@ import { ReadGithubProfile } from './read-github-profile';
 export interface UpdateGithubProfileRequestDto {
   installationId: string;
   targetOrganizationId: string;
+  firstLineageCreated?: boolean,
+  repositoriesToAdd?: string[],
+  repositoriesToRemove?: string[]
 }
 
 export interface UpdateGithubProfileAuthDto {
@@ -58,7 +62,7 @@ export class UpdateGithubProfile
         await this.#readGithubProfile.execute(
           {
             installationId: request.installationId,
-            targetOrganizationId: request.targetOrganizationId
+            targetOrganizationId: request.targetOrganizationId,
           },
           { isSystemInternal: auth.isSystemInternal },
           this.#dbConnection,
@@ -75,6 +79,7 @@ export class UpdateGithubProfile
 
       const updateResult = await this.#githubProfileRepo.updateOne(
         readGithubProfileResult.value.id,
+        this.#buildUpdateDto(request),
         this.#dbConnection,
         this.#dbEncryption
       );
@@ -85,6 +90,10 @@ export class UpdateGithubProfile
       if (error instanceof Error) return Result.fail(error.message);
       return Result.fail('Unknown error occured');
     }
-  }
+  };
+
+  #buildUpdateDto = (
+    request: UpdateGithubProfileRequestDto
+  ): GithubProfileUpdateDto => ({ ...request });
 
 }

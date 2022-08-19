@@ -1,6 +1,11 @@
 import { GithubProfile } from '../entities/github-profile';
 import { DbConnection, DbEncryption } from '../services/i-db';
 
+export interface GithubProfileUpdateDto {
+  firstLineageCreated?: boolean;
+  repositoriesToAdd?: string[],
+  repositoriesToRemove?: string[]
+}
 export interface IGithubProfileRepo {
   findOne(
     installationId:string,
@@ -16,6 +21,7 @@ export interface IGithubProfileRepo {
 
   updateOne(
     id: string,
+    updateDto: GithubProfileUpdateDto,
     dbConnection: DbConnection,
     encryption?: DbEncryption
   ): Promise<string>;

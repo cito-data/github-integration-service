@@ -9,7 +9,7 @@ import {
 } from 'mongodb';
 import sanitize from 'mongo-sanitize';
 
-import { IGithubProfileRepo } from '../../domain/github-profile/i-github-profile-repo';
+import { GithubProfileUpdateDto, IGithubProfileRepo } from '../../domain/github-profile/i-github-profile-repo';
 import {
   GithubProfile,
   GithubProfileProperties,
@@ -39,7 +39,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     try {
       const result: any = await dbConnection
         .collection(collectionName)
-        .findOne({ organizationId: sanitize(installationId) });
+        .findOne({ installationId: sanitize(installationId) });
 
       if (!result) return null;
 
@@ -76,25 +76,41 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
   };
 
   #buildUpdateFilter = async (
+    updateDto: GithubProfileUpdateDto,
+    currentRepositoryNames: string[]
   ): Promise<GithubProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
     setFilter.firstLineageCreated = true;
+    if (updateDto.firstLineageCreated) 
+      setFilter.firstLineageCreated = updateDto.firstLineageCreated;
+    if (updateDto.repositoriesToAdd) 
+      setFilter.repositoryNames = currentRepositoryNames.concat(updateDto.repositoriesToAdd);
+    if (updateDto.repositoriesToRemove)
+      setFilter.repositoryNames = currentRepositoryNames.filter((repoName) => !updateDto.repositoriesToRemove?.includes(repoName));
 
     return { $set: setFilter, $push: pushFilter };
   };
 
   updateOne = async (
     id: string,
+    updateDto: GithubProfileUpdateDto,
     dbConnection: Db
   ): Promise<string> => {
     try {
+
+      const profiletoUpdate: any = await dbConnection
+        .collection(collectionName)
+        .findOne({ _id: sanitize(id) });
+
+      const currentRepositoryNames = profiletoUpdate.repositoryNames;
+
       const result: Document | UpdateResult = await dbConnection
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
-          await this.#buildUpdateFilter()
+          await this.#buildUpdateFilter(sanitize(updateDto), currentRepositoryNames)
         );
 
       if (!result.acknowledged)

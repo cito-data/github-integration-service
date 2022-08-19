@@ -104,7 +104,10 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   const updateGithubProfile = async (
     installationId: string,
-    targetOrganizationId: string
+    targetOrganizationId: string,
+    firstLineageCreated?: boolean,
+    repositoriesToAdd?: string[],
+    repositoriesToRemove?: string[]
   ): Promise<any> => {
     try {
 
@@ -121,7 +124,10 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
         'http://localhost:3002/api/v1/github/profile/update',
         {
           installationId,
-          targetOrganizationId
+          targetOrganizationId,
+          firstLineageCreated,
+          repositoriesToAdd,
+          repositoriesToRemove
         },
         configuration
       );
@@ -267,7 +273,41 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     const result = await requestLineageCreation(catalogText, manifestText, organizationId);
 
-    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId);
+    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId, true);
+
+  });
+
+  githubApp.webhooks.on('installation.deleted', async ({octokit, payload}) =>{
+
+    const installationId = payload.installation.id;
+    //delete profile
+  });
+  
+  githubApp.webhooks.on('installation_repositories.added', async ({octokit, payload}) =>{
+
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+
+    const {organizationId} = githubProfile;
+
+    const addedRepos = payload.repositories_added;
+    const addedRepoNames = addedRepos.map((repo) => repo.full_name);
+
+    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, addedRepoNames);
+
+  });
+
+  githubApp.webhooks.on('installation_repositories.removed', async ({octokit, payload}) =>{
+
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+
+    const {organizationId} = githubProfile;
+
+    const removedRepos = payload.repositories_removed;
+    const removedRepoNames = removedRepos.map((repo) => repo.full_name);
+
+    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, undefined, removedRepoNames);
 
   });
 
