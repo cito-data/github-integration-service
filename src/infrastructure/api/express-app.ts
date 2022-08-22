@@ -157,14 +157,14 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
           Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json'
         },
-      };
-
-      const response = await axios.post(
-        'http://localhost:3002/api/v1/github/profile/delete',
-        {
+        params: {
           installationId,
           targetOrganizationId,
         },
+      };
+
+      const response = await axios.delete(
+        'http://localhost:3002/api/v1/github/profile/delete',
         configuration
       );
 

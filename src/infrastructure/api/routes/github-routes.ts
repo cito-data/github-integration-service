@@ -56,7 +56,7 @@ githubRoutes.post('/profile/update', (req, res) => {
   updateGithubProfileController.execute(req, res);    
 });
 
-githubRoutes.post('/profile/delete', (req, res) => {
+githubRoutes.delete('/profile/delete', (req, res) => {
   deleteGithubProfileController.execute(req, res);    
 });
 

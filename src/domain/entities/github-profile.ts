@@ -50,7 +50,8 @@ export class GithubProfile {
     if (!properties.id) throw new TypeError('GithubProfile must have Id');
     if (!properties.installationId) throw new TypeError('GithubProfile must have installationId');
     if (!properties.organizationId) throw new TypeError('GithubProfile must have organizationId');
-    if (!properties.repositoryNames) throw new TypeError('GithubProfile must have repositoryNames');
+    if (!properties.repositoryNames || properties.repositoryNames.length === 0) 
+      throw new TypeError('GithubProfile must have repositoryNames');
     if (!properties.firstLineageCreated) throw new TypeError('GithubProfile must have firstLineageCreated');
 
     return new GithubProfile(properties);

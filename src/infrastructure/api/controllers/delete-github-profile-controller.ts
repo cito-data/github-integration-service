@@ -35,8 +35,8 @@ export default class DeleteGithubProfileController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): DeleteGithubProfileRequestDto => ({
-    installationId: httpRequest.body.installationId,
-    targetOrganizationId: httpRequest.body.targetOrganizationId
+    installationId: httpRequest.params.installationId,
+    targetOrganizationId: httpRequest.params.targetOrganizationId
   });
 
   #buildAuthDto = (
