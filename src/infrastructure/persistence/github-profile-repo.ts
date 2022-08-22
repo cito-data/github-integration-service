@@ -2,6 +2,7 @@
 
 import {
   Db,
+  DeleteResult,
   Document,
   InsertOneResult,
   ObjectId,
@@ -9,7 +10,7 @@ import {
 } from 'mongodb';
 import sanitize from 'mongo-sanitize';
 
-import { IGithubProfileRepo } from '../../domain/github-profile/i-github-profile-repo';
+import { GithubProfileUpdateDto, IGithubProfileRepo } from '../../domain/github-profile/i-github-profile-repo';
 import {
   GithubProfile,
   GithubProfileProperties,
@@ -19,6 +20,7 @@ interface GithubProfilePersistence {
   _id: ObjectId;
   installationId: string;
   organizationId: string;
+  repositoryNames: string[];
   firstLineageCreated: boolean;
 }
 
@@ -38,7 +40,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     try {
       const result: any = await dbConnection
         .collection(collectionName)
-        .findOne({ organizationId: sanitize(installationId) });
+        .findOne({ installationId: sanitize(installationId) });
 
       if (!result) return null;
 
@@ -75,31 +77,69 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
   };
 
   #buildUpdateFilter = async (
+    updateDto: GithubProfileUpdateDto,
+    currentRepositoryNames: string[]
   ): Promise<GithubProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
     setFilter.firstLineageCreated = true;
+    if (updateDto.firstLineageCreated) 
+      setFilter.firstLineageCreated = updateDto.firstLineageCreated;
+    if (updateDto.repositoriesToAdd) 
+      setFilter.repositoryNames = currentRepositoryNames.concat(updateDto.repositoriesToAdd);
+    if (updateDto.repositoriesToRemove)
+      setFilter.repositoryNames = currentRepositoryNames.filter((repoName) => !updateDto.repositoriesToRemove?.includes(repoName));
 
     return { $set: setFilter, $push: pushFilter };
   };
 
   updateOne = async (
     id: string,
+    updateDto: GithubProfileUpdateDto,
     dbConnection: Db
   ): Promise<string> => {
     try {
+
+      const profiletoUpdate: any = await dbConnection
+        .collection(collectionName)
+        .findOne({ _id: sanitize(id) });
+
+      const currentRepositoryNames = profiletoUpdate.repositoryNames;
+
       const result: Document | UpdateResult = await dbConnection
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
-          await this.#buildUpdateFilter()
+          await this.#buildUpdateFilter(sanitize(updateDto), currentRepositoryNames)
         );
 
       if (!result.acknowledged)
         throw new Error('Test suite update failed. Update not acknowledged');
 
       return result.upsertedId;
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  deleteOne = async (
+    id: string,
+    dbConnection: Db
+    ): Promise<string> => {
+    try {
+      const result: DeleteResult = await dbConnection
+        .collection(collectionName)
+        .deleteOne({ _id: new ObjectId(sanitize(id)) });
+
+      if (!result.acknowledged)
+        throw new Error(
+          'SnowflakeProfile delete failed. Delete not acknowledged'
+        );
+
+      return result.deletedCount.toString();
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -119,6 +159,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     id: githubProfile._id.toHexString(),
     installationId: githubProfile.installationId,
     organizationId: githubProfile.organizationId,
+    repositoryNames: githubProfile.repositoryNames,
     firstLineageCreated: githubProfile.firstLineageCreated,
 
   });
@@ -131,6 +172,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
       _id: ObjectId.createFromHexString(githubProfile.id),
       installationId: githubProfile.installationId,
       organizationId: githubProfile.organizationId,
+      repositoryNames: githubProfile.repositoryNames,
       firstLineageCreated: githubProfile.firstLineageCreated,
     };
 

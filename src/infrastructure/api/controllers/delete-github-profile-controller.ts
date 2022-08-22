@@ -2,11 +2,11 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  UpdateGithubProfile,
-  UpdateGithubProfileAuthDto,
-  UpdateGithubProfileRequestDto,
-  UpdateGithubProfileResponseDto,
-} from '../../../domain/github-profile/update-github-profile';
+  DeleteGithubProfile,
+  DeleteGithubProfileAuthDto,
+  DeleteGithubProfileRequestDto,
+  DeleteGithubProfileResponseDto,
+} from '../../../domain/github-profile/delete-github-profile';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -16,35 +16,32 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class UpdateGithubProfileController extends BaseController {
-  readonly #updateGithubProfile: UpdateGithubProfile;
+export default class DeleteGithubProfileController extends BaseController {
+  readonly #deleteGithubProfile: DeleteGithubProfile;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    updateGithubProfile: UpdateGithubProfile,
+    deleteGithubProfile: DeleteGithubProfile,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#updateGithubProfile = updateGithubProfile;
+    this.#deleteGithubProfile = deleteGithubProfile;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): UpdateGithubProfileRequestDto => ({
-    installationId: httpRequest.body.installationId,
-    targetOrganizationId: httpRequest.body.targetOrganizationId,
-    firstLineageCreated: httpRequest.body.firstLineageCreated,
-    repositoriesToAdd: httpRequest.body.repositoriesToAdd,
-    repositoriesToRemove: httpRequest.body.repositoriesToRemove,
+  #buildRequestDto = (httpRequest: Request): DeleteGithubProfileRequestDto => ({
+    installationId: httpRequest.params.installationId,
+    targetOrganizationId: httpRequest.params.targetOrganizationId
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): UpdateGithubProfileAuthDto => ({
+  ): DeleteGithubProfileAuthDto => ({
     isSystemInternal: userAccountInfo.isSystemInternal,
   });
 
@@ -53,32 +50,32 @@ export default class UpdateGithubProfileController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return UpdateGithubProfileController.unauthorized(res, 'Unauthorized');
+        return DeleteGithubProfileController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await UpdateGithubProfileController.getUserAccountInfo(
+        await DeleteGithubProfileController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return UpdateGithubProfileController.unauthorized(
+        return DeleteGithubProfileController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: UpdateGithubProfileRequestDto =
+      const requestDto: DeleteGithubProfileRequestDto =
         this.#buildRequestDto(req);
-      const authDto: UpdateGithubProfileAuthDto = this.#buildAuthDto(
+      const authDto: DeleteGithubProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: UpdateGithubProfileResponseDto =
-        await this.#updateGithubProfile.execute(
+      const useCaseResult: DeleteGithubProfileResponseDto =
+        await this.#deleteGithubProfile.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection,
@@ -86,23 +83,23 @@ export default class UpdateGithubProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return UpdateGithubProfileController.badRequest(
+        return DeleteGithubProfileController.badRequest(
           res,
           useCaseResult.error
         );
       }
 
-      return UpdateGithubProfileController.ok(
+      return DeleteGithubProfileController.ok(
         res,
         useCaseResult.value,
         CodeHttp.OK
       );
     } catch (error: unknown) {
       if (typeof error === 'string')
-        return UpdateGithubProfileController.fail(res, error);
+        return DeleteGithubProfileController.fail(res, error);
       if (error instanceof Error)
-        return UpdateGithubProfileController.fail(res, error);
-      return UpdateGithubProfileController.fail(res, 'Unknown error occured');
+        return DeleteGithubProfileController.fail(res, error);
+      return DeleteGithubProfileController.fail(res, 'Unknown error occured');
     }
   }
 }

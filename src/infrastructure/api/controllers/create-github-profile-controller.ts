@@ -38,6 +38,7 @@ export default class CreateGithubProfileController extends BaseController {
   #buildRequestDto = (httpRequest: Request): CreateGithubProfileRequestDto => ({
     installationId: httpRequest.body.installationId,
     organizationId: httpRequest.body.organizationId,
+    repositoryNames: httpRequest.body.repositoryNames,
   });
 
   #buildAuthDto = (

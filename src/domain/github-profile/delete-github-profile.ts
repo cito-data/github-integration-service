@@ -2,31 +2,27 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection, DbEncryption } from '../services/i-db';
 import {
-  GithubProfileUpdateDto,
   IGithubProfileRepo
 } from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
 
-export interface UpdateGithubProfileRequestDto {
+export interface DeleteGithubProfileRequestDto {
   installationId: string;
   targetOrganizationId: string;
-  firstLineageCreated?: boolean,
-  repositoriesToAdd?: string[],
-  repositoriesToRemove?: string[]
 }
 
-export interface UpdateGithubProfileAuthDto {
+export interface DeleteGithubProfileAuthDto {
   isSystemInternal: boolean
 }
 
-export type UpdateGithubProfileResponseDto = Result<string>;
+export type DeleteGithubProfileResponseDto = Result<string>;
 
-export class UpdateGithubProfile
+export class DeleteGithubProfile
   implements
   IUseCase<
-  UpdateGithubProfileRequestDto,
-  UpdateGithubProfileResponseDto,
-  UpdateGithubProfileAuthDto,
+  DeleteGithubProfileRequestDto,
+  DeleteGithubProfileResponseDto,
+  DeleteGithubProfileAuthDto,
   DbConnection,
   DbEncryption
   >
@@ -48,11 +44,11 @@ export class UpdateGithubProfile
   }
 
   async execute(
-    request: UpdateGithubProfileRequestDto,
-    auth: UpdateGithubProfileAuthDto,
+    request: DeleteGithubProfileRequestDto,
+    auth: DeleteGithubProfileAuthDto,
     dbConnection: DbConnection,
     dbEncryption: DbEncryption
-  ): Promise<UpdateGithubProfileResponseDto> {
+  ): Promise<DeleteGithubProfileResponseDto> {
     try {
       if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
       this.#dbConnection = dbConnection;
@@ -77,23 +73,16 @@ export class UpdateGithubProfile
       if (readGithubProfileResult.value.organizationId !== request.targetOrganizationId)
         throw new Error('Not allowed to perform action');
 
-      const updateResult = await this.#githubProfileRepo.updateOne(
+      const deleteResult = await this.#githubProfileRepo.deleteOne(
         readGithubProfileResult.value.id,
-        this.#buildUpdateDto(request),
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
-      return Result.ok(updateResult);
+      return Result.ok(deleteResult);
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);
       return Result.fail('Unknown error occured');
     }
   };
-
-  #buildUpdateDto = (
-    request: UpdateGithubProfileRequestDto
-  ): GithubProfileUpdateDto => ({ ...request });
-
 }

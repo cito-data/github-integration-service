@@ -3,6 +3,7 @@ import app from '../../ioc-register';
 import CreateGithubProfileController from '../controllers/create-github-profile-controller';
 import ReadGithubProfileController from '../controllers/read-github-profile-controller';
 import UpdateGithubProfileController from '../controllers/update-github-profile-controller';
+import DeleteGithubProfileController from '../controllers/delete-github-profile-controller';
 
 const githubRoutes = Router();
 
@@ -27,6 +28,12 @@ const readGithubProfileController = new ReadGithubProfileController(
     dbo
   );
 
+  const deleteGithubProfileController = new DeleteGithubProfileController(
+    app.resolve('deleteGithubProfile'),
+    getAccounts,
+    dbo
+  );
+
 githubRoutes.post('/webhooks', (req, res) => {
     console.log(req);
     const {body} = req;
@@ -47,6 +54,10 @@ githubRoutes.get('/profile', (req, res) => {
 
 githubRoutes.post('/profile/update', (req, res) => {
   updateGithubProfileController.execute(req, res);    
+});
+
+githubRoutes.delete('/profile/delete', (req, res) => {
+  deleteGithubProfileController.execute(req, res);    
 });
 
 export default githubRoutes;

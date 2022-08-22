@@ -104,7 +104,10 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   const updateGithubProfile = async (
     installationId: string,
-    targetOrganizationId: string
+    targetOrganizationId: string,
+    firstLineageCreated?: boolean,
+    repositoriesToAdd?: string[],
+    repositoriesToRemove?: string[]
   ): Promise<any> => {
     try {
 
@@ -121,8 +124,47 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
         'http://localhost:3002/api/v1/github/profile/update',
         {
           installationId,
-          targetOrganizationId
+          targetOrganizationId,
+          firstLineageCreated,
+          repositoriesToAdd,
+          repositoriesToRemove
         },
+        configuration
+      );
+
+      const jsonResponse = response.data;
+      console.log(jsonResponse);
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse.message);
+
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  const deleteGithubProfile = async (
+    installationId: string,
+    targetOrganizationId: string,
+    ): Promise<any> => {
+    try {
+
+      const jwt = await getJwt();
+
+      const configuration: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        },
+        params: {
+          installationId,
+          targetOrganizationId,
+        },
+      };
+
+      const response = await axios.delete(
+        'http://localhost:3002/api/v1/github/profile/delete',
         configuration
       );
 
@@ -267,7 +309,45 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
     const result = await requestLineageCreation(catalogText, manifestText, organizationId);
 
-    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId);
+    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId, true);
+
+  });
+
+  githubApp.webhooks.on('installation.deleted', async ({payload}) =>{
+
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));
+    
+    const {organizationId} = githubProfile;
+
+    deleteGithubProfile(currentInstallation.toString(10), organizationId);
+  });
+  
+  githubApp.webhooks.on('installation_repositories.added', async ({payload}) =>{
+
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+
+    const {organizationId} = githubProfile;
+
+    const addedRepos = payload.repositories_added;
+    const addedRepoNames = addedRepos.map((repo) => repo.full_name);
+
+    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, addedRepoNames);
+
+  });
+
+  githubApp.webhooks.on('installation_repositories.removed', async ({payload}) =>{
+
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+
+    const {organizationId} = githubProfile;
+
+    const removedRepos = payload.repositories_removed;
+    const removedRepoNames = removedRepos.map((repo) => repo.full_name);
+
+    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, undefined, removedRepoNames);
 
   });
 

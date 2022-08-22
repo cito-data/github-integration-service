@@ -22,6 +22,7 @@ import { GetSlackConversations } from '../domain/slack-api/get-conversations';
 import SlackApiRepo from './persistence/slack-api-repo';
 import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
 import { UpdateGithubProfile } from '../domain/github-profile/update-github-profile';
+import { DeleteGithubProfile } from '../domain/github-profile/delete-github-profile';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -30,6 +31,8 @@ iocRegister.register({
   createSlackProfile: asClass(CreateSlackProfile),
   createGithubProfile: asClass(CreateGithubProfile),
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
+
+  deleteGithubProfile: asClass(DeleteGithubProfile),
 
   updateSlackProfile: asClass(UpdateSlackProfile),
   updateGithubProfile: asClass(UpdateGithubProfile),

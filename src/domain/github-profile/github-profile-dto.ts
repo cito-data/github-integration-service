@@ -4,6 +4,7 @@ export interface GithubProfileDto {
   id: string;
   installationId: string;
   organizationId: string;
+  repositoryNames: string[];
   firstLineageCreated: boolean;
 }
 
@@ -13,5 +14,6 @@ export const buildGithubProfileDto = (
   id: githubProfile.id,
   installationId: githubProfile.installationId,
   organizationId: githubProfile.organizationId,
+  repositoryNames: githubProfile.repositoryNames,
   firstLineageCreated: githubProfile.firstLineageCreated,
 });
