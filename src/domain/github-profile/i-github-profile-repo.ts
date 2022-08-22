@@ -26,4 +26,9 @@ export interface IGithubProfileRepo {
     encryption?: DbEncryption
   ): Promise<string>;
   
+  deleteOne(
+    id: string,
+    dbConnection: DbConnection
+  ): Promise<string>;
+  
 }

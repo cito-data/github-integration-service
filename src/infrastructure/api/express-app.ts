@@ -144,6 +144,42 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     }
   };
 
+  const deleteGithubProfile = async (
+    installationId: string,
+    targetOrganizationId: string,
+    ): Promise<any> => {
+    try {
+
+      const jwt = await getJwt();
+
+      const configuration: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        },
+      };
+
+      const response = await axios.post(
+        'http://localhost:3002/api/v1/github/profile/delete',
+        {
+          installationId,
+          targetOrganizationId,
+        },
+        configuration
+      );
+
+      const jsonResponse = response.data;
+      console.log(jsonResponse);
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse.message);
+
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
   const requestLineageCreation = async (
     catalogText: string,
     manifestText: string,
@@ -277,13 +313,17 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   });
 
-  githubApp.webhooks.on('installation.deleted', async ({octokit, payload}) =>{
+  githubApp.webhooks.on('installation.deleted', async ({payload}) =>{
 
-    const installationId = payload.installation.id;
-    //delete profile
+    const currentInstallation = payload.installation.id;
+    const githubProfile = await getGithubProfile(currentInstallation.toString(10));
+    
+    const {organizationId} = githubProfile;
+
+    deleteGithubProfile(currentInstallation.toString(10), organizationId);
   });
   
-  githubApp.webhooks.on('installation_repositories.added', async ({octokit, payload}) =>{
+  githubApp.webhooks.on('installation_repositories.added', async ({payload}) =>{
 
     const currentInstallation = payload.installation.id;
     const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
@@ -297,7 +337,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   });
 
-  githubApp.webhooks.on('installation_repositories.removed', async ({octokit, payload}) =>{
+  githubApp.webhooks.on('installation_repositories.removed', async ({payload}) =>{
 
     const currentInstallation = payload.installation.id;
     const githubProfile = await getGithubProfile(currentInstallation.toString(10));;

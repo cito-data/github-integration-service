@@ -2,6 +2,7 @@
 
 import {
   Db,
+  DeleteResult,
   Document,
   InsertOneResult,
   ObjectId,
@@ -117,6 +118,28 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
         throw new Error('Test suite update failed. Update not acknowledged');
 
       return result.upsertedId;
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
+
+  deleteOne = async (
+    id: string,
+    dbConnection: Db
+    ): Promise<string> => {
+    try {
+      const result: DeleteResult = await dbConnection
+        .collection(collectionName)
+        .deleteOne({ _id: new ObjectId(sanitize(id)) });
+
+      if (!result.acknowledged)
+        throw new Error(
+          'SnowflakeProfile delete failed. Delete not acknowledged'
+        );
+
+      return result.deletedCount.toString();
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
