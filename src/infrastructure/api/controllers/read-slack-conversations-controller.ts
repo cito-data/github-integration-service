@@ -99,6 +99,7 @@ export default class ReadSlackConversationsController extends BaseController {
 
       return ReadSlackConversationsController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return ReadSlackConversationsController.fail(res, error);
       if (error instanceof Error)

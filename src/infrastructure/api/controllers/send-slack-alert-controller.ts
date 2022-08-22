@@ -92,6 +92,7 @@ export default class SendSlackAlertController extends BaseController {
 
       return SendSlackAlertController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return SendSlackAlertController.fail(res, error);
       if (error instanceof Error)

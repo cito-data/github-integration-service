@@ -96,6 +96,7 @@ export default class ReadSlackProfileController extends BaseController {
 
       return ReadSlackProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return ReadSlackProfileController.fail(res, error);
       if (error instanceof Error)

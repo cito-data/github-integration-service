@@ -91,6 +91,7 @@ export default class QuerySnowflakeController extends BaseController {
 
       return QuerySnowflakeController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return QuerySnowflakeController.fail(res, error);
       if (error instanceof Error)

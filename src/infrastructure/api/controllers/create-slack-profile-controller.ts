@@ -101,6 +101,7 @@ export default class CreateSlackProfileController extends BaseController {
 
       return CreateSlackProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return CreateSlackProfileController.fail(res, error);
       if (error instanceof Error)

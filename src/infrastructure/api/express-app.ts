@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
 import axios, { AxiosRequestConfig } from 'axios';
+import compression from 'compression';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
@@ -173,27 +174,28 @@ export default class ExpressApp {
     this.#githubConfig = githubConfig;
   }
 
-  start = (): Application => {
+  async start(runningLocal: boolean): Promise<Application> {
     const dbo: Dbo = iocRegister.resolve('dbo');
 
-    dbo.connectToServer((err) => {
-      if (err) {
-        console.error(err);
-        process.exit();
-      }
+    try {
+      await dbo.connectToServer();
 
-      this.#expressApp.listen(this.#config.port, () => {
-        console.log(
-          `App running under pid ${process.pid} listening on port: ${this.#config.port} in ${
-            this.#config.mode
-          } mode`
-        );
-      });
-    });
-    this.configApp();
+      this.configApp();
 
-    return this.#expressApp;
-  };
+      if (runningLocal)
+        this.#expressApp.listen(this.#config.port, () => {
+          console.log(
+            `App running under pid ${process.pid} and listening on port: ${
+              this.#config.port
+            } in ${this.#config.mode} mode`
+          );
+        });
+
+      return this.#expressApp;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
 
   private configApp(): void {
     this.#expressApp.use(
@@ -202,7 +204,7 @@ export default class ExpressApp {
     this.#expressApp.use(express.json());
     this.#expressApp.use(express.urlencoded({ extended: true }));
     this.#expressApp.use(cors());
-    // this.#expressApp.use(compression());
+    this.#expressApp.use(compression());
     // // this.#expressApp.use(morgan("combined"));
     this.#expressApp.use(helmet());
     this.#expressApp.use(v1Router);

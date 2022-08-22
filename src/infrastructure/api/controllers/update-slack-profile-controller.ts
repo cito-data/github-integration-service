@@ -100,6 +100,7 @@ export default class UpdateSlackProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return UpdateSlackProfileController.fail(res, error);
       if (error instanceof Error)
