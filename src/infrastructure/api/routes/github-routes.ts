@@ -34,6 +34,7 @@ const readGithubProfileController = new ReadGithubProfileController(
     dbo
   );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 githubRoutes.post('/webhooks', (req, res) => {
     console.log(req);
     const {body} = req;
