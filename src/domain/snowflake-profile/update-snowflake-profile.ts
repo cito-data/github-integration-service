@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import {
   ISnowflakeProfileRepo,
   SnowflakeProfileUpdateDto,
@@ -25,8 +25,7 @@ export class UpdateSnowflakeProfile
       UpdateSnowflakeProfileRequestDto,
       UpdateSnowflakeProfileResponseDto,
       UpdateSnowflakeProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
@@ -34,8 +33,6 @@ export class UpdateSnowflakeProfile
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readSnowflakeProfile: ReadSnowflakeProfile,
@@ -48,33 +45,33 @@ export class UpdateSnowflakeProfile
   async execute(
     request: UpdateSnowflakeProfileRequestDto,
     auth: UpdateSnowflakeProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<UpdateSnowflakeProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
 
-      const readSnowflakeProfileResult = await this.#readSnowflakeProfile.execute(
-        null,
-        { callerOrganizationId: auth.callerOrganizationId },
-        this.#dbConnection,
-        this.#dbEncryption
-      );
+      const readSnowflakeProfileResult =
+        await this.#readSnowflakeProfile.execute(
+          null,
+          { callerOrganizationId: auth.callerOrganizationId },
+          this.#dbConnection
+        );
 
       if (!readSnowflakeProfileResult.success)
         throw new Error('No such snowflake profile found');
       if (!readSnowflakeProfileResult.value)
         throw new Error('Snowflake profile retrieval went wrong');
 
-      if (readSnowflakeProfileResult.value.organizationId !== auth.callerOrganizationId)
+      if (
+        readSnowflakeProfileResult.value.organizationId !==
+        auth.callerOrganizationId
+      )
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#snowflakeProfileRepo.updateOne(
         readSnowflakeProfileResult.value.id,
         this.#buildUpdateDto(request),
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       return Result.ok(updateResult);

@@ -2,35 +2,32 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { IGithubProfileRepo } from './i-github-profile-repo';
 import { GithubProfile } from '../entities/github-profile';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 
 export type ReadGithubProfileRequestDto = {
   installationId: string;
-  targetOrganizationId?: string
-}
+  targetOrganizationId?: string;
+};
 
 export interface ReadGithubProfileAuthDto {
   callerOrganizationId?: string;
-  isSystemInternal: boolean,
+  isSystemInternal: boolean;
 }
 
 export type ReadGithubProfileResponseDto = Result<GithubProfile>;
 
 export class ReadGithubProfile
   implements
-  IUseCase<
-  ReadGithubProfileRequestDto,
-  ReadGithubProfileResponseDto,
-  ReadGithubProfileAuthDto,
-  DbConnection,
-  DbEncryption
-  >
+    IUseCase<
+      ReadGithubProfileRequestDto,
+      ReadGithubProfileResponseDto,
+      ReadGithubProfileAuthDto,
+      DbConnection
+    >
 {
   readonly #githubProfileRepo: IGithubProfileRepo;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(githubProfileRepo: IGithubProfileRepo) {
     this.#githubProfileRepo = githubProfileRepo;
@@ -39,8 +36,7 @@ export class ReadGithubProfile
   async execute(
     request: ReadGithubProfileRequestDto,
     auth: ReadGithubProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<ReadGithubProfileResponseDto> {
     try {
       // todo -replace
@@ -57,20 +53,18 @@ export class ReadGithubProfile
         organizationId = request.targetOrganizationId;
       else if (auth.callerOrganizationId)
         organizationId = auth.callerOrganizationId;
-      else
-        throw new Error('Unhandled organizationId allocation');
+      else throw new Error('Unhandled organizationId allocation');
 
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
-
       const githubProfile = await this.#githubProfileRepo.findOne(
         request.installationId,
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
       if (!githubProfile)
-        throw new Error(`Github profile with id ${organizationId} does not exist`);
+        throw new Error(
+          `Github profile with id ${organizationId} does not exist`
+        );
 
       if (githubProfile.organizationId !== organizationId)
         throw new Error('Not authorized to perform action');

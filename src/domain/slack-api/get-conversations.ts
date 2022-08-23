@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { ISlackApiRepo } from './i-slack-api-repo';
 import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
@@ -20,8 +20,7 @@ export class GetSlackConversations
       GetSlackConversationsRequestDto,
       GetSlackConversationsResponseDto,
       GetSlackConversationsAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #slackApiRepo: ISlackApiRepo;
@@ -30,7 +29,6 @@ export class GetSlackConversations
 
   #dbConnection: DbConnection;
 
-  #dbEncryption: DbEncryption;
 
   constructor(slackApiRepo: ISlackApiRepo, readSlackProfile: ReadSlackProfile) {
     this.#slackApiRepo = slackApiRepo;
@@ -44,7 +42,6 @@ export class GetSlackConversations
         callerOrganizationId: organizationId,
       },
       this.#dbConnection,
-      this.#dbEncryption
     );
 
     if (!readSlackProfileResult.success)
@@ -59,12 +56,10 @@ export class GetSlackConversations
     request: GetSlackConversationsRequestDto,
     auth: GetSlackConversationsAuthDto,
     dbConnection: DbConnection,
-    dbEncryption: DbEncryption
   ): Promise<GetSlackConversationsResponseDto> {
     try {
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
 
       const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
 

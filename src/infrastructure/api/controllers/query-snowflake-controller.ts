@@ -78,7 +78,6 @@ export default class QuerySnowflakeController extends BaseController {
           requestDto,
           authDto,
           this.#dbo.dbConnection,
-          this.#dbo.encryption
         );
 
       if (!useCaseResult.success) {

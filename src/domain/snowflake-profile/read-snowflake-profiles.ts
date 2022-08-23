@@ -1,5 +1,5 @@
 import { SnowflakeProfile } from '../entities/snowflake-profile';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import IUseCase from '../services/use-case';
 import Result from '../value-types/transient-types/result';
 import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
@@ -18,15 +18,12 @@ export class ReadSnowflakeProfiles
       ReadSnowflakeProfilesRequestDto,
       ReadSnowflakeProfilesResponseDto,
       ReadSnowflakeProfilesAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(snowflakeProfileRepo: ISnowflakeProfileRepo) {
     this.#snowflakeProfileRepo = snowflakeProfileRepo;
@@ -35,22 +32,16 @@ export class ReadSnowflakeProfiles
   async execute(
     request: ReadSnowflakeProfilesRequestDto,
     auth: ReadSnowflakeProfilesAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<ReadSnowflakeProfilesResponseDto> {
     try {
-      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
+      if (!auth.isSystemInternal)
+        throw new Error('Not authorized to perform action');
 
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
-
       const snowflakeProfiles: SnowflakeProfile[] =
-        await this.#snowflakeProfileRepo.all(
-          this.#dbConnection, 
-        this.#dbEncryption
-          
-        );
+        await this.#snowflakeProfileRepo.all(this.#dbConnection);
       if (!snowflakeProfiles)
         throw new Error(`Queried snowflakeProfiles do not exist`);
 

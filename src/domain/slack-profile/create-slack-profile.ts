@@ -1,15 +1,15 @@
 import { ObjectId } from 'mongodb';
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { SlackProfile } from '../entities/slack-profile';
 import { ISlackProfileRepo } from './i-slack-profile-repo';
 import { ReadSlackProfile } from './read-slack-profile';
 
 export interface CreateSlackProfileRequestDto {
-channelId: string,
-channelName: string,
-accessToken: string, 
+  channelId: string;
+  channelName: string;
+  accessToken: string;
 }
 
 export interface CreateSlackProfileAuthDto {
@@ -24,8 +24,7 @@ export class CreateSlackProfile
       CreateSlackProfileRequestDto,
       CreateSlackProfileResponseDto,
       CreateSlackProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #slackProfileRepo: ISlackProfileRepo;
@@ -33,8 +32,6 @@ export class CreateSlackProfile
   readonly #readSlackProfile: ReadSlackProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readSlackProfile: ReadSlackProfile,
@@ -47,38 +44,29 @@ export class CreateSlackProfile
   async execute(
     request: CreateSlackProfileRequestDto,
     auth: CreateSlackProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<CreateSlackProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;    
 
       const slackProfile = SlackProfile.create({
         id: new ObjectId().toHexString(),
         organizationId: auth.callerOrganizationId,
         channelId: request.channelId,
         channelName: request.channelName,
-        accessToken: request.accessToken
+        accessToken: request.accessToken,
       });
 
-      const readSlackProfileResult =
-        await this.#readSlackProfile.execute(
-         null 
-         ,
-          { callerOrganizationId: auth.callerOrganizationId },
-          this.#dbConnection,
-          this.#dbEncryption
-        );
+      const readSlackProfileResult = await this.#readSlackProfile.execute(
+        null,
+        { callerOrganizationId: auth.callerOrganizationId },
+        this.#dbConnection
+      );
 
       if (readSlackProfileResult.success)
         throw new Error('Slack profile already exists');
 
-      await this.#slackProfileRepo.insertOne(
-        slackProfile,
-        this.#dbConnection,
-        this.#dbEncryption
-      );
+      await this.#slackProfileRepo.insertOne(slackProfile, this.#dbConnection);
 
       return Result.ok(slackProfile);
     } catch (error: unknown) {

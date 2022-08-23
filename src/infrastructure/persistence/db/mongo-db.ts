@@ -1,13 +1,41 @@
+import crypto from 'crypto';
 import { Db, MongoClient, ServerApiVersion } from 'mongodb';
-import { ClientEncryption } from 'mongodb-client-encryption';
 import { appConfig } from '../../../config';
+
+export interface Hash {
+  iv: string,
+  content: string
+}
+
+const algorithm = 'aes-256-ctr';
+
+export const encrypt = (text: string): Hash => {
+    
+  const iv = crypto.randomBytes(16);
+
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(appConfig.mongodb.dataKeyId, 'hex'), iv);
+
+  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+
+  return {
+      iv: iv.toString('hex'),
+      content: encrypted.toString('hex')
+  };
+};
+
+export const decrypt = (hash: Hash): string => {
+
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(appConfig.mongodb.dataKeyId, 'hex'), Buffer.from(hash.iv, 'hex'));
+
+  const decrpyted = Buffer.concat([decipher.update(Buffer.from(hash.content, 'hex')), decipher.final()]);
+
+  return decrpyted.toString();
+};
 
 export default class Dbo {
   #client = new MongoClient(appConfig.mongodb.url, {
     serverApi: ServerApiVersion.v1,
   });
-
-  #encryption?: ClientEncryption;
 
   #dbConnection: Db | undefined;
 
@@ -17,21 +45,10 @@ export default class Dbo {
     return this.#dbConnection;
   }
 
-  get encryption(): ClientEncryption {
-    if (!this.#encryption)
-      throw Error('Undefined encryption object. Please define first');
-    return this.#encryption;
-  }
-
   connectToServer = async (): Promise<void> => {
     const db = await this.#client.connect();
 
     this.#dbConnection = db.db(appConfig.mongodb.dbName);
     console.log('Successfully connected to MongoDB.');
-
-    this.#encryption = new ClientEncryption(this.#client, {
-      keyVaultNamespace: appConfig.mongodb.keyVaultNamespace,
-      kmsProviders: appConfig.mongodb.kmsProviders,
-    });
   };
 }

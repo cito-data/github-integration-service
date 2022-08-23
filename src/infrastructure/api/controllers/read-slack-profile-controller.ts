@@ -83,7 +83,6 @@ export default class ReadSlackProfileController extends BaseController {
           requestDto,
           authDto,
           this.#dbo.dbConnection,
-          this.#dbo.encryption
         );
 
       if (!useCaseResult.success) {

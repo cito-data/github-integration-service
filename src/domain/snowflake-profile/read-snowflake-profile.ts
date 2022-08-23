@@ -2,9 +2,9 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 
-export type  ReadSnowflakeProfileRequestDto = null
+export type ReadSnowflakeProfileRequestDto = null;
 
 export interface ReadSnowflakeProfileAuthDto {
   callerOrganizationId: string;
@@ -18,15 +18,12 @@ export class ReadSnowflakeProfile
       ReadSnowflakeProfileRequestDto,
       ReadSnowflakeProfileResponseDto,
       ReadSnowflakeProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(snowflakeProfileRepo: ISnowflakeProfileRepo) {
     this.#snowflakeProfileRepo = snowflakeProfileRepo;
@@ -35,21 +32,19 @@ export class ReadSnowflakeProfile
   async execute(
     request: ReadSnowflakeProfileRequestDto,
     auth: ReadSnowflakeProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<ReadSnowflakeProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
-
       const snowflakeProfile = await this.#snowflakeProfileRepo.findOne(
         auth.callerOrganizationId,
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
       if (!snowflakeProfile)
-        throw new Error(`SnowflakeProfile with id ${auth.callerOrganizationId} does not exist`);
+        throw new Error(
+          `SnowflakeProfile with id ${auth.callerOrganizationId} does not exist`
+        );
 
       if (snowflakeProfile.organizationId !== auth.callerOrganizationId)
         throw new Error('Not authorized to perform action');

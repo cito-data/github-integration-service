@@ -2,9 +2,9 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { ISlackProfileRepo } from './i-slack-profile-repo';
 import { SlackProfile } from '../entities/slack-profile';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 
-export type  ReadSlackProfileRequestDto = null
+export type ReadSlackProfileRequestDto = null;
 
 export interface ReadSlackProfileAuthDto {
   callerOrganizationId: string;
@@ -18,15 +18,12 @@ export class ReadSlackProfile
       ReadSlackProfileRequestDto,
       ReadSlackProfileResponseDto,
       ReadSlackProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #slackProfileRepo: ISlackProfileRepo;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(slackProfileRepo: ISlackProfileRepo) {
     this.#slackProfileRepo = slackProfileRepo;
@@ -35,8 +32,7 @@ export class ReadSlackProfile
   async execute(
     request: ReadSlackProfileRequestDto,
     auth: ReadSlackProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<ReadSlackProfileResponseDto> {
     try {
       // todo -replace
@@ -44,15 +40,14 @@ export class ReadSlackProfile
 
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
-
       const slackProfile = await this.#slackProfileRepo.findOne(
         auth.callerOrganizationId,
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
       if (!slackProfile)
-        throw new Error(`SlackProfile with id ${auth.callerOrganizationId} does not exist`);
+        throw new Error(
+          `SlackProfile with id ${auth.callerOrganizationId} does not exist`
+        );
 
       if (slackProfile.organizationId !== auth.callerOrganizationId)
         throw new Error('Not authorized to perform action');
