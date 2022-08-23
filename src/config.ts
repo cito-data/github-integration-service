@@ -67,9 +67,9 @@ const getMongodbConfig = (): MongoDbConfig => {
         url: process.env.DATABASE_DEV_URL || '',
         dbName: process.env.DATABASE_DEV_NAME || '',
         kmsProviders: { local: { key } },
-        keyVaultNamespace: process.env.DATABASE_DEV_KEY_VAULT_NAMESPACE || '',
+        keyVaultNamespace: process.env.DATABASE_KEY_VAULT_NAMESPACE || '',
         dataKeyId: Buffer.from(
-          process.env.DATABASE_DEV_DATA_KEY_ID || '',
+          process.env.DATABASE_DATA_KEY_ID || '',
           'base64'
         ),
       };
@@ -79,9 +79,9 @@ const getMongodbConfig = (): MongoDbConfig => {
         url: process.env.DATABASE_TEST_URL || '',
         dbName: process.env.DATABASE_TEST_NAME || '',
         kmsProviders: {},
-        keyVaultNamespace: process.env.DATABASE_TEST_KEY_VAULT_NAMESPACE || '',
+        keyVaultNamespace: process.env.DATABASE_KEY_VAULT_NAMESPACE || '',
         dataKeyId: Buffer.from(
-          process.env.DATABASE_TEST_DATA_KEY_ID || '',
+          process.env.DATABASE_DATA_KEY_ID || '',
           'base64'
         ),
       };
