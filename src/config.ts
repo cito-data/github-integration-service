@@ -3,22 +3,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const privateKey = process.env.GITHUB_PRIVATE_KEY;
-if (!privateKey) throw new Error('Private key not available');
+const githubPrivateKey = process.env.GITHUB_PRIVATE_KEY;
+if (!githubPrivateKey) throw new Error('Private key not available');
 
-const appId = process.env.GITHUB_APP_IDENTIFIER
+const githubAppId = process.env.GITHUB_APP_IDENTIFIER
   ? parseInt(process.env.GITHUB_APP_IDENTIFIER, 10)
   : '';
-if (!appId) throw new Error('App id not available');
+if (!githubAppId) throw new Error('App id not available');
 
-const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-if (!webhookSecret) throw new Error('Webhook secret not available');
+const githubWebhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+if (!githubWebhookSecret) throw new Error('Webhook secret not available');
 
-const clientId = process.env.GITHUB_APP_CLIENT_ID;
-if (!clientId) throw new Error('Client id not available');
+const githubClientId = process.env.GITHUB_APP_CLIENT_ID;
+if (!githubClientId) throw new Error('Client id not available');
 
-const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
-if (!clientSecret) throw new Error('Client secret not available');
+const githubClientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
+if (!githubClientSecret) throw new Error('Client secret not available');
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 const defaultPort = 3002;
@@ -113,39 +113,39 @@ const getCognitoUserPoolId = (): string => {
       throw new Error('No valid nodenv provided');
   }
 };
-export interface AuthSchedulerEnvConfig {
-  clientSecretSchedule: string;
-  clientIdSchedule: string;
+export interface SystemInternalAuthConfig {
+  clientSecret: string;
+  clientId: string;
   tokenUrl: string;
 }
 
-const getAuthSchedulerEnvConfig = (): AuthSchedulerEnvConfig => {
+const getSystemInternalAuthConfig = (): SystemInternalAuthConfig => {
   switch (nodeEnv) {
     case 'development': {
-      const clientSecretSchedule = process.env.AUTH_SCHEDULER_CLIENT_SECRET_DEV || '';
-      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+      const clientSecret = process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET_DEV || '';
+      if (!clientSecret) throw new Error('auth client secret missing');
 
-      const clientIdSchedule = '3o029nji154v0bm109hkvkoi5h';
+      const clientId = '3o029nji154v0bm109hkvkoi5h';
       const tokenUrl =
         'https://auth-cito-dev.auth.eu-central-1.amazoncognito.com/oauth2/token';
-      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+      return { clientSecret, clientId, tokenUrl };
     }
     case 'test': {
-      const clientSecretSchedule =
+      const clientSecret =
         process.env.AUTH_SCHEDULER_CLIENT_SECRET_STAGING || '';
-      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+      if (!clientSecret) throw new Error('auth client secret missing');
 
-      const clientIdSchedule = '';
+      const clientId = '';
       const tokenUrl = '';
-      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+      return { clientSecret, clientId, tokenUrl };
     }
     case 'production': {
-      const clientSecretSchedule = process.env.AUTH_SCHEDULER_CLIENT_SECRET_PROD || '';
-      if (!clientSecretSchedule) throw new Error('auth client secret missing');
+      const clientSecret = process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET_PROD || '';
+      if (!clientSecret) throw new Error('auth client secret missing');
 
-      const clientIdSchedule = '';
-      const tokenUrl = '';
-      return { clientSecretSchedule, clientIdSchedule, tokenUrl };
+      const clientId = '54n1ig9sb07d4d9tiihdi0kifq';
+      const tokenUrl = 'https://auth.citodata.com/oauth2/token';
+      return { clientSecret, clientId, tokenUrl };
     }
     default:
       throw new Error('node env misconfiguration');
@@ -159,7 +159,7 @@ export const appConfig = {
     apiRoot,
   },
   cloud: {
-    authSchedulerEnvConfig: getAuthSchedulerEnvConfig(),
+    systemInternalAuthConfig: getSystemInternalAuthConfig(),
     serviceDiscoveryNamespace: getServiceDiscoveryNamespace(),
     userPoolId: getCognitoUserPoolId(),
     region: 'eu-central-1',
@@ -175,10 +175,10 @@ export const appConfig = {
       process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector',
   },
   github: {
-    privateKey,
-    appId,
-    webhookSecret,
-    clientId,
-    clientSecret,
+    privateKey: githubPrivateKey,
+    appId: githubAppId,
+    webhookSecret: githubWebhookSecret,
+    clientId: githubClientId,
+    clientSecret: githubClientSecret,
   },
 };

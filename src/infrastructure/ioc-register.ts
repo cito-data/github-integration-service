@@ -23,6 +23,7 @@ import SlackApiRepo from './persistence/slack-api-repo';
 import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
 import { UpdateGithubProfile } from '../domain/github-profile/update-github-profile';
 import { DeleteGithubProfile } from '../domain/github-profile/delete-github-profile';
+import { UpdateSnowflakeProfile } from '../domain/snowflake-profile/update-snowflake-profile';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -36,6 +37,7 @@ iocRegister.register({
 
   updateSlackProfile: asClass(UpdateSlackProfile),
   updateGithubProfile: asClass(UpdateGithubProfile),
+  updateSnowflakeProfile: asClass(UpdateSnowflakeProfile),
 
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   readSlackProfile: asClass(ReadSlackProfile),

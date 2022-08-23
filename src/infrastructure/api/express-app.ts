@@ -9,7 +9,8 @@ import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
 import { GithubProfile } from '../../domain/entities/github-profile';
-
+import { appConfig } from '../../config';
+import getRoot from '../shared/api-root-builder';
 
 interface AppConfig {
   port: number;
@@ -37,23 +38,34 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     },
   });
 
+  const getSelfApiRoute = async (): Promise<string> => {
+    const gateway =
+      appConfig.express.mode === 'production'
+        ? 'wej7xjkvug.execute-api.eu-central-1.amazonaws.com/production'
+        : 'localhost:3002';
+
+    const apiRoot = await getRoot(gateway, 'api/v1');
+
+    return apiRoot;
+  };
+
   const getJwt = async (): Promise<string> => {
     try {
       const configuration: AxiosRequestConfig = {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${appConfig.cloud.authSchedulerEnvConfig.clientIdSchedule}:${appConfig.cloud.authSchedulerEnvConfig.clientSecretSchedule}`
+            `${appConfig.cloud.systemInternalAuthConfig.clientId}:${appConfig.cloud.systemInternalAuthConfig.clientSecret}`
           ).toString('base64')}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         params: new URLSearchParams({
           grant_type: 'client_credentials',
-          client_id: appConfig.cloud.authSchedulerEnvConfig.clientIdSchedule,
+          client_id: appConfig.cloud.systemInternalAuthConfig.clientId,
         }),
       };
 
       const response = await axios.post(
-        appConfig.cloud.authSchedulerEnvConfig.tokenUrl,
+        appConfig.cloud.systemInternalAuthConfig.tokenUrl,
         undefined,
         configuration
       );
@@ -69,23 +81,26 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     }
   };
 
-  const getGithubProfile = async (installationId: string): Promise<GithubProfile> => {
-
+  const getGithubProfile = async (
+    installationId: string
+  ): Promise<GithubProfile> => {
     try {
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
         headers: {
           Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         params: {
-          installationId
-        }
+          installationId,
+        },
       };
 
+      const apiRoot = await getSelfApiRoute();
+
       const response = await axios.get(
-        'http://localhost:3002/api/v1/github/profile',
+        `${apiRoot}/github/profile`,
         configuration
       );
 
@@ -93,13 +108,11 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       console.log(jsonResponse);
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
-
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
       return Promise.reject(new Error('Unknown error occured'));
     }
-
   };
 
   const updateGithubProfile = async (
@@ -110,24 +123,25 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     repositoriesToRemove?: string[]
   ): Promise<any> => {
     try {
-
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
         headers: {
           Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       };
 
+      const apiRoot = await getSelfApiRoute();
+
       const response = await axios.post(
-        'http://localhost:3002/api/v1/github/profile/update',
+        `${apiRoot}/github/profile/update`,
         {
           installationId,
           targetOrganizationId,
           firstLineageCreated,
           repositoriesToAdd,
-          repositoriesToRemove
+          repositoriesToRemove,
         },
         configuration
       );
@@ -136,7 +150,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       console.log(jsonResponse);
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
-
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -146,16 +159,15 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   const deleteGithubProfile = async (
     installationId: string,
-    targetOrganizationId: string,
-    ): Promise<any> => {
+    targetOrganizationId: string
+  ): Promise<any> => {
     try {
-
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
         headers: {
           Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         params: {
           installationId,
@@ -163,8 +175,10 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
         },
       };
 
+      const apiRoot = await getSelfApiRoute();
+
       const response = await axios.delete(
-        'http://localhost:3002/api/v1/github/profile/delete',
+        `${apiRoot}/github/profile/delete`,
         configuration
       );
 
@@ -172,7 +186,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       console.log(jsonResponse);
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
-
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -186,23 +199,28 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     organizationId: string
   ): Promise<any> => {
     try {
-
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
-
         headers: {
           Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       };
 
+      const gateway =
+        appConfig.express.mode === 'production'
+          ? 'kga7x5r9la.execute-api.eu-central-1.amazonaws.com/production'
+          : 'localhost:3000';
+
+      const apiRoot = await getRoot(gateway, 'api/v1');
+
       const response = await axios.post(
-        'http://localhost:3000/api/v1/lineage',
+        `${apiRoot}/lineage`,
         {
           catalog: catalogText,
           manifest: manifestText,
-          targetOrganizationId: organizationId
+          targetOrganizationId: organizationId,
         },
         configuration
       );
@@ -211,7 +229,6 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       console.log(jsonResponse);
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
-
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -220,26 +237,25 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   };
 
   githubApp.webhooks.on('push', async ({ octokit, payload }) => {
-
     const currentInstallation = payload.installation?.id;
-    if (!currentInstallation)
-      throw Error('Current installation not found');
+    if (!currentInstallation) throw Error('Current installation not found');
 
-    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+    const githubProfile = await getGithubProfile(
+      currentInstallation.toString(10)
+    );
 
-    const {organizationId, firstLineageCreated} = githubProfile;
+    const { organizationId, firstLineageCreated } = githubProfile;
 
     if (firstLineageCreated) return;
 
     const catalogRes = await octokit.request('GET /search/code', {
-      q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
+      q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`,
     });
 
     let { data }: any = catalogRes;
     let { items } = data;
 
-    if (items.length > 1)
-      throw Error('More than 1 catalog found');
+    if (items.length > 1) throw Error('More than 1 catalog found');
 
     let [item] = items;
     let { path } = item;
@@ -247,11 +263,14 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
 
     type ContentResponseType = Endpoints[typeof endpoint]['response'];
-    const catalogResponse: ContentResponseType = await octokit.request(endpoint, {
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      path,
-    });
+    const catalogResponse: ContentResponseType = await octokit.request(
+      endpoint,
+      {
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        path,
+      }
+    );
 
     if (catalogResponse.status !== 200)
       throw new Error('Reading catalog failed');
@@ -264,31 +283,31 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       throw new Error(
         'Did not receive content field in string format from API'
       );
-    if (encoding !== 'base64')
-      throw new Error('Unexpected encoding type');
+    if (encoding !== 'base64') throw new Error('Unexpected encoding type');
 
     const catalogBuffer = Buffer.from(content, encoding);
     const catalogText = catalogBuffer.toString('utf-8');
 
     const manifestRes = await octokit.request('GET /search/code', {
-      q: `filename:manifest+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`
+      q: `filename:manifest+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`,
     });
 
     ({ data } = manifestRes);
     ({ items } = data);
 
-    if (items.length > 1)
-      throw Error('More than 1 manifest found');
+    if (items.length > 1) throw Error('More than 1 manifest found');
 
-    ([item] = items);
+    [item] = items;
     ({ path } = item);
 
-    const manifestResponse: ContentResponseType = await octokit.request(endpoint, {
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      path,
-
-    });
+    const manifestResponse: ContentResponseType = await octokit.request(
+      endpoint,
+      {
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        path,
+      }
+    );
 
     if (manifestResponse.status !== 200)
       throw new Error('Reading manifest failed');
@@ -301,55 +320,80 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       throw new Error(
         'Did not receive content field in string format from API'
       );
-    if (encoding !== 'base64')
-      throw new Error('Unexpected encoding type');
+    if (encoding !== 'base64') throw new Error('Unexpected encoding type');
 
     const manifestBuffer = Buffer.from(content, encoding);
     const manifestText = manifestBuffer.toString('utf-8');
 
-    const result = await requestLineageCreation(catalogText, manifestText, organizationId);
+    const result = await requestLineageCreation(
+      catalogText,
+      manifestText,
+      organizationId
+    );
 
-    if (result) updateGithubProfile(currentInstallation.toString(10), organizationId, true);
-
+    if (result)
+      updateGithubProfile(
+        currentInstallation.toString(10),
+        organizationId,
+        true
+      );
   });
 
-  githubApp.webhooks.on('installation.deleted', async ({payload}) =>{
-
+  githubApp.webhooks.on('installation.deleted', async ({ payload }) => {
     const currentInstallation = payload.installation.id;
-    const githubProfile = await getGithubProfile(currentInstallation.toString(10));
-    
-    const {organizationId} = githubProfile;
+    const githubProfile = await getGithubProfile(
+      currentInstallation.toString(10)
+    );
+
+    const { organizationId } = githubProfile;
 
     deleteGithubProfile(currentInstallation.toString(10), organizationId);
   });
-  
-  githubApp.webhooks.on('installation_repositories.added', async ({payload}) =>{
 
-    const currentInstallation = payload.installation.id;
-    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+  githubApp.webhooks.on(
+    'installation_repositories.added',
+    async ({ payload }) => {
+      const currentInstallation = payload.installation.id;
+      const githubProfile = await getGithubProfile(
+        currentInstallation.toString(10)
+      );
 
-    const {organizationId} = githubProfile;
+      const { organizationId } = githubProfile;
 
-    const addedRepos = payload.repositories_added;
-    const addedRepoNames = addedRepos.map((repo) => repo.full_name);
+      const addedRepos = payload.repositories_added;
+      const addedRepoNames = addedRepos.map((repo) => repo.full_name);
 
-    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, addedRepoNames);
+      updateGithubProfile(
+        currentInstallation.toString(10),
+        organizationId,
+        undefined,
+        addedRepoNames
+      );
+    }
+  );
 
-  });
+  githubApp.webhooks.on(
+    'installation_repositories.removed',
+    async ({ payload }) => {
+      const currentInstallation = payload.installation.id;
+      const githubProfile = await getGithubProfile(
+        currentInstallation.toString(10)
+      );
 
-  githubApp.webhooks.on('installation_repositories.removed', async ({payload}) =>{
+      const { organizationId } = githubProfile;
 
-    const currentInstallation = payload.installation.id;
-    const githubProfile = await getGithubProfile(currentInstallation.toString(10));;
+      const removedRepos = payload.repositories_removed;
+      const removedRepoNames = removedRepos.map((repo) => repo.full_name);
 
-    const {organizationId} = githubProfile;
-
-    const removedRepos = payload.repositories_removed;
-    const removedRepoNames = removedRepos.map((repo) => repo.full_name);
-
-    updateGithubProfile(currentInstallation.toString(10), organizationId, undefined, undefined, removedRepoNames);
-
-  });
+      updateGithubProfile(
+        currentInstallation.toString(10),
+        organizationId,
+        undefined,
+        undefined,
+        removedRepoNames
+      );
+    }
+  );
 
   return githubApp;
 };
@@ -403,4 +447,3 @@ export default class ExpressApp {
     this.#expressApp.use(v1Router);
   }
 }
-
