@@ -106,6 +106,7 @@ export default class CreateSnowflakeProfileController extends BaseController {
 
       return CreateSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return CreateSnowflakeProfileController.fail(res, error);
       if (error instanceof Error)

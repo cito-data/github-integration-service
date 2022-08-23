@@ -1,4 +1,7 @@
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const privateKey = process.env.GITHUB_PRIVATE_KEY;
 if (!privateKey) throw new Error('Private key not available');
@@ -57,9 +60,9 @@ export interface MongoDbConfig {
 }
 
 const getMongodbConfig = (): MongoDbConfig => {
+  const key = fs.readFileSync('./master-key.txt');
   switch (nodeEnv) {
     case 'development': {
-      const key = fs.readFileSync('./master-key.txt');
       return {
         url: process.env.DATABASE_DEV_URL || '',
         dbName: process.env.DATABASE_DEV_NAME || '',
@@ -84,9 +87,9 @@ const getMongodbConfig = (): MongoDbConfig => {
       };
     case 'production':
       return {
-        url: process.env.DATABASE_URL || '',
-        dbName: process.env.DATABASE_NAME || '',
-        kmsProviders: {},
+        url: process.env.DATABASE_URL_PROD || '',
+        dbName: process.env.DATABASE_NAME_PROD || '',
+        kmsProviders: { local: { key } },
         keyVaultNamespace: process.env.DATABASE_KEY_VAULT_NAMESPACE || '',
         dataKeyId: Buffer.from(
           process.env.DATABASE_DATA_KEY_ID || '',
@@ -94,18 +97,7 @@ const getMongodbConfig = (): MongoDbConfig => {
         ),
       };
     default:
-      return {
-        url: process.env.DATABASE_DEV_URL || '',
-        dbName: process.env.DATABASE_DEV_URL || '',
-        kmsProviders: {
-          local: { key: process.env.DATABASE_DEV_KMS_KEY || '' },
-        },
-        keyVaultNamespace: process.env.DATABASE_DEV_KEY_VAULT_NAMESPACE || '',
-        dataKeyId: Buffer.from(
-          process.env.DATABASE_DEV_DATA_KEY_ID || '',
-          'base64'
-        ),
-      };
+      throw new Error('Node environment mismatch');
   }
 };
 

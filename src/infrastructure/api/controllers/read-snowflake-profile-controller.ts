@@ -100,6 +100,7 @@ export default class ReadSnowflakeProfileController extends BaseController {
 
       return ReadSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return ReadSnowflakeProfileController.fail(res, error);
       if (error instanceof Error)

@@ -98,6 +98,7 @@ export default class JoinSlackConversationController extends BaseController {
         CodeHttp.CREATED
       );
     } catch (error: unknown) {
+      console.error(error);
       if (typeof error === 'string')
         return JoinSlackConversationController.fail(res, error);
       if (error instanceof Error)

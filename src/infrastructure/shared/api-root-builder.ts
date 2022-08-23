@@ -1,16 +1,17 @@
-import { appConfig } from "../../config";
+import { appConfig } from '../../config';
 
 export default async (
-  serviceName: string,
-  port: string,
+  // serviceName: string,
+  gateway: string,
   path: string
 ): Promise<string> => {
   try {
-    if (appConfig.express.mode === 'development') return `http://localhost:${port}/${path}`;
-    return `http://localhost:${port}/${path}`;
+    if (appConfig.express.mode === 'development')
+      return `http://localhost:${gateway}/${path}`;
+    if (appConfig.express.mode === 'production')
+      return `https://${gateway}/${path}`;
 
-    console.log(serviceName);
-    
+    throw new Error('Node env misalignment');
 
     // const discoveredService: DiscoveredService = await discoverService(
     //   serviceDiscoveryNamespace,
