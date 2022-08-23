@@ -5,6 +5,7 @@ import CreateSnowflakeProfileController from '../controllers/create-snowflake-pr
 import QuerySnowflakeController from '../controllers/query-snowflake-controller';
 import ReadSnowflakeProfileController from '../controllers/read-snowflake-profile-controller';
 import ReadSnowflakeProfilesController from '../controllers/read-snowflake-profiles-controller';
+import UpdateSnowflakeProfileController from '../controllers/update-snowflake-profile-controller';
 
 const snowflakeRoutes = Router();
 
@@ -45,8 +46,18 @@ snowflakeRoutes.post('/profile', (req, res) => {
   createSnowflakeProfileController.execute(req, res);
 });
 
+const updateSnowflakeProfileController = new UpdateSnowflakeProfileController(
+  app.resolve('updateSnowflakeProfile'),
+  getAccounts,
+  dbo
+);
+
 snowflakeRoutes.get('/profile', (req, res) => {
   readSnowflakeProfileController.execute(req, res);
+});
+
+snowflakeRoutes.patch('/profile', (req, res) => {
+  updateSnowflakeProfileController.execute(req, res);
 });
 
 snowflakeRoutes.get('/profiles', (req, res) => {
