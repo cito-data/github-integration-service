@@ -16,6 +16,6 @@ v1Router.use(`/${appConfig.express.apiRoot}/${version}/snowflake`, snowflakeRout
 
 v1Router.use(`/${appConfig.express.apiRoot}/${version}/slack`, slackRoutes);
 
-v1Router.use(`/${appConfig.express.apiRoot}/github`, githubRoutes);
+v1Router.use(`/${appConfig.express.apiRoot}/${version}/github`, githubRoutes);
 
 export default v1Router;
