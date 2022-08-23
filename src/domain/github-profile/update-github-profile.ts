@@ -1,43 +1,40 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import {
   GithubProfileUpdateDto,
-  IGithubProfileRepo
+  IGithubProfileRepo,
 } from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
 
 export interface UpdateGithubProfileRequestDto {
   installationId: string;
   targetOrganizationId: string;
-  firstLineageCreated?: boolean,
-  repositoriesToAdd?: string[],
-  repositoriesToRemove?: string[]
+  firstLineageCreated?: boolean;
+  repositoriesToAdd?: string[];
+  repositoriesToRemove?: string[];
 }
 
 export interface UpdateGithubProfileAuthDto {
-  isSystemInternal: boolean
+  isSystemInternal: boolean;
 }
 
 export type UpdateGithubProfileResponseDto = Result<string>;
 
 export class UpdateGithubProfile
   implements
-  IUseCase<
-  UpdateGithubProfileRequestDto,
-  UpdateGithubProfileResponseDto,
-  UpdateGithubProfileAuthDto,
-  DbConnection,
-  DbEncryption
-  >
+    IUseCase<
+      UpdateGithubProfileRequestDto,
+      UpdateGithubProfileResponseDto,
+      UpdateGithubProfileAuthDto,
+      DbConnection
+    >
 {
   readonly #githubProfileRepo: IGithubProfileRepo;
 
   readonly #readGithubProfile: ReadGithubProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readGithubProfile: ReadGithubProfile,
@@ -50,38 +47,37 @@ export class UpdateGithubProfile
   async execute(
     request: UpdateGithubProfileRequestDto,
     auth: UpdateGithubProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<UpdateGithubProfileResponseDto> {
     try {
-      if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
+      if (!auth.isSystemInternal)
+        throw new Error('Not authorized to perform action');
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
 
-      const readGithubProfileResult =
-        await this.#readGithubProfile.execute(
-          {
-            installationId: request.installationId,
-            targetOrganizationId: request.targetOrganizationId,
-          },
-          { isSystemInternal: auth.isSystemInternal },
-          this.#dbConnection,
-          this.#dbEncryption
-        );
+      const readGithubProfileResult = await this.#readGithubProfile.execute(
+        {
+          installationId: request.installationId,
+          targetOrganizationId: request.targetOrganizationId,
+        },
+        { isSystemInternal: auth.isSystemInternal },
+        this.#dbConnection
+      );
 
       if (!readGithubProfileResult.success)
         throw new Error('No such Github profile found');
       if (!readGithubProfileResult.value)
         throw new Error('Github profile retrieval went wrong');
 
-      if (readGithubProfileResult.value.organizationId !== request.targetOrganizationId)
+      if (
+        readGithubProfileResult.value.organizationId !==
+        request.targetOrganizationId
+      )
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#githubProfileRepo.updateOne(
         readGithubProfileResult.value.id,
         this.#buildUpdateDto(request),
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       return Result.ok(updateResult);
@@ -90,10 +86,9 @@ export class UpdateGithubProfile
       if (error instanceof Error) return Result.fail(error.message);
       return Result.fail('Unknown error occured');
     }
-  };
+  }
 
   #buildUpdateDto = (
     request: UpdateGithubProfileRequestDto
   ): GithubProfileUpdateDto => ({ ...request });
-
 }

@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection} from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
   citoMaterializationTypes,
@@ -25,15 +25,12 @@ export class CreateCitoSnowflakeEnv
       CreateCitoSnowflakeEnvRequestDto,
       CreateCitoSnowflakeEnvResponseDto,
       CreateCitoSnowflakeEnvAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #querySnowflake: QuerySnowflake;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(querySnowflake: QuerySnowflake) {
     this.#querySnowflake = querySnowflake;
@@ -43,13 +40,10 @@ export class CreateCitoSnowflakeEnv
     request: CreateCitoSnowflakeEnvRequestDto,
     auth: CreateCitoSnowflakeEnvAuthDto,
     dbConnection: DbConnection,
-    dbEncryption: DbEncryption
   ): Promise<CreateCitoSnowflakeEnvResponseDto> {
     try {
 
       this.#dbConnection = dbConnection;
-
-      this.#dbEncryption = dbEncryption;
 
       const createTableResults = await Promise.all(
         citoMaterializationTypes.map(async (type) => {
@@ -61,7 +55,6 @@ export class CreateCitoSnowflakeEnv
             },
             { callerOrganizationId: auth.callerOrganizationId, isSystemInternal: auth.isSystemInternal },
             this.#dbConnection,
-            this.#dbEncryption
           );
 
           return createTableResult;

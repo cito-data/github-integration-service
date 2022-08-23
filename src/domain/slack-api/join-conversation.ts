@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { ISlackApiRepo } from './i-slack-api-repo';
 import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
@@ -19,8 +19,7 @@ export class JoinSlackConversation
       JoinSlackConversationRequestDto,
       JoinSlackConversationResponseDto,
       JoinSlackConversationAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #slackApiRepo: ISlackApiRepo;
@@ -28,8 +27,6 @@ export class JoinSlackConversation
   readonly #readSlackProfile: ReadSlackProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(slackApiRepo: ISlackApiRepo, readSlackProfile: ReadSlackProfile) {
     this.#slackApiRepo = slackApiRepo;
@@ -42,8 +39,7 @@ export class JoinSlackConversation
       {
         callerOrganizationId: organizationId,
       },
-      this.#dbConnection,
-      this.#dbEncryption
+      this.#dbConnection
     );
 
     if (!readSlackProfileResult.success)
@@ -57,15 +53,14 @@ export class JoinSlackConversation
   async execute(
     request: JoinSlackConversationRequestDto,
     auth: JoinSlackConversationAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<JoinSlackConversationResponseDto> {
     try {
       this.#dbConnection = dbConnection;
 
-      this.#dbEncryption = dbEncryption;
-
-      const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
+      const slackProfile = await this.#getSlackProfile(
+        auth.callerOrganizationId
+      );
 
       await this.#slackApiRepo.joinConversation(
         slackProfile.accessToken,

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
 import { ISnowflakeProfileRepo } from './i-snowflake-profile-repo';
 import { ReadSnowflakeProfile } from './read-snowflake-profile';
@@ -24,8 +24,7 @@ export class CreateSnowflakeProfile
       CreateSnowflakeProfileRequestDto,
       CreateSnowflakeProfileResponseDto,
       CreateSnowflakeProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #snowflakeProfileRepo: ISnowflakeProfileRepo;
@@ -33,8 +32,6 @@ export class CreateSnowflakeProfile
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readSnowflakeProfile: ReadSnowflakeProfile,
@@ -47,12 +44,10 @@ export class CreateSnowflakeProfile
   async execute(
     request: CreateSnowflakeProfileRequestDto,
     auth: CreateSnowflakeProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<CreateSnowflakeProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;    
 
       const snowflakeProfile = SnowflakeProfile.create({
         id: new ObjectId().toHexString(),
@@ -64,11 +59,9 @@ export class CreateSnowflakeProfile
 
       const readSnowflakeProfileResult =
         await this.#readSnowflakeProfile.execute(
-         null 
-         ,
+          null,
           { callerOrganizationId: auth.callerOrganizationId },
-          this.#dbConnection,
-          this.#dbEncryption
+          this.#dbConnection
         );
 
       if (readSnowflakeProfileResult.success)
@@ -76,8 +69,7 @@ export class CreateSnowflakeProfile
 
       await this.#snowflakeProfileRepo.insertOne(
         snowflakeProfile,
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       return Result.ok(snowflakeProfile);

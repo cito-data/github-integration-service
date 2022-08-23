@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection} from '../services/i-db';
 import {
   IGithubProfileRepo
 } from './i-github-profile-repo';
@@ -23,8 +23,7 @@ export class DeleteGithubProfile
   DeleteGithubProfileRequestDto,
   DeleteGithubProfileResponseDto,
   DeleteGithubProfileAuthDto,
-  DbConnection,
-  DbEncryption
+  DbConnection
   >
 {
   readonly #githubProfileRepo: IGithubProfileRepo;
@@ -33,7 +32,6 @@ export class DeleteGithubProfile
 
   #dbConnection: DbConnection;
 
-  #dbEncryption: DbEncryption;
 
   constructor(
     readGithubProfile: ReadGithubProfile,
@@ -47,12 +45,10 @@ export class DeleteGithubProfile
     request: DeleteGithubProfileRequestDto,
     auth: DeleteGithubProfileAuthDto,
     dbConnection: DbConnection,
-    dbEncryption: DbEncryption
   ): Promise<DeleteGithubProfileResponseDto> {
     try {
       if (!auth.isSystemInternal) throw new Error('Not authorized to perform action');
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
 
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
@@ -62,7 +58,6 @@ export class DeleteGithubProfile
           },
           { isSystemInternal: auth.isSystemInternal },
           this.#dbConnection,
-          this.#dbEncryption
         );
 
       if (!readGithubProfileResult.success)

@@ -1,7 +1,6 @@
 // use MongoDB: https://www.mongodb.com/docs/manual/core/csfle/
 
 import {
-  Binary,
   Db,
   DeleteResult,
   Document,
@@ -12,7 +11,6 @@ import {
 } from 'mongodb';
 import sanitize from 'mongo-sanitize';
 
-import { ClientEncryption } from 'mongodb-client-encryption';
 import {
   ISlackProfileRepo,
   SlackProfileUpdateDto,
@@ -21,13 +19,14 @@ import {
   SlackProfile,
   SlackProfileProperties,
 } from '../../domain/entities/slack-profile';
-import { appConfig } from '../../config';
+import { decrypt, encrypt } from './db/mongo-db';
 
 interface SlackProfilePersistence {
   _id: ObjectId;
   channelId: string;
   channelName: string;
-  accessToken: Binary;
+  accessToken: string;
+  iv: string;
   organizationId: string;
 }
 
@@ -41,8 +40,7 @@ const collectionName = 'slackProfile';
 export default class SlackProfileRepo implements ISlackProfileRepo {
   findOne = async (
     organizationId: string,
-    dbConnection: Db,
-    encryption: ClientEncryption
+    dbConnection: Db
   ): Promise<SlackProfile | null> => {
     try {
       const result: any = await dbConnection
@@ -51,7 +49,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
 
       if (!result) return null;
 
-      return this.#toEntity(await this.#buildProperties(result, encryption));
+      return this.#toEntity(await this.#buildProperties(result));
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -59,10 +57,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     }
   };
 
-  all = async (
-    dbConnection: Db,
-    encryption: ClientEncryption
-  ): Promise<SlackProfile[]> => {
+  all = async (dbConnection: Db): Promise<SlackProfile[]> => {
     try {
       const result: FindCursor = await dbConnection
         .collection(collectionName)
@@ -73,7 +68,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
 
       const profiles = await Promise.all(
         results.map(async (element: any) =>
-          this.#toEntity(await this.#buildProperties(element, encryption))
+          this.#toEntity(await this.#buildProperties(element))
         )
       );
 
@@ -87,15 +82,12 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
 
   insertOne = async (
     slackProfile: SlackProfile,
-    dbConnection: Db,
-    encryption: ClientEncryption
+    dbConnection: Db
   ): Promise<string> => {
     try {
       const result: InsertOneResult<Document> = await dbConnection
         .collection(collectionName)
-        .insertOne(
-          await this.#toPersistence(sanitize(slackProfile), encryption)
-        );
+        .insertOne(await this.#toPersistence(sanitize(slackProfile)));
 
       if (!result.acknowledged)
         throw new Error(
@@ -111,8 +103,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
   };
 
   #buildUpdateFilter = async (
-    updateDto: SlackProfileUpdateDto,
-    encryption?: ClientEncryption
+    updateDto: SlackProfileUpdateDto
   ): Promise<SlackProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
@@ -120,11 +111,7 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     if (updateDto.channelId) setFilter.channelId = updateDto.channelId;
     if (updateDto.channelName) setFilter.channelName = updateDto.channelName;
     if (updateDto.accessToken) {
-      if (!encryption) throw new Error('Encryption object missing');
-      const encryptedToken = await encryption.encrypt(updateDto.accessToken, {
-        algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
-        keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
-      });
+      const encryptedToken = encrypt(updateDto.accessToken);
       setFilter.accessToken = encryptedToken;
     }
 
@@ -134,15 +121,14 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
   updateOne = async (
     id: string,
     updateDto: SlackProfileUpdateDto,
-    dbConnection: Db,
-    encryption?: ClientEncryption
+    dbConnection: Db
   ): Promise<string> => {
     try {
       const result: Document | UpdateResult = await dbConnection
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
-          await this.#buildUpdateFilter(sanitize(updateDto), encryption)
+          await this.#buildUpdateFilter(sanitize(updateDto))
         );
 
       if (!result.acknowledged)
@@ -177,10 +163,12 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     SlackProfile.create(props);
 
   #buildProperties = async (
-    slackProfile: SlackProfilePersistence,
-    encryption: ClientEncryption
+    slackProfile: SlackProfilePersistence
   ): Promise<SlackProfileProperties> => {
-    const decryptedToken = await encryption.decrypt(slackProfile.accessToken);
+    const decryptedToken = decrypt({
+      content: slackProfile.accessToken,
+      iv: slackProfile.iv,
+    });
 
     return {
       // eslint-disable-next-line no-underscore-dangle
@@ -192,21 +180,16 @@ export default class SlackProfileRepo implements ISlackProfileRepo {
     };
   };
 
-  #toPersistence = async (
-    slackProfile: SlackProfile,
-    encryption: ClientEncryption
-  ): Promise<Document> => {
-    const encryptedToken = await encryption.encrypt(slackProfile.accessToken, {
-      algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
-      keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
-    });
+  #toPersistence = async (slackProfile: SlackProfile): Promise<Document> => {
+    const encryptedToken = encrypt(slackProfile.accessToken);
 
     const persistenceObject: SlackProfilePersistence = {
       _id: ObjectId.createFromHexString(slackProfile.id),
       organizationId: slackProfile.organizationId,
       channelId: slackProfile.channelId,
       channelName: slackProfile.channelName,
-      accessToken: encryptedToken,
+      accessToken: encryptedToken.content,
+      iv: encryptedToken.iv,
     };
 
     return persistenceObject;

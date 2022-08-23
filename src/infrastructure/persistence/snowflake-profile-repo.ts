@@ -1,7 +1,6 @@
 // use MongoDB: https://www.mongodb.com/docs/manual/core/csfle/
 
 import {
-  Binary,
   Db,
   DeleteResult,
   Document,
@@ -12,7 +11,6 @@ import {
 } from 'mongodb';
 import sanitize from 'mongo-sanitize';
 
-import { ClientEncryption } from 'mongodb-client-encryption';
 import {
   ISnowflakeProfileRepo,
   SnowflakeProfileUpdateDto,
@@ -21,13 +19,14 @@ import {
   SnowflakeProfile,
   SnowflakeProfileProperties,
 } from '../../domain/entities/snowflake-profile';
-import { appConfig } from '../../config';
+import { decrypt, encrypt, } from './db/mongo-db';
 
 interface SnowflakeProfilePersistence {
   _id: ObjectId;
   accountId: string;
   username: string;
-  password: Binary;
+  password: string;
+  iv: string;
   organizationId: string;
 }
 
@@ -41,8 +40,7 @@ const collectionName = 'snowflakeProfile';
 export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
   findOne = async (
     organizationId: string,
-    dbConnection: Db,
-    encryption: ClientEncryption
+    dbConnection: Db
   ): Promise<SnowflakeProfile | null> => {
     try {
       const result: any = await dbConnection
@@ -51,7 +49,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
       if (!result) return null;
 
-      return this.#toEntity(await this.#buildProperties(result, encryption));
+      return this.#toEntity(await this.#buildProperties(result));
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -59,10 +57,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
     }
   };
 
-  all = async (
-    dbConnection: Db,
-    encryption: ClientEncryption
-  ): Promise<SnowflakeProfile[]> => {
+  all = async (dbConnection: Db): Promise<SnowflakeProfile[]> => {
     try {
       const result: FindCursor = await dbConnection
         .collection(collectionName)
@@ -73,7 +68,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
       const profiles = await Promise.all(
         results.map(async (element: any) =>
-          this.#toEntity(await this.#buildProperties(element, encryption))
+          this.#toEntity(await this.#buildProperties(element))
         )
       );
 
@@ -87,14 +82,13 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
   insertOne = async (
     snowflakeProfile: SnowflakeProfile,
-    dbConnection: Db,
-    encryption: ClientEncryption
+    dbConnection: Db
   ): Promise<string> => {
     try {
       const result: InsertOneResult<Document> = await dbConnection
         .collection(collectionName)
         .insertOne(
-          await this.#toPersistence(sanitize(snowflakeProfile), encryption)
+          await this.#toPersistence(sanitize(snowflakeProfile), )
         );
 
       if (!result.acknowledged)
@@ -112,7 +106,6 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
   #buildUpdateFilter = async (
     updateDto: SnowflakeProfileUpdateDto,
-    encryption?: ClientEncryption
   ): Promise<SnowflakeProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
@@ -120,12 +113,9 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
     if (updateDto.accountId) setFilter.accountId = updateDto.accountId;
     if (updateDto.username) setFilter.username = updateDto.username;
     if (updateDto.password) {
-      if (!encryption) throw new Error('Encryption object missing');
-      const encryptedPassword = await encryption.encrypt(updateDto.password, {
-        algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
-        keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
-      });
-      setFilter.password = encryptedPassword;
+      const encryptedPassword = encrypt(updateDto.password);
+      setFilter.password = encryptedPassword.content;
+      setFilter.iv = encryptedPassword.iv;
     }
 
     return { $set: setFilter, $push: pushFilter };
@@ -134,15 +124,14 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
   updateOne = async (
     id: string,
     updateDto: SnowflakeProfileUpdateDto,
-    dbConnection: Db,
-    encryption?: ClientEncryption
+    dbConnection: Db
   ): Promise<string> => {
     try {
       const result: Document | UpdateResult = await dbConnection
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
-          await this.#buildUpdateFilter(sanitize(updateDto), encryption)
+          await this.#buildUpdateFilter(sanitize(updateDto))
         );
 
       if (!result.acknowledged)
@@ -180,11 +169,11 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
   #buildProperties = async (
     snowflakeProfile: SnowflakeProfilePersistence,
-    encryption: ClientEncryption
   ): Promise<SnowflakeProfileProperties> => {
-    const decryptedPassword = await encryption.decrypt(
-      snowflakeProfile.password
-    );
+    const decryptedPassword = await decrypt({
+      content: snowflakeProfile.password,
+      iv: snowflakeProfile.iv,
+    });
 
     return {
       // eslint-disable-next-line no-underscore-dangle
@@ -198,22 +187,16 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
   #toPersistence = async (
     snowflakeProfile: SnowflakeProfile,
-    encryption: ClientEncryption
   ): Promise<Document> => {
-    const encryptedPassword = await encryption.encrypt(
-      snowflakeProfile.password,
-      {
-        algorithm: 'AEAD_AES_256_CBC_HMAC_SHA_512-Random',
-        keyId: new Binary(appConfig.mongodb.dataKeyId, 4),
-      }
-    );
+    const encryptedPassword = encrypt(snowflakeProfile.password);
 
     const persistenceObject: SnowflakeProfilePersistence = {
       _id: ObjectId.createFromHexString(snowflakeProfile.id),
       organizationId: snowflakeProfile.organizationId,
       accountId: snowflakeProfile.accountId,
       username: snowflakeProfile.username,
-      password: encryptedPassword,
+      password: encryptedPassword.content,
+      iv: encryptedPassword.iv,
     };
 
     return persistenceObject;

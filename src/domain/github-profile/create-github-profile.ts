@@ -1,15 +1,15 @@
 import { ObjectId } from 'mongodb';
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { GithubProfile } from '../entities/github-profile';
 import { IGithubProfileRepo } from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
 
 export interface CreateGithubProfileRequestDto {
-  installationId: string,
-  organizationId: string,
-  repositoryNames: string[]
+  installationId: string;
+  organizationId: string;
+  repositoryNames: string[];
 }
 
 export interface CreateGithubProfileAuthDto {
@@ -21,21 +21,18 @@ export type CreateGithubProfileResponseDto = Result<GithubProfile>;
 
 export class CreateGithubProfile
   implements
-  IUseCase<
-  CreateGithubProfileRequestDto,
-  CreateGithubProfileResponseDto,
-  CreateGithubProfileAuthDto,
-  DbConnection,
-  DbEncryption
-  >
+    IUseCase<
+      CreateGithubProfileRequestDto,
+      CreateGithubProfileResponseDto,
+      CreateGithubProfileAuthDto,
+      DbConnection
+    >
 {
   readonly #githubProfileRepo: IGithubProfileRepo;
 
   readonly #readGithubProfile: ReadGithubProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readGithubProfile: ReadGithubProfile,
@@ -48,12 +45,10 @@ export class CreateGithubProfile
   async execute(
     request: CreateGithubProfileRequestDto,
     auth: CreateGithubProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<CreateGithubProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
 
       const githubProfile = GithubProfile.create({
         id: new ObjectId().toHexString(),
@@ -63,24 +58,21 @@ export class CreateGithubProfile
         firstLineageCreated: false,
       });
 
-      const readGithubProfileResult =
-        await this.#readGithubProfile.execute(
-          { installationId: request.installationId },
-          { 
-            callerOrganizationId: auth.callerOrganizationId,
-            isSystemInternal: auth.isSystemInternal,
-          },
-          this.#dbConnection,
-          this.#dbEncryption
-        );
+      const readGithubProfileResult = await this.#readGithubProfile.execute(
+        { installationId: request.installationId },
+        {
+          callerOrganizationId: auth.callerOrganizationId,
+          isSystemInternal: auth.isSystemInternal,
+        },
+        this.#dbConnection
+      );
 
       if (readGithubProfileResult.success)
         throw new Error('Github profile already exists');
 
       await this.#githubProfileRepo.insertOne(
         githubProfile,
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       return Result.ok(githubProfile);

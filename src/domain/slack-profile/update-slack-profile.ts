@@ -1,6 +1,6 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection, DbEncryption } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import {
   ISlackProfileRepo,
   SlackProfileUpdateDto,
@@ -25,8 +25,7 @@ export class UpdateSlackProfile
       UpdateSlackProfileRequestDto,
       UpdateSlackProfileResponseDto,
       UpdateSlackProfileAuthDto,
-      DbConnection,
-      DbEncryption
+      DbConnection
     >
 {
   readonly #slackProfileRepo: ISlackProfileRepo;
@@ -34,8 +33,6 @@ export class UpdateSlackProfile
   readonly #readSlackProfile: ReadSlackProfile;
 
   #dbConnection: DbConnection;
-
-  #dbEncryption: DbEncryption;
 
   constructor(
     readSlackProfile: ReadSlackProfile,
@@ -48,18 +45,15 @@ export class UpdateSlackProfile
   async execute(
     request: UpdateSlackProfileRequestDto,
     auth: UpdateSlackProfileAuthDto,
-    dbConnection: DbConnection,
-    dbEncryption: DbEncryption
+    dbConnection: DbConnection
   ): Promise<UpdateSlackProfileResponseDto> {
     try {
       this.#dbConnection = dbConnection;
-      this.#dbEncryption = dbEncryption;
 
       const readSlackProfileResult = await this.#readSlackProfile.execute(
         null,
         { callerOrganizationId: auth.callerOrganizationId },
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       if (!readSlackProfileResult.success)
@@ -67,14 +61,16 @@ export class UpdateSlackProfile
       if (!readSlackProfileResult.value)
         throw new Error('Slack profile retrieval went wrong');
 
-      if (readSlackProfileResult.value.organizationId !== auth.callerOrganizationId)
+      if (
+        readSlackProfileResult.value.organizationId !==
+        auth.callerOrganizationId
+      )
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#slackProfileRepo.updateOne(
         readSlackProfileResult.value.id,
         this.#buildUpdateDto(request),
-        this.#dbConnection,
-        this.#dbEncryption
+        this.#dbConnection
       );
 
       return Result.ok(updateResult);
