@@ -37,10 +37,7 @@ const readGithubProfileController = new ReadGithubProfileController(
 githubRoutes.post('/webhooks', (req, res) => {
     console.log(req);
     const {body} = req;
-    console.log(body);
-  
-    res.send('success with smee');
-    
+    console.log(body);    
 });
 
 githubRoutes.post('/profile', (req, res) => {
