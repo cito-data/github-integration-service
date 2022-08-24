@@ -64,7 +64,7 @@ export class CreateSnowflakeProfile
           this.#dbConnection
         );
 
-      if (readSnowflakeProfileResult.success)
+      if (readSnowflakeProfileResult.success && readSnowflakeProfileResult.value)
         throw new Error('SnowflakeProfile already exists');
 
       await this.#snowflakeProfileRepo.insertOne(

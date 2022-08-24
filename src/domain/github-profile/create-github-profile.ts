@@ -67,7 +67,7 @@ export class CreateGithubProfile
         this.#dbConnection
       );
 
-      if (readGithubProfileResult.success)
+      if (readGithubProfileResult.success && readGithubProfileResult.value)
         throw new Error('Github profile already exists');
 
       await this.#githubProfileRepo.insertOne(

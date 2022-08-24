@@ -63,7 +63,7 @@ export class CreateSlackProfile
         this.#dbConnection
       );
 
-      if (readSlackProfileResult.success)
+      if (readSlackProfileResult.success && readSlackProfileResult.value)
         throw new Error('Slack profile already exists');
 
       await this.#slackProfileRepo.insertOne(slackProfile, this.#dbConnection);

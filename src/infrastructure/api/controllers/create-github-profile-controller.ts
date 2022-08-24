@@ -99,7 +99,7 @@ export default class CreateGithubProfileController extends BaseController {
         ? buildGithubProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CreateGithubProfileController.ok(res, resultValue, CodeHttp.OK);
+      return CreateGithubProfileController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       if (typeof error === 'string')
         return CreateGithubProfileController.fail(res, error);

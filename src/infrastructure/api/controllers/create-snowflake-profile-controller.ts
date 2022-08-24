@@ -103,7 +103,7 @@ export default class CreateSnowflakeProfileController extends BaseController {
         ? buildSnowflakeProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CreateSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
+      return CreateSnowflakeProfileController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       console.error(error);
       if (typeof error === 'string')
