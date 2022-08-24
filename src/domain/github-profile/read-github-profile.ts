@@ -14,7 +14,7 @@ export interface ReadGithubProfileAuthDto {
   isSystemInternal: boolean;
 }
 
-export type ReadGithubProfileResponseDto = Result<GithubProfile>;
+export type ReadGithubProfileResponseDto = Result<GithubProfile|undefined>;
 
 export class ReadGithubProfile
   implements
@@ -62,9 +62,7 @@ export class ReadGithubProfile
         this.#dbConnection
       );
       if (!githubProfile)
-        throw new Error(
-          `Github profile with id ${organizationId} does not exist`
-        );
+        return Result.ok(undefined);
 
       if (githubProfile.organizationId !== organizationId)
         throw new Error('Not authorized to perform action');

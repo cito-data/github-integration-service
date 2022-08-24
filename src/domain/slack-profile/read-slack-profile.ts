@@ -10,7 +10,7 @@ export interface ReadSlackProfileAuthDto {
   callerOrganizationId: string;
 }
 
-export type ReadSlackProfileResponseDto = Result<SlackProfile>;
+export type ReadSlackProfileResponseDto = Result<SlackProfile|undefined>;
 
 export class ReadSlackProfile
   implements
@@ -45,9 +45,7 @@ export class ReadSlackProfile
         this.#dbConnection
       );
       if (!slackProfile)
-        throw new Error(
-          `SlackProfile with id ${auth.callerOrganizationId} does not exist`
-        );
+        return Result.ok(undefined);
 
       if (slackProfile.organizationId !== auth.callerOrganizationId)
         throw new Error('Not authorized to perform action');

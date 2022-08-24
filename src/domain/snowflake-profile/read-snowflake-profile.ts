@@ -10,7 +10,7 @@ export interface ReadSnowflakeProfileAuthDto {
   callerOrganizationId: string;
 }
 
-export type ReadSnowflakeProfileResponseDto = Result<SnowflakeProfile>;
+export type ReadSnowflakeProfileResponseDto = Result<SnowflakeProfile|undefined>;
 
 export class ReadSnowflakeProfile
   implements
@@ -42,9 +42,7 @@ export class ReadSnowflakeProfile
         this.#dbConnection
       );
       if (!snowflakeProfile)
-        throw new Error(
-          `SnowflakeProfile with id ${auth.callerOrganizationId} does not exist`
-        );
+        return Result.ok(undefined);
 
       if (snowflakeProfile.organizationId !== auth.callerOrganizationId)
         throw new Error('Not authorized to perform action');
