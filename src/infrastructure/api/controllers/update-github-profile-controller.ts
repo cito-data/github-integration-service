@@ -35,17 +35,20 @@ export default class UpdateGithubProfileController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): UpdateGithubProfileRequestDto => ({
-    installationId: httpRequest.body.installationId,
     targetOrganizationId: httpRequest.body.targetOrganizationId,
-    firstLineageCreated: httpRequest.body.firstLineageCreated,
-    repositoriesToAdd: httpRequest.body.repositoriesToAdd,
-    repositoriesToRemove: httpRequest.body.repositoriesToRemove,
+    updateDto: {
+      firstLineageCreated: httpRequest.body.firstLineageCreated,
+      repositoriesToAdd: httpRequest.body.repositoriesToAdd,
+      repositoriesToRemove: httpRequest.body.repositoriesToRemove,
+      installationId: httpRequest.body.installationId,
+    },
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): UpdateGithubProfileAuthDto => ({
     isSystemInternal: userAccountInfo.isSystemInternal,
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -81,7 +84,7 @@ export default class UpdateGithubProfileController extends BaseController {
         await this.#updateGithubProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {

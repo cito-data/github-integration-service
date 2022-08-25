@@ -93,40 +93,37 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
-    setFilter.firstLineageCreated = true;
     if (updateDto.firstLineageCreated)
       setFilter.firstLineageCreated = updateDto.firstLineageCreated;
     if (updateDto.repositoriesToAdd)
       setFilter.repositoryNames = currentRepositoryNames.concat(
         updateDto.repositoriesToAdd
       );
-    if (updateDto.repositoriesToRemove)
+    const reposToRemove = updateDto.repositoriesToRemove;
+    if (reposToRemove)
       setFilter.repositoryNames = currentRepositoryNames.filter(
-        (repoName) => !updateDto.repositoriesToRemove?.includes(repoName)
+        (repoName) => !reposToRemove.includes(repoName)
       );
+    if (updateDto.installationId)
+      setFilter.installationId = updateDto.installationId;
 
     return { $set: setFilter, $push: pushFilter };
   };
 
   updateOne = async (
     id: string,
+    currentRepoNames: string[],
     updateDto: GithubProfileUpdateDto,
     dbConnection: Db
   ): Promise<string> => {
     try {
-      const profiletoUpdate: any = await dbConnection
-        .collection(collectionName)
-        .findOne({ _id: sanitize(id) });
-
-      const currentRepositoryNames = profiletoUpdate.repositoryNames;
-
       const result: Document | UpdateResult = await dbConnection
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
           await this.#buildUpdateFilter(
             sanitize(updateDto),
-            currentRepositoryNames
+            currentRepoNames
           )
         );
 

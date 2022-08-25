@@ -7,15 +7,20 @@ import {
 } from './i-github-profile-repo';
 import { ReadGithubProfile } from './read-github-profile';
 
-export interface UpdateGithubProfileRequestDto {
-  installationId: string;
-  targetOrganizationId: string;
+export interface RequestUpdateDto {
   firstLineageCreated?: boolean;
   repositoriesToAdd?: string[];
   repositoriesToRemove?: string[];
+  installationId?: string;
+}
+
+export interface UpdateGithubProfileRequestDto {
+  targetOrganizationId?: string;
+  updateDto: RequestUpdateDto;
 }
 
 export interface UpdateGithubProfileAuthDto {
+  callerOrganizationId?: string;
   isSystemInternal: boolean;
 }
 
@@ -50,16 +55,31 @@ export class UpdateGithubProfile
     dbConnection: DbConnection
   ): Promise<UpdateGithubProfileResponseDto> {
     try {
-      if (!auth.isSystemInternal)
-        throw new Error('Not authorized to perform action');
+      if (auth.isSystemInternal && !request.targetOrganizationId)
+        throw new Error('Target organization id missing');
+      if (!auth.isSystemInternal && !auth.callerOrganizationId)
+        throw new Error('Caller organization id missing');
+      if (!request.targetOrganizationId && !auth.callerOrganizationId)
+        throw new Error('No organization Id provided');
+
+      let organizationId;
+      if (auth.isSystemInternal && request.targetOrganizationId)
+        organizationId = request.targetOrganizationId;
+      else if (auth.callerOrganizationId)
+        organizationId = auth.callerOrganizationId;
+      else throw new Error('Unhandled organizationId allocation');
+
       this.#dbConnection = dbConnection;
 
       const readGithubProfileResult = await this.#readGithubProfile.execute(
         {
-          installationId: request.installationId,
+          installationId: request.updateDto.installationId,
           targetOrganizationId: request.targetOrganizationId,
         },
-        { isSystemInternal: auth.isSystemInternal },
+        {
+          isSystemInternal: auth.isSystemInternal,
+          callerOrganizationId: auth.callerOrganizationId,
+        },
         this.#dbConnection
       );
 
@@ -68,15 +88,15 @@ export class UpdateGithubProfile
       if (!readGithubProfileResult.value)
         throw new Error('Github profile retrieval went wrong');
 
-      if (
-        readGithubProfileResult.value.organizationId !==
-        request.targetOrganizationId
-      )
+      if (readGithubProfileResult.value.organizationId !== organizationId)
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#githubProfileRepo.updateOne(
         readGithubProfileResult.value.id,
-        this.#buildUpdateDto(request),
+        readGithubProfileResult.value.repositoryNames,
+        this.#buildUpdateDto({
+          ...request,
+        }),
         this.#dbConnection
       );
 
@@ -90,5 +110,10 @@ export class UpdateGithubProfile
 
   #buildUpdateDto = (
     request: UpdateGithubProfileRequestDto
-  ): GithubProfileUpdateDto => ({ ...request });
+  ): GithubProfileUpdateDto => ({
+    firstLineageCreated: request.updateDto.firstLineageCreated,
+    installationId: request.updateDto.installationId,
+    repositoriesToAdd: request.updateDto.repositoriesToAdd,
+    repositoriesToRemove: request.updateDto.repositoriesToRemove,
+  });
 }

@@ -136,11 +136,13 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       const response = await axios.patch(
         `${apiRoot}/github/profile`,
         {
-          installationId,
           targetOrganizationId,
-          firstLineageCreated,
-          repositoriesToAdd,
-          repositoriesToRemove,
+          updateDto: {
+            firstLineageCreated,
+            repositoriesToAdd,
+            repositoriesToRemove,
+            installationId,
+          },
         },
         configuration
       );
