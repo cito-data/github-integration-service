@@ -35,6 +35,15 @@ export default class ReadSlackConversationsController extends BaseController {
     this.#dbo = dbo;
   }
 
+  #buildRequestDto = (
+    httpRequest: Request
+  ): GetSlackConversationsRequestDto => ({
+    accessToken:
+      typeof httpRequest.query.accessToken === 'string'
+        ? httpRequest.query.accessToken
+        : undefined,
+  });
+
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): GetSlackConversationsAuthDto => {
@@ -71,7 +80,7 @@ export default class ReadSlackConversationsController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: GetSlackConversationsRequestDto = null;
+      const requestDto: GetSlackConversationsRequestDto = this.#buildRequestDto(req);
       const authDto: GetSlackConversationsAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
@@ -80,7 +89,7 @@ export default class ReadSlackConversationsController extends BaseController {
         await this.#getslackconversations.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {

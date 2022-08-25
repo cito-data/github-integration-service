@@ -35,8 +35,6 @@ export class ReadSlackProfile
     dbConnection: DbConnection
   ): Promise<ReadSlackProfileResponseDto> {
     try {
-      // todo -replace
-      console.log(auth);
 
       this.#dbConnection = dbConnection;
 

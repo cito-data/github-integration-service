@@ -6,7 +6,9 @@ import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
 import { SlackConversationInfo } from '../value-types/slack-conversation-info';
 
-export type GetSlackConversationsRequestDto = null
+export type GetSlackConversationsRequestDto = {
+  accessToken?: string;
+};
 
 export interface GetSlackConversationsAuthDto {
   callerOrganizationId: string;
@@ -29,19 +31,20 @@ export class GetSlackConversations
 
   #dbConnection: DbConnection;
 
-
   constructor(slackApiRepo: ISlackApiRepo, readSlackProfile: ReadSlackProfile) {
     this.#slackApiRepo = slackApiRepo;
     this.#readSlackProfile = readSlackProfile;
   }
 
-  #getSlackProfile = async (organizationId: string): Promise<SlackProfile|undefined> => {
+  #getSlackProfile = async (
+    organizationId: string
+  ): Promise<SlackProfile | undefined> => {
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
         callerOrganizationId: organizationId,
       },
-      this.#dbConnection,
+      this.#dbConnection
     );
 
     if (!readSlackProfileResult.success)
@@ -53,18 +56,25 @@ export class GetSlackConversations
   async execute(
     request: GetSlackConversationsRequestDto,
     auth: GetSlackConversationsAuthDto,
-    dbConnection: DbConnection,
+    dbConnection: DbConnection
   ): Promise<GetSlackConversationsResponseDto> {
     try {
       this.#dbConnection = dbConnection;
 
+      let {accessToken} = request;
 
-      const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
+      if (!accessToken) {
+        const slackProfile = await this.#getSlackProfile(
+          auth.callerOrganizationId
+        );
 
-      if(!slackProfile) return Result.ok([]);
+        if (!slackProfile) return Result.ok([]);
+
+        accessToken = slackProfile.accessToken;
+      }
 
       const conversations = await this.#slackApiRepo.getConversations(
-        slackProfile.accessToken,
+        accessToken
       );
 
       // if (slackQuery.organizationId !== auth.organizationId)

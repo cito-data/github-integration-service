@@ -34,6 +34,14 @@ export default class JoinSlackConversationController extends BaseController {
     this.#dbo = dbo;
   }
 
+  #buildRequestDto = (
+    httpRequest: Request
+  ): JoinSlackConversationRequestDto => ({
+    oldChannelId: httpRequest.body.oldChannelId,
+    newChannelId: httpRequest.body.newChannelId,
+    accessToken: httpRequest.body.accessToken
+  });
+
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): JoinSlackConversationAuthDto => {
@@ -70,7 +78,7 @@ export default class JoinSlackConversationController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: JoinSlackConversationRequestDto = null;
+      const requestDto: JoinSlackConversationRequestDto = this.#buildRequestDto(req);
       const authDto: JoinSlackConversationAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );

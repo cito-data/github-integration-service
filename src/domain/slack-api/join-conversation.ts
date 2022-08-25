@@ -3,9 +3,12 @@ import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
 import { ISlackApiRepo } from './i-slack-api-repo';
 import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
-import { SlackProfile } from '../entities/slack-profile';
 
-export type JoinSlackConversationRequestDto = null;
+export type JoinSlackConversationRequestDto = {
+  oldChannelId?: string;
+  newChannelId: string;
+  accessToken: string;
+};
 
 export interface JoinSlackConversationAuthDto {
   callerOrganizationId: string;
@@ -33,22 +36,22 @@ export class JoinSlackConversation
     this.#readSlackProfile = readSlackProfile;
   }
 
-  #getSlackProfile = async (organizationId: string): Promise<SlackProfile> => {
-    const readSlackProfileResult = await this.#readSlackProfile.execute(
-      null,
-      {
-        callerOrganizationId: organizationId,
-      },
-      this.#dbConnection
-    );
+  // #getSlackProfile = async (organizationId: string): Promise<SlackProfile> => {
+  //   const readSlackProfileResult = await this.#readSlackProfile.execute(
+  //     null,
+  //     {
+  //       callerOrganizationId: organizationId,
+  //     },
+  //     this.#dbConnection
+  //   );
 
-    if (!readSlackProfileResult.success)
-      throw new Error(readSlackProfileResult.error);
-    if (!readSlackProfileResult.value)
-      throw new Error('SlackProfile does not exist');
+  //   if (!readSlackProfileResult.success)
+  //     throw new Error(readSlackProfileResult.error);
+  //   if (!readSlackProfileResult.value)
+  //     throw new Error('SlackProfile does not exist');
 
-    return readSlackProfileResult.value;
-  };
+  //   return readSlackProfileResult.value;
+  // };
 
   async execute(
     request: JoinSlackConversationRequestDto,
@@ -58,13 +61,15 @@ export class JoinSlackConversation
     try {
       this.#dbConnection = dbConnection;
 
-      const slackProfile = await this.#getSlackProfile(
-        auth.callerOrganizationId
-      );
+      if (request.oldChannelId)
+        await this.#slackApiRepo.leaveConversation(
+          request.accessToken,
+          request.oldChannelId
+        );
 
       await this.#slackApiRepo.joinConversation(
-        slackProfile.accessToken,
-        slackProfile.channelId
+        request.accessToken,
+        request.newChannelId
       );
 
       // if (slackQuery.organizationId !== auth.organizationId)

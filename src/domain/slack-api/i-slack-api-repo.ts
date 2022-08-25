@@ -17,4 +17,5 @@ export interface ISlackApiRepo {
   ): Promise<void>;
   getConversations(accessToken: string): Promise<SlackConversationInfo[]>;
   joinConversation(accessToken: string, channelId: string): Promise<void>;
+  leaveConversation(accessToken: string, channelId: string): Promise<void>;
 }
