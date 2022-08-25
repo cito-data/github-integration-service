@@ -35,7 +35,7 @@ export class GetSlackConversations
     this.#readSlackProfile = readSlackProfile;
   }
 
-  #getSlackProfile = async (organizationId: string): Promise<SlackProfile> => {
+  #getSlackProfile = async (organizationId: string): Promise<SlackProfile|undefined> => {
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
@@ -46,8 +46,6 @@ export class GetSlackConversations
 
     if (!readSlackProfileResult.success)
       throw new Error(readSlackProfileResult.error);
-    if (!readSlackProfileResult.value)
-      throw new Error('SlackProfile does not exist');
 
     return readSlackProfileResult.value;
   };
@@ -62,6 +60,8 @@ export class GetSlackConversations
 
 
       const slackProfile = await this.#getSlackProfile(auth.callerOrganizationId);
+
+      if(!slackProfile) return Result.ok([]);
 
       const conversations = await this.#slackApiRepo.getConversations(
         slackProfile.accessToken,
