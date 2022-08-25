@@ -24,6 +24,8 @@ import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
 import { UpdateGithubProfile } from '../domain/github-profile/update-github-profile';
 import { DeleteGithubProfile } from '../domain/github-profile/delete-github-profile';
 import { UpdateSnowflakeProfile } from '../domain/snowflake-profile/update-snowflake-profile';
+import { GetGithubAccessToken } from '../domain/github-api/get-access-token';
+import GithubApiRepo from './persistence/github-api-repo';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -46,6 +48,8 @@ iocRegister.register({
 
   querySnowflake: asClass(QuerySnowflake),
 
+  getGithubAccessToken: asClass(GetGithubAccessToken),
+
   sendSlackAlert: asClass(SendSlackAlert),
   getSlackConversations: asClass(GetSlackConversations),
   joinSlackConversation: asClass(JoinSlackConversation),
@@ -58,6 +62,7 @@ iocRegister.register({
 
   snowflakeApiRepo: asClass(SnowflakeApiRepo),
   slackApiRepo: asClass(SlackApiRepo),
+  githubApiRepo: asClass(GithubApiRepo),
 
   accountApiRepo: asClass(AccountApiRepo),
 

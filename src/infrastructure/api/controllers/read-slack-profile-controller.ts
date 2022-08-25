@@ -35,11 +35,6 @@ export default class ReadSlackProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadSlackProfileRequestDto => {
-    console.log(httpRequest.params);
-    return null;
-  };
-
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSlackProfileAuthDto => {
@@ -73,7 +68,7 @@ export default class ReadSlackProfileController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSlackProfileRequestDto = this.#buildRequestDto(req);
+      const requestDto: ReadSlackProfileRequestDto = null;
       const authDto: ReadSlackProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );

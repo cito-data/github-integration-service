@@ -8,8 +8,9 @@ export interface GithubProfileUpdateDto {
 }
 export interface IGithubProfileRepo {
   findOne(
-    installationId:string,
     dbConnection: DbConnection,
+    installationId?:string,
+    organizationId?: string,
   ): Promise<GithubProfile | null>;
   
   insertOne(

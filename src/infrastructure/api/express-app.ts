@@ -81,8 +81,9 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     }
   };
 
+  // todo - Call use-case directly instead
   const getGithubProfile = async (
-    installationId: string
+    params: URLSearchParams
   ): Promise<GithubProfile> => {
     try {
       const jwt = await getJwt();
@@ -92,9 +93,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
           Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json',
         },
-        params: {
-          installationId,
-        },
+        params,
       };
 
       const apiRoot = await getSelfApiRoute();
@@ -134,8 +133,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
       const apiRoot = await getSelfApiRoute();
 
-      const response = await axios.post(
-        `${apiRoot}/github/profile/update`,
+      const response = await axios.patch(
+        `${apiRoot}/github/profile`,
         {
           installationId,
           targetOrganizationId,
@@ -178,7 +177,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       const apiRoot = await getSelfApiRoute();
 
       const response = await axios.delete(
-        `${apiRoot}/github/profile/delete`,
+        `${apiRoot}/github/profile`,
         configuration
       );
 
@@ -241,7 +240,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     if (!currentInstallation) throw Error('Current installation not found');
 
     const githubProfile = await getGithubProfile(
-      currentInstallation.toString(10)
+      new URLSearchParams({ installationId: currentInstallation.toString(10) })
     );
 
     const { organizationId, firstLineageCreated } = githubProfile;
@@ -342,7 +341,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   githubApp.webhooks.on('installation.deleted', async ({ payload }) => {
     const currentInstallation = payload.installation.id;
     const githubProfile = await getGithubProfile(
-      currentInstallation.toString(10)
+      new URLSearchParams({ installationId: currentInstallation.toString(10) })
     );
 
     const { organizationId } = githubProfile;
@@ -355,7 +354,9 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     async ({ payload }) => {
       const currentInstallation = payload.installation.id;
       const githubProfile = await getGithubProfile(
-        currentInstallation.toString(10)
+        new URLSearchParams({
+          installationId: currentInstallation.toString(10),
+        })
       );
 
       const { organizationId } = githubProfile;
@@ -377,7 +378,9 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
     async ({ payload }) => {
       const currentInstallation = payload.installation.id;
       const githubProfile = await getGithubProfile(
-        currentInstallation.toString(10)
+        new URLSearchParams({
+          installationId: currentInstallation.toString(10),
+        })
       );
 
       const { organizationId } = githubProfile;

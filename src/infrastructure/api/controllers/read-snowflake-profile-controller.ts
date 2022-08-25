@@ -35,11 +35,7 @@ export default class ReadSnowflakeProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {
-    console.log(httpRequest.params);
-    return null;
-  };
-
+  
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSnowflakeProfileAuthDto => {
@@ -74,7 +70,7 @@ export default class ReadSnowflakeProfileController extends BaseController {
         throw new ReferenceError('Authorization failed');
 
       const requestDto: ReadSnowflakeProfileRequestDto =
-        this.#buildRequestDto(req);
+        null;
       const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );

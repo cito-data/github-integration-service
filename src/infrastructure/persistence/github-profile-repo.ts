@@ -10,7 +10,10 @@ import {
 } from 'mongodb';
 import sanitize from 'mongo-sanitize';
 
-import { GithubProfileUpdateDto, IGithubProfileRepo } from '../../domain/github-profile/i-github-profile-repo';
+import {
+  GithubProfileUpdateDto,
+  IGithubProfileRepo,
+} from '../../domain/github-profile/i-github-profile-repo';
 import {
   GithubProfile,
   GithubProfileProperties,
@@ -24,7 +27,6 @@ interface GithubProfilePersistence {
   firstLineageCreated: boolean;
 }
 
-
 interface GithubProfileUpdateFilter {
   $set: { [key: string]: unknown };
   $push: { [key: string]: unknown };
@@ -34,13 +36,23 @@ const collectionName = 'githubProfile';
 
 export default class GithubProfileRepo implements IGithubProfileRepo {
   findOne = async (
-    installationId: string,
     dbConnection: Db,
+    installationId?: string,
+    organizationId?: string
   ): Promise<GithubProfile | null> => {
+    if (!installationId && !organizationId)
+      throw new Error(
+        'Either the installationId or organizationId need to be provided to find Github profile'
+      );
+
     try {
       const result: any = await dbConnection
         .collection(collectionName)
-        .findOne({ installationId: sanitize(installationId) });
+        .findOne(
+          organizationId
+            ? { organizationId: sanitize(organizationId) }
+            : { installationId: sanitize(installationId) }
+        );
 
       if (!result) return null;
 
@@ -54,14 +66,12 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
   insertOne = async (
     githubProfile: GithubProfile,
-    dbConnection: Db,
+    dbConnection: Db
   ): Promise<string> => {
     try {
       const result: InsertOneResult<Document> = await dbConnection
         .collection(collectionName)
-        .insertOne(
-          await this.#toPersistence(sanitize(githubProfile))
-        );
+        .insertOne(await this.#toPersistence(sanitize(githubProfile)));
 
       if (!result.acknowledged)
         throw new Error(
@@ -84,12 +94,16 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     const pushFilter: { [key: string]: unknown } = {};
 
     setFilter.firstLineageCreated = true;
-    if (updateDto.firstLineageCreated) 
+    if (updateDto.firstLineageCreated)
       setFilter.firstLineageCreated = updateDto.firstLineageCreated;
-    if (updateDto.repositoriesToAdd) 
-      setFilter.repositoryNames = currentRepositoryNames.concat(updateDto.repositoriesToAdd);
+    if (updateDto.repositoriesToAdd)
+      setFilter.repositoryNames = currentRepositoryNames.concat(
+        updateDto.repositoriesToAdd
+      );
     if (updateDto.repositoriesToRemove)
-      setFilter.repositoryNames = currentRepositoryNames.filter((repoName) => !updateDto.repositoriesToRemove?.includes(repoName));
+      setFilter.repositoryNames = currentRepositoryNames.filter(
+        (repoName) => !updateDto.repositoriesToRemove?.includes(repoName)
+      );
 
     return { $set: setFilter, $push: pushFilter };
   };
@@ -100,7 +114,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     dbConnection: Db
   ): Promise<string> => {
     try {
-
       const profiletoUpdate: any = await dbConnection
         .collection(collectionName)
         .findOne({ _id: sanitize(id) });
@@ -111,7 +124,10 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(sanitize(id)) },
-          await this.#buildUpdateFilter(sanitize(updateDto), currentRepositoryNames)
+          await this.#buildUpdateFilter(
+            sanitize(updateDto),
+            currentRepositoryNames
+          )
         );
 
       if (!result.acknowledged)
@@ -125,10 +141,7 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     }
   };
 
-  deleteOne = async (
-    id: string,
-    dbConnection: Db
-    ): Promise<string> => {
+  deleteOne = async (id: string, dbConnection: Db): Promise<string> => {
     try {
       const result: DeleteResult = await dbConnection
         .collection(collectionName)
@@ -151,23 +164,17 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     GithubProfile.create(properties);
 
   #buildProperties = async (
-    githubProfile: GithubProfilePersistence,
+    githubProfile: GithubProfilePersistence
   ): Promise<GithubProfileProperties> => ({
-
-
     // eslint-disable-next-line no-underscore-dangle
     id: githubProfile._id.toHexString(),
     installationId: githubProfile.installationId,
     organizationId: githubProfile.organizationId,
     repositoryNames: githubProfile.repositoryNames,
     firstLineageCreated: githubProfile.firstLineageCreated,
-
   });
 
-  #toPersistence = async (
-    githubProfile: GithubProfile,
-  ): Promise<Document> => {
-
+  #toPersistence = async (githubProfile: GithubProfile): Promise<Document> => {
     const persistenceObject: GithubProfilePersistence = {
       _id: ObjectId.createFromHexString(githubProfile.id),
       installationId: githubProfile.installationId,

@@ -36,17 +36,21 @@ export default class ReadGithubProfileController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): ReadGithubProfileRequestDto => ({
-    
-   installationId: httpRequest.params.installationId
+    targetOrganizationId:
+      typeof httpRequest.query.organizationId === 'string'
+        ? httpRequest.query.organizationId
+        : undefined,
+    installationId:
+      typeof httpRequest.query.installationId === 'string'
+        ? typeof httpRequest.query.installationId
+        : undefined,
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadGithubProfileAuthDto => ({
-    
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
-      isSystemInternal: userAccountInfo.isSystemInternal,
-    
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
+    isSystemInternal: userAccountInfo.isSystemInternal,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
@@ -82,14 +86,11 @@ export default class ReadGithubProfileController extends BaseController {
         await this.#readGithubProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return ReadGithubProfileController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return ReadGithubProfileController.badRequest(res, useCaseResult.error);
       }
 
       const resultValue = useCaseResult.value

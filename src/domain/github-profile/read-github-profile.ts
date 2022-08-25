@@ -5,7 +5,7 @@ import { GithubProfile } from '../entities/github-profile';
 import { DbConnection } from '../services/i-db';
 
 export type ReadGithubProfileRequestDto = {
-  installationId: string;
+  installationId?: string;
   targetOrganizationId?: string;
 };
 
@@ -39,8 +39,6 @@ export class ReadGithubProfile
     dbConnection: DbConnection
   ): Promise<ReadGithubProfileResponseDto> {
     try {
-      // todo -replace
-      console.log(auth);
       if (auth.isSystemInternal && !request.targetOrganizationId)
         throw new Error('Target organization id missing');
       if (!auth.isSystemInternal && !auth.callerOrganizationId)
@@ -58,8 +56,9 @@ export class ReadGithubProfile
       this.#dbConnection = dbConnection;
 
       const githubProfile = await this.#githubProfileRepo.findOne(
+        this.#dbConnection,
         request.installationId,
-        this.#dbConnection
+        request.targetOrganizationId,
       );
       if (!githubProfile)
         return Result.ok(undefined);
