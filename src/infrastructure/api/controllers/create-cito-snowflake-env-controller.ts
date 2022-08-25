@@ -95,7 +95,7 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
 
       const resultValue = useCaseResult.value;
 
-      return CreateCitoSnowflakeEnvController.ok(res, resultValue, CodeHttp.OK);
+      return CreateCitoSnowflakeEnvController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
       console.error(error);
       if (typeof error === 'string')
