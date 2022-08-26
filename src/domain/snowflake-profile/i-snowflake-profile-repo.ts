@@ -5,6 +5,7 @@ export interface SnowflakeProfileUpdateDto {
   accountId?: string;
   username?: string;
   password?: string;
+  warehouseName?: string;
 }
 
 export interface ISnowflakeProfileRepo {

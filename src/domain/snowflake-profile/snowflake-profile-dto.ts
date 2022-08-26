@@ -6,6 +6,7 @@ export interface SnowflakeProfileDto {
   accountId: string;
   username: string;
   password: string;
+  warehouseName: string;
 }
 
 export const buildSnowflakeProfileDto = (
@@ -16,4 +17,5 @@ export const buildSnowflakeProfileDto = (
   accountId: snowflakeProfile.accountId,
   username: snowflakeProfile.username,
   password: snowflakeProfile.password,
+  warehouseName: snowflakeProfile.warehouseName
 });

@@ -4,6 +4,7 @@ export interface SnowflakeProfileProperties {
   username: string;
   password: string;
   organizationId: string;
+  warehouseName: string;
 }
 
 export class SnowflakeProfile {
@@ -16,6 +17,8 @@ export class SnowflakeProfile {
   #username: string; 
 
   #password: string; 
+
+  #warehouseName: string;
 
   get id(): string {
     return this.#id;
@@ -37,12 +40,17 @@ export class SnowflakeProfile {
     return this.#password;
   }
 
+  get warehouseName(): string {
+    return this.#warehouseName;
+  }
+
   private constructor(props: SnowflakeProfileProperties) {
     this.#id = props.id;
     this.#organizationId = props.organizationId;
     this.#accountId = props.accountId;
     this.#username = props.username;
     this.#password = props.password;
+    this.#warehouseName = props.warehouseName;
   }
 
   static create = (props: SnowflakeProfileProperties): SnowflakeProfile => {
@@ -51,6 +59,7 @@ export class SnowflakeProfile {
     if (!props.accountId) throw new TypeError('SnowflakeProfile must have accountId');
     if (!props.username) throw new TypeError('SnowflakeProfile must have username');
     if (!props.password) throw new TypeError('SnowflakeProfile must have password');
+    if (!props.warehouseName) throw new TypeError('SnowflakeProfile must have warehouseName');
     
 
     return new SnowflakeProfile(props);

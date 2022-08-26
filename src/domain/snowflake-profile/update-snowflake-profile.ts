@@ -11,6 +11,7 @@ export interface UpdateSnowflakeProfileRequestDto {
   accountId?: string;
   username?: string;
   password?: string;
+  warehouseName?: string;
 }
 
 export interface UpdateSnowflakeProfileAuthDto {

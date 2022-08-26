@@ -25,6 +25,7 @@ interface SnowflakeProfilePersistence {
   _id: ObjectId;
   accountId: string;
   username: string;
+  warehouseName: string;
   password: string;
   iv: string;
   organizationId: string;
@@ -112,6 +113,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
 
     if (updateDto.accountId) setFilter.accountId = updateDto.accountId;
     if (updateDto.username) setFilter.username = updateDto.username;
+    if (updateDto.warehouseName) setFilter.warehouseName = updateDto.warehouseName;
     if (updateDto.password) {
       const encryptedPassword = encrypt(updateDto.password);
       setFilter.password = encryptedPassword.content;
@@ -181,6 +183,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
       organizationId: snowflakeProfile.organizationId,
       accountId: snowflakeProfile.accountId,
       username: snowflakeProfile.username,
+      warehouseName: snowflakeProfile.warehouseName,
       password: decryptedPassword,
     };
   };
@@ -195,6 +198,7 @@ export default class SnowflakeProfileRepo implements ISnowflakeProfileRepo {
       organizationId: snowflakeProfile.organizationId,
       accountId: snowflakeProfile.accountId,
       username: snowflakeProfile.username,
+      warehouseName: snowflakeProfile.warehouseName,
       password: encryptedPassword.content,
       iv: encryptedPassword.iv,
     };

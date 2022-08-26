@@ -41,6 +41,7 @@ export default class CreateSnowflakeProfileController extends BaseController {
     accountId: httpRequest.body.accountId,
     username: httpRequest.body.username,
     password: httpRequest.body.password,
+    warehouseName: httpRequest.body.warehouseName,
   });
 
   #buildAuthDto = (

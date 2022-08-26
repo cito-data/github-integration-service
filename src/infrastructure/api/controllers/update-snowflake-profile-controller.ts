@@ -38,6 +38,7 @@ export default class UpdateSnowflakeProfileController extends BaseController {
     accountId: httpRequest.body.accountId || undefined,
     username: httpRequest.body.username || undefined,
     password: httpRequest.body.password || undefined,
+    warehouseName: httpRequest.body.warehouseName || undefined
   });
 
   #buildAuthDto = (

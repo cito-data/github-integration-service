@@ -10,6 +10,7 @@ export interface CreateSnowflakeProfileRequestDto {
   accountId: string;
   username: string;
   password: string;
+  warehouseName: string;
 }
 
 export interface CreateSnowflakeProfileAuthDto {
@@ -55,6 +56,7 @@ export class CreateSnowflakeProfile
         accountId: request.accountId,
         username: request.username,
         password: request.password,
+        warehouseName: request.warehouseName
       });
 
       const readSnowflakeProfileResult =
