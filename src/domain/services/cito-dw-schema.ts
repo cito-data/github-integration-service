@@ -13,7 +13,21 @@ const schema = {
         { name: 'materialization_name', type: 'string' },
         { name: 'materialization_type', type: 'string' },
         { name: 'column_name', type: 'string' },
-        { name: 'target_resource_id', type: 'string'},
+        { name: 'target_resource_id', type: 'string' },
+        { name: 'organization_id', type: 'string' },
+      ],
+    },
+    {
+      name: 'custom_test_suites',
+      columns: [
+        { name: 'id', type: 'string' },
+        { name: 'activated', type: 'boolean' },
+        { name: 'threshold', type: 'integer' },
+        { name: 'execution_frequency', type: 'integer' },
+        { name: 'name', type: 'string' },
+        { name: 'description', type: 'string' },
+        { name: 'sql_logic', type: 'string' },
+        { name: 'target_resource_ids', type: 'array' },
         { name: 'organization_id', type: 'string' },
       ],
     },
@@ -35,7 +49,7 @@ const schema = {
         { name: 'user_feedback_is_anomaly', type: 'integer' },
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
-        { name: 'alert_id', type: 'string'}
+        { name: 'alert_id', type: 'string' },
       ],
     },
     {
