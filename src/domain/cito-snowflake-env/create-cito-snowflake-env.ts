@@ -48,7 +48,6 @@ export class CreateCitoSnowflakeEnv
       const createTableResults = await Promise.all(
         citoMaterializationTypes.map(async (type) => {
           const query = getCreateTableQuery(type);
-
           const createTableResult = await this.#querySnowflake.execute(
             {
               query,
