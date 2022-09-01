@@ -238,6 +238,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   };
 
   githubApp.webhooks.on('push', async ({ octokit, payload }) => {
+    console.log('handlling "push" github webhook');
+    
     const currentInstallation = payload.installation?.id;
     if (!currentInstallation) throw Error('Current installation not found');
 
@@ -341,6 +343,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   });
 
   githubApp.webhooks.on('installation.deleted', async ({ payload }) => {
+    console.log('handlling "installation.deleted" github webhook');
+
     const currentInstallation = payload.installation.id;
     const githubProfile = await getGithubProfile(
       new URLSearchParams({ installationId: currentInstallation.toString(10) })
@@ -354,6 +358,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   githubApp.webhooks.on(
     'installation_repositories.added',
     async ({ payload }) => {
+      console.log('handlling "installation_repositories.added" github webhook');
+
       const currentInstallation = payload.installation.id;
       const githubProfile = await getGithubProfile(
         new URLSearchParams({
@@ -378,6 +384,8 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   githubApp.webhooks.on(
     'installation_repositories.removed',
     async ({ payload }) => {
+      console.log('handlling "installation_repositories.removed" github webhook');
+
       const currentInstallation = payload.installation.id;
       const githubProfile = await getGithubProfile(
         new URLSearchParams({
