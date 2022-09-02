@@ -5,6 +5,7 @@ import { App, createNodeMiddleware } from 'octokit';
 import { Endpoints } from '@octokit/types';
 import axios, { AxiosRequestConfig } from 'axios';
 import compression from 'compression';
+import morgan from 'morgan';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
@@ -239,7 +240,7 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
 
   githubApp.webhooks.on('push', async ({ octokit, payload }) => {
     console.log('handlling "push" github webhook');
-    
+
     const currentInstallation = payload.installation?.id;
     if (!currentInstallation) throw Error('Current installation not found');
 
@@ -342,6 +343,13 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
       );
   });
 
+  githubApp.webhooks.on('installation.created', async ({ payload }) => {
+    console.log('handlling "installation.created" github webhook');
+    console.log('xxxxxxxxxxxxxxxx');
+
+    console.log(payload);
+  });
+
   githubApp.webhooks.on('installation.deleted', async ({ payload }) => {
     console.log('handlling "installation.deleted" github webhook');
 
@@ -384,7 +392,9 @@ const githubIntegrationMiddleware = (config: GithubConfig): App => {
   githubApp.webhooks.on(
     'installation_repositories.removed',
     async ({ payload }) => {
-      console.log('handlling "installation_repositories.removed" github webhook');
+      console.log(
+        'handlling "installation_repositories.removed" github webhook'
+      );
 
       const currentInstallation = payload.installation.id;
       const githubProfile = await getGithubProfile(
@@ -448,15 +458,16 @@ export default class ExpressApp {
   }
 
   private configApp(): void {
-    this.#expressApp.use(
-      createNodeMiddleware(githubIntegrationMiddleware(this.#githubConfig))
-    );
+    this.#expressApp.use(morgan('combined'));
     this.#expressApp.use(express.json());
     this.#expressApp.use(express.urlencoded({ extended: true }));
     this.#expressApp.use(cors());
     this.#expressApp.use(compression());
-    // // this.#expressApp.use(morgan("combined"));
     this.#expressApp.use(helmet());
+    // listens on /api/github/(webhooks)
+    this.#expressApp.use(
+      createNodeMiddleware(githubIntegrationMiddleware(this.#githubConfig))
+    );
     this.#expressApp.use(v1Router);
   }
 }

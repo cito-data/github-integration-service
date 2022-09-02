@@ -13,6 +13,20 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
     new Promise((resolve, reject) => {
       const results: SnowflakeQuery[] = [];
 
+      const destroy = (conn: Connection, error?: Error): void => {
+        conn.destroy((destroyError: any, connectionToDestroy: Connection) => {
+          if (destroyError)
+            throw new Error(`Unable to disconnect: ${destroyError.message}`);
+          else {
+            console.log(
+              `Disconnected connection with id: ${connectionToDestroy.getId()}`
+            );
+            if (error) reject(error);
+            resolve(results);
+          }
+        });
+      };
+
       const connection = connect({
         ...options,
         application: appConfig.snowflake.applicationName,
@@ -23,7 +37,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           if (err) {
             if (typeof err === 'string') reject(err);
             if (err instanceof Error) reject(err.message);
-            reject(new Error('Unknown error occured'));
+            reject(new Error('Unknown Snowflake connection error occured'));
           }
 
           // Optional: store the connection ID.
@@ -31,17 +45,18 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           console.log(`sf connection: ${connectionId}`);
 
           const complete = (error: any, stmt: Statement): void => {
-            if (error)
+            if (error) {
               console.error(
                 `Failed to execute statement ${stmt.getStatementId()} due to the following error: ${
                   error.message
                 }`
               );
+              destroy(conn, new Error(`Snowflake query ${error.message}`));
+            }
           };
-         
-          
+
           // todo - include select statements once dwh-to-dashboard is going to be implemented
-          const statement = connection.execute({
+          const statement = conn.execute({
             sqlText: query,
             complete,
           });
@@ -49,25 +64,10 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           const stream = statement.streamRows();
 
           stream.on('data', (row: any) => {
-            if(row) results.push(row);
+            if (row) results.push(row);
           });
           stream.on('error', handleStreamError);
-          stream.on('end', () =>
-            connection.destroy(
-              (destroyError: any, connectionToDestroy: Connection) => {
-                if (destroyError)
-                  throw new Error(
-                    `Unable to disconnect: ${destroyError.message}`
-                  );
-                else {
-                  console.log(
-                    `Disconnected connection with id: ${connectionToDestroy.getId()}`
-                  );
-                  resolve(results);
-                }
-              }
-            )
-          );
+          stream.on('end', () => destroy(conn));
         } catch (error: unknown) {
           if (typeof error === 'string') reject(error);
           if (error instanceof Error) reject(error.message);

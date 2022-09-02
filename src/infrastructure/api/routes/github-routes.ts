@@ -41,14 +41,6 @@ const readGithubAccessTokenController = new ReadGithubAccessTokenController(
   dbo
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-githubRoutes.post('/webhooks', (req, res) => {
-  const { body } = req;
-  console.log(
-    `Receiving GitHub action "${body.action}" webhook for installation ${body.installation.id}`
-  );
-});
-
 githubRoutes.post('/profile', (req, res) => {
   createGithubProfileController.execute(req, res);
 });
