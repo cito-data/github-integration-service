@@ -10,6 +10,7 @@
     "clean": "rimraf dist",
     "build": "npm run clean && npm run tsc && npm run lint",
     "start": "npm run build && nodemon ./src/index.ts",
+    "start-dependencies": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./start-dependencies.ps1 -serviceDependencyNames @('account')",
     "deploy": "npm run build && serverless deploy && npm run write-env ",
     "write-env": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./write-env.ps1 -functionName integration-service-production-app",
     "debug": "npm run build && nodemon --inspect=3003 ./src/index.ts"
