@@ -34,10 +34,13 @@ export default class DeleteGithubProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): DeleteGithubProfileRequestDto => ({
-    installationId: httpRequest.params.installationId,
-    targetOrganizationId: httpRequest.params.targetOrganizationId
-  });
+  #buildRequestDto = (httpRequest: Request): DeleteGithubProfileRequestDto => {
+    const targetOrganizationId = httpRequest.query.organizationId;
+    if(!targetOrganizationId) throw new Error('missing organizationId in deletion operation');
+    if(typeof targetOrganizationId !== 'string') throw new Error('Query param need to be provided as string');
+
+    return  {targetOrganizationId};
+  };
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo

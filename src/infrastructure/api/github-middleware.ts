@@ -31,7 +31,7 @@ export default (config: GithubConfig): App => {
     const gateway =
       appConfig.express.mode === 'production'
         ? 'wej7xjkvug.execute-api.eu-central-1.amazonaws.com/production'
-        : 'localhost:3002';
+        : '3002';
 
     const apiRoot = await getRoot(gateway, 'api/v1');
 
@@ -92,7 +92,7 @@ export default (config: GithubConfig): App => {
       );
 
       const jsonResponse = response.data;
-      console.log(jsonResponse);
+
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
@@ -136,7 +136,7 @@ export default (config: GithubConfig): App => {
       );
 
       const jsonResponse = response.data;
-      console.log(jsonResponse);
+
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
@@ -147,7 +147,6 @@ export default (config: GithubConfig): App => {
   };
 
   const deleteGithubProfile = async (
-    installationId: string,
     targetOrganizationId: string
   ): Promise<any> => {
     try {
@@ -158,10 +157,9 @@ export default (config: GithubConfig): App => {
           Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json',
         },
-        params: {
-          installationId,
-          targetOrganizationId,
-        },
+        params: new URLSearchParams({
+          organizationId: targetOrganizationId,
+        }),
       };
 
       const apiRoot = await getSelfApiRoute();
@@ -172,7 +170,7 @@ export default (config: GithubConfig): App => {
       );
 
       const jsonResponse = response.data;
-      console.log(jsonResponse);
+
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
@@ -332,7 +330,7 @@ export default (config: GithubConfig): App => {
 
     const { organizationId } = githubProfile;
 
-    await deleteGithubProfile(currentInstallation.toString(10), organizationId);
+    await deleteGithubProfile(organizationId);
   };
 
   const handleInstallationReposAdded = async (payload: any): Promise<void> => {
@@ -380,7 +378,11 @@ export default (config: GithubConfig): App => {
     );
   };
 
-  const handleEvent = async (id: string, name: string, payload: any): Promise<void> => {
+  const handleEvent = async (
+    id: string,
+    name: string,
+    payload: any
+  ): Promise<void> => {
     console.log(`Receiving GitHub event - id: ${id}, name: ${name}`);
 
     const event = payload.action ? `${name}.${payload.action}` : name;
@@ -391,19 +393,19 @@ export default (config: GithubConfig): App => {
       switch (event) {
         case 'installation.created':
           console.log(handlingMessage);
-          // handleInstallationCreated(payload);
+          // await handleInstallationCreated(payload);
           break;
         case 'installation.deleted':
           console.log(handlingMessage);
-          handleInstallationDeleted(payload);
+          await handleInstallationDeleted(payload);
           break;
         case 'installation_repositories.added':
           console.log(handlingMessage);
-          handleInstallationReposAdded(payload);
+          await handleInstallationReposAdded(payload);
           break;
         case 'installation_repositories.removed':
           console.log(handlingMessage);
-          handleInstallationReposRemoved(payload);
+          await handleInstallationReposRemoved(payload);
           break;
         case 'push':
           console.log(handlingMessage);
@@ -427,7 +429,11 @@ export default (config: GithubConfig): App => {
     const source = new EventSource(webhookProxyUrl);
     source.onmessage = (event: any) => {
       const webhookEvent = JSON.parse(event.data);
-      handleEvent(webhookEvent['x-github-delivery'], webhookEvent['x-github-event'], webhookEvent.body);
+      handleEvent(
+        webhookEvent['x-github-delivery'],
+        webhookEvent['x-github-event'],
+        webhookEvent.body
+      );
     };
   } else
     githubApp.webhooks.onAny(async ({ id, name, payload }) =>

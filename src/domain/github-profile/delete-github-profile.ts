@@ -7,7 +7,6 @@ import {
 import { ReadGithubProfile } from './read-github-profile';
 
 export interface DeleteGithubProfileRequestDto {
-  installationId: string;
   targetOrganizationId: string;
 }
 
@@ -53,7 +52,6 @@ export class DeleteGithubProfile
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
           {
-            installationId: request.installationId,
             targetOrganizationId: request.targetOrganizationId,
           },
           { isSystemInternal: auth.isSystemInternal },

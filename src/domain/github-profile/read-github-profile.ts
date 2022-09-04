@@ -14,7 +14,7 @@ export interface ReadGithubProfileAuthDto {
   isSystemInternal: boolean;
 }
 
-export type ReadGithubProfileResponseDto = Result<GithubProfile|undefined>;
+export type ReadGithubProfileResponseDto = Result<GithubProfile | undefined>;
 
 export class ReadGithubProfile
   implements
@@ -39,31 +39,31 @@ export class ReadGithubProfile
     dbConnection: DbConnection
   ): Promise<ReadGithubProfileResponseDto> {
     try {
-      if (auth.isSystemInternal && !request.targetOrganizationId)
-        throw new Error('Target organization id missing');
+      if (
+        auth.isSystemInternal &&
+        !(request.targetOrganizationId || request.installationId)
+      )
+        throw new Error('Target organization id or installation id missing');
       if (!auth.isSystemInternal && !auth.callerOrganizationId)
         throw new Error('Caller organization id missing');
-      if (!request.targetOrganizationId && !auth.callerOrganizationId)
-        throw new Error('No organization Id instance provided');
+      if (!request.targetOrganizationId && !auth.callerOrganizationId && !request.installationId)
+        throw new Error('No potential profile identifier provided');
 
       let organizationId;
       if (auth.isSystemInternal && request.targetOrganizationId)
         organizationId = request.targetOrganizationId;
       else if (auth.callerOrganizationId)
         organizationId = auth.callerOrganizationId;
-      else throw new Error('Unhandled organizationId allocation');
-
       this.#dbConnection = dbConnection;
 
       const githubProfile = await this.#githubProfileRepo.findOne(
         this.#dbConnection,
         request.installationId,
-        request.targetOrganizationId,
+        organizationId
       );
-      if (!githubProfile)
-        return Result.ok(undefined);
+      if (!githubProfile) return Result.ok(undefined);
 
-      if (githubProfile.organizationId !== organizationId)
+      if (organizationId && githubProfile.organizationId !== organizationId)
         throw new Error('Not authorized to perform action');
 
       return Result.ok(githubProfile);

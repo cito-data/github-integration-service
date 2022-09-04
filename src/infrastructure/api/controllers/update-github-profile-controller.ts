@@ -36,12 +36,7 @@ export default class UpdateGithubProfileController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): UpdateGithubProfileRequestDto => ({
     targetOrganizationId: httpRequest.body.targetOrganizationId,
-    updateDto: {
-      firstLineageCreated: httpRequest.body.firstLineageCreated,
-      repositoriesToAdd: httpRequest.body.repositoriesToAdd,
-      repositoriesToRemove: httpRequest.body.repositoriesToRemove,
-      installationId: httpRequest.body.installationId,
-    },
+    updateDto: httpRequest.body.updateDto,
   });
 
   #buildAuthDto = (
