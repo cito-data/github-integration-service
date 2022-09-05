@@ -1,4 +1,4 @@
-// import { Endpoints } from '@octokit/types';
+import { Endpoints } from '@octokit/types';
 import axios, { AxiosRequestConfig } from 'axios';
 import { App } from 'octokit';
 import EventSource from 'eventsource';
@@ -180,147 +180,134 @@ export default (config: GithubConfig): App => {
     }
   };
 
-  // const requestLineageCreation = async (
-  //   catalogText: string,
-  //   manifestText: string,
-  //   organizationId: string
-  // ): Promise<any> => {
-  //   try {
-  //     const jwt = await getJwt();
+  const requestLineageCreation = async (
+    catalogContent: string,
+    manifestContent: string,
+    organizationId: string
+  ): Promise<any> => {
+    try {
+      const jwt = await getJwt();
 
-  //     const configuration: AxiosRequestConfig = {
-  //       headers: {
-  //         Authorization: `Bearer ${jwt}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     };
+      const configuration: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+      };
 
-  //     const gateway =
-  //       appConfig.express.mode === 'production'
-  //         ? 'kga7x5r9la.execute-api.eu-central-1.amazonaws.com/production'
-  //         : 'localhost:3000';
+      const gateway =
+        appConfig.express.mode === 'production'
+          ? 'kga7x5r9la.execute-api.eu-central-1.amazonaws.com/production'
+          : '3000';
 
-  //     const apiRoot = await getRoot(gateway, 'api/v1');
+      const apiRoot = await getRoot(gateway, 'api/v1');
 
-  //     const response = await axios.post(
-  //       `${apiRoot}/lineage`,
-  //       {
-  //         catalog: catalogText,
-  //         manifest: manifestText,
-  //         targetOrganizationId: organizationId,
-  //       },
-  //       configuration
-  //     );
+      const response = await axios.post(
+        `${apiRoot}/lineage`,
+        {
+          catalog: catalogContent,
+          manifest: manifestContent,
+          targetOrganizationId: organizationId,
+        },
+        configuration
+      );
 
-  //     const jsonResponse = response.data;
-  //     console.log(jsonResponse);
-  //     if (response.status === 200) return jsonResponse;
-  //     throw new Error(jsonResponse.message);
-  //   } catch (error: unknown) {
-  //     if (typeof error === 'string') return Promise.reject(error);
-  //     if (error instanceof Error) return Promise.reject(error.message);
-  //     return Promise.reject(new Error('Unknown error occured'));
-  //   }
-  // };
+      const jsonResponse = response.data;
 
-  // const handleInstallationCreated = async (payload: any): Promise<void> => {
-  //   const currentInstallation = payload.installation?.id;
-  //   if (!currentInstallation) throw Error('Current installation not found');
+      if (response.status === 201) return jsonResponse;
+      throw new Error(jsonResponse.message);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
+  };
 
-  //   const githubProfile = await getGithubProfile(
-  //     new URLSearchParams({ installationId: currentInstallation.toString(10) })
-  //   );
+  const getRepoFileContent = async (
+    ownerLogin: string,
+    repoName: string,
+    fileSearchPattern: string
+  ): Promise<string> => {
+    const catalogRes = await githubApp.octokit.request('GET /search/code', {
+      q: fileSearchPattern,
+    });
 
-  //   const { organizationId, firstLineageCreated } = githubProfile;
+    let { data }: any = catalogRes;
+    const { items } = data;
 
-  //   if (firstLineageCreated) return;
+    if (items.length > 1) throw Error('More than 1 file found');
 
-  //   const catalogRes = await githubApp.octokit.request('GET /search/code', {
-  //     q: `filename:catalog+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`,
-  //   });
+    const [item] = items;
+    const { path } = item;
 
-  //   let { data }: any = catalogRes;
-  //   let { items } = data;
+    const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
 
-  //   if (items.length > 1) throw Error('More than 1 catalog found');
+    type ContentResponseType = Endpoints[typeof endpoint]['response'];
+    const catalogResponse: ContentResponseType =
+      await githubApp.octokit.request(endpoint, {
+        owner: ownerLogin,
+        repo: repoName,
+        path,
+      });
 
-  //   let [item] = items;
-  //   let { path } = item;
+    if (catalogResponse.status !== 200) throw new Error('Reading file failed');
 
-  //   const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
+    // todo - include type checking
+    ({ data } = catalogResponse);
+    const { content, encoding } = data;
 
-  //   type ContentResponseType = Endpoints[typeof endpoint]['response'];
-  //   const catalogResponse: ContentResponseType =
-  //     await githubApp.octokit.request(endpoint, {
-  //       owner: payload.repository.owner.login,
-  //       repo: payload.repository.name,
-  //       path,
-  //     });
+    if (typeof content !== 'string')
+      throw new Error(
+        'Did not receive content field in string format from API'
+      );
+    if (encoding !== 'base64') throw new Error('Unexpected encoding type');
 
-  //   if (catalogResponse.status !== 200)
-  //     throw new Error('Reading catalog failed');
+    const catalogBuffer = Buffer.from(content, encoding);
+    return catalogBuffer.toString('utf-8');
+  };
 
-  //   // todo - include type checking
-  //   ({ data } = catalogResponse);
-  //   let { content, encoding } = data;
+  const handlePush = async (payload: any): Promise<void> => {
+    const currentInstallation = payload.installation.id;
+    if (!currentInstallation) throw Error('Current installation not found');
 
-  //   if (typeof content !== 'string')
-  //     throw new Error(
-  //       'Did not receive content field in string format from API'
-  //     );
-  //   if (encoding !== 'base64') throw new Error('Unexpected encoding type');
+    const githubProfile = await getGithubProfile(
+      new URLSearchParams({ installationId: currentInstallation.toString(10) })
+    );
 
-  //   const catalogBuffer = Buffer.from(content, encoding);
-  //   const catalogText = catalogBuffer.toString('utf-8');
+    const { organizationId, firstLineageCreated } = githubProfile;
 
-  //   const manifestRes = await githubApp.octokit.request('GET /search/code', {
-  //     q: `filename:manifest+extension:json+repo:${payload.repository.owner.login}/${payload.repository.name}`,
-  //   });
+    if (firstLineageCreated) return;
 
-  //   ({ data } = manifestRes);
-  //   ({ items } = data);
+    const ownerLogin = payload.repository.owner.login;
+    const repoName = payload.repository.name;
 
-  //   if (items.length > 1) throw Error('More than 1 manifest found');
+    const catalogSearchPattern = `filename:catalog+extension:json+repo:${ownerLogin}/${repoName}`;
+    const catalogContent = await getRepoFileContent(
+      ownerLogin,
+      repoName,
+      catalogSearchPattern
+    );
 
-  //   [item] = items;
-  //   ({ path } = item);
+    const manifestSearchPattern = `filename:manifest+extension:json+repo:${ownerLogin}/${repoName}`;
+    const manifestContent = await getRepoFileContent(
+      ownerLogin,
+      repoName,
+      manifestSearchPattern
+    );
 
-  //   const manifestResponse: ContentResponseType =
-  //     await githubApp.octokit.request(endpoint, {
-  //       owner: payload.repository.owner.login,
-  //       repo: payload.repository.name,
-  //       path,
-  //     });
+    const result = await requestLineageCreation(
+      catalogContent,
+      manifestContent,
+      organizationId
+    );
 
-  //   if (manifestResponse.status !== 200)
-  //     throw new Error('Reading manifest failed');
-
-  //   // todo - include type checking
-  //   ({ data } = manifestResponse);
-  //   ({ content, encoding } = data);
-
-  //   if (typeof content !== 'string')
-  //     throw new Error(
-  //       'Did not receive content field in string format from API'
-  //     );
-  //   if (encoding !== 'base64') throw new Error('Unexpected encoding type');
-
-  //   const manifestBuffer = Buffer.from(content, encoding);
-  //   const manifestText = manifestBuffer.toString('utf-8');
-
-  //   const result = await requestLineageCreation(
-  //     catalogText,
-  //     manifestText,
-  //     organizationId
-  //   );
-
-  //   if (result)
-  //     await updateGithubProfile(
-  //       currentInstallation.toString(10),
-  //       organizationId,
-  //       true
-  //     );
-  // };
+    if (result)
+      await updateGithubProfile(
+        currentInstallation.toString(10),
+        organizationId,
+        true
+      );
+  };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
     const currentInstallation = payload.installation.id;
@@ -391,9 +378,9 @@ export default (config: GithubConfig): App => {
 
     try {
       switch (event) {
-        case 'installation.created':
+        case 'push':
           console.log(handlingMessage);
-          // await handleInstallationCreated(payload);
+          await handlePush(payload);
           break;
         case 'installation.deleted':
           console.log(handlingMessage);
@@ -406,10 +393,6 @@ export default (config: GithubConfig): App => {
         case 'installation_repositories.removed':
           console.log(handlingMessage);
           await handleInstallationReposRemoved(payload);
-          break;
-        case 'push':
-          console.log(handlingMessage);
-          console.log('todo - Implement logic');
           break;
         default:
           console.warn(`Unhandled ${event} GitHub event`);
