@@ -8,25 +8,14 @@ import morgan from 'morgan';
 import v1Router from './routes/v1';
 import iocRegister from '../ioc-register';
 import Dbo from '../persistence/db/mongo-db';
-import githubMiddleware, { GithubConfig } from './github-middleware';
-
-
-interface AppConfig {
-  port: number;
-  mode: string;
-}
+import githubMiddleware from './github-middleware';
+import { appConfig } from '../../config';
 
 export default class ExpressApp {
   #expressApp: Application;
 
-  #config: AppConfig;
-
-  #githubConfig: GithubConfig;
-
-  constructor(config: AppConfig, githubConfig: GithubConfig) {
+  constructor() {
     this.#expressApp = express();
-    this.#config = config;
-    this.#githubConfig = githubConfig;
   }
 
   async start(runningLocal: boolean): Promise<Application> {
@@ -38,11 +27,11 @@ export default class ExpressApp {
       this.configApp();
 
       if (runningLocal)
-        this.#expressApp.listen(this.#config.port, () => {
+        this.#expressApp.listen(appConfig.express.port, () => {
           console.log(
             `App running under pid ${process.pid} and listening on port: ${
-              this.#config.port
-            } in ${this.#config.mode} mode`
+              appConfig.express.port
+            } in ${appConfig.express.mode} mode`
           );
         });
 
@@ -61,7 +50,7 @@ export default class ExpressApp {
     this.#expressApp.use(helmet());
     // listens on /api/github/(webhooks)
     this.#expressApp.use(
-      createNodeMiddleware(githubMiddleware(this.#githubConfig))
+      createNodeMiddleware(githubMiddleware())
     );
     this.#expressApp.use(v1Router);
   }

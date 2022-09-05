@@ -14,16 +14,16 @@ export interface GithubConfig {
   clientSecret: string;
 }
 
-export default (config: GithubConfig): App => {
+export default (): App => {
   const githubApp = new App({
-    appId: config.appId,
-    privateKey: config.privateKey,
+    appId: appConfig.github.appId,
+    privateKey: appConfig.github.privateKey,
     webhooks: {
-      secret: config.webhookSecret,
+      secret: appConfig.github.webhookSecret,
     },
     oauth: {
-      clientId: config.clientId,
-      clientSecret: config.clientSecret,
+      clientId: appConfig.github.clientId,
+      clientSecret: appConfig.github.clientSecret,
     },
   });
 
@@ -226,9 +226,10 @@ export default (config: GithubConfig): App => {
   const getRepoFileContent = async (
     ownerLogin: string,
     repoName: string,
-    fileSearchPattern: string
+    fileSearchPattern: string,
+    octokit: any
   ): Promise<string> => {
-    const catalogRes = await githubApp.octokit.request('GET /search/code', {
+    const catalogRes = await octokit.request('GET /search/code', {
       q: fileSearchPattern,
     });
 
@@ -244,7 +245,7 @@ export default (config: GithubConfig): App => {
 
     type ContentResponseType = Endpoints[typeof endpoint]['response'];
     const catalogResponse: ContentResponseType =
-      await githubApp.octokit.request(endpoint, {
+      await octokit.request(endpoint, {
         owner: ownerLogin,
         repo: repoName,
         path,
@@ -267,11 +268,10 @@ export default (config: GithubConfig): App => {
   };
 
   const handlePush = async (payload: any): Promise<void> => {
-    const currentInstallation = payload.installation.id;
-    if (!currentInstallation) throw Error('Current installation not found');
+    const installationId = payload.installation.id;
 
     const githubProfile = await getGithubProfile(
-      new URLSearchParams({ installationId: currentInstallation.toString(10) })
+      new URLSearchParams({ installationId: installationId.toString(10) })
     );
 
     const { organizationId, firstLineageCreated } = githubProfile;
@@ -281,18 +281,22 @@ export default (config: GithubConfig): App => {
     const ownerLogin = payload.repository.owner.login;
     const repoName = payload.repository.name;
 
+    const octokit = await githubApp.getInstallationOctokit(installationId);
+
     const catalogSearchPattern = `filename:catalog+extension:json+repo:${ownerLogin}/${repoName}`;
     const catalogContent = await getRepoFileContent(
       ownerLogin,
       repoName,
-      catalogSearchPattern
+      catalogSearchPattern,
+      octokit
     );
 
     const manifestSearchPattern = `filename:manifest+extension:json+repo:${ownerLogin}/${repoName}`;
     const manifestContent = await getRepoFileContent(
       ownerLogin,
       repoName,
-      manifestSearchPattern
+      manifestSearchPattern,
+      octokit
     );
 
     const result = await requestLineageCreation(
@@ -303,16 +307,16 @@ export default (config: GithubConfig): App => {
 
     if (result)
       await updateGithubProfile(
-        currentInstallation.toString(10),
+        installationId.toString(10),
         organizationId,
         true
       );
   };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
-    const currentInstallation = payload.installation.id;
+    const installationId = payload.installation.id;
     const githubProfile = await getGithubProfile(
-      new URLSearchParams({ installationId: currentInstallation.toString(10) })
+      new URLSearchParams({ installationId: installationId.toString(10) })
     );
 
     const { organizationId } = githubProfile;
@@ -321,10 +325,10 @@ export default (config: GithubConfig): App => {
   };
 
   const handleInstallationReposAdded = async (payload: any): Promise<void> => {
-    const currentInstallation = payload.installation.id;
+    const installationId = payload.installation.id;
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
-        installationId: currentInstallation.toString(10),
+        installationId: installationId.toString(10),
       })
     );
 
@@ -334,7 +338,7 @@ export default (config: GithubConfig): App => {
     const addedRepoNames = addedRepos.map((repo: any) => repo.full_name);
 
     await updateGithubProfile(
-      currentInstallation.toString(10),
+      installationId.toString(10),
       organizationId,
       undefined,
       addedRepoNames
@@ -344,10 +348,10 @@ export default (config: GithubConfig): App => {
   const handleInstallationReposRemoved = async (
     payload: any
   ): Promise<void> => {
-    const currentInstallation = payload.installation.id;
+    const installationId = payload.installation.id;
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
-        installationId: currentInstallation.toString(10),
+        installationId: installationId.toString(10),
       })
     );
 
@@ -357,7 +361,7 @@ export default (config: GithubConfig): App => {
     const removedRepoNames = removedRepos.map((repo: any) => repo.full_name);
 
     await updateGithubProfile(
-      currentInstallation.toString(10),
+      installationId.toString(10),
       organizationId,
       undefined,
       undefined,
