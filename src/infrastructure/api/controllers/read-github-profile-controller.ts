@@ -42,7 +42,7 @@ export default class ReadGithubProfileController extends BaseController {
         : undefined,
     installationId:
       typeof httpRequest.query.installationId === 'string'
-        ? typeof httpRequest.query.installationId
+        ? httpRequest.query.installationId
         : undefined,
   });
 

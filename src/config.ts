@@ -1,23 +1,11 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
-
-const githubPrivateKey = process.env.GITHUB_PRIVATE_KEY;
-if (!githubPrivateKey) throw new Error('Private key not available');
-
-const githubAppId = process.env.GITHUB_APP_IDENTIFIER
-  ? parseInt(process.env.GITHUB_APP_IDENTIFIER, 10)
-  : '';
-if (!githubAppId) throw new Error('App id not available');
-
-const githubWebhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-if (!githubWebhookSecret) throw new Error('Webhook secret not available');
-
-const githubClientId = process.env.GITHUB_APP_CLIENT_ID;
-if (!githubClientId) throw new Error('Client id not available');
-
-const githubClientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
-if (!githubClientSecret) throw new Error('Client secret not available');
+const dotenvConfig =
+  process.env.NODE_ENV === 'development'
+    ? { path: path.resolve(process.cwd(), `${process.env.NODE_ENV}.env`) }
+    : {};
+dotenv.config(dotenvConfig);
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 const defaultPort = 3002;
@@ -28,7 +16,7 @@ const getServiceDiscoveryNamespace = (): string | null => {
   switch (nodeEnv) {
     case 'development':
       return null;
-    case 'test':
+    case 'staging':
       return 'integration-staging';
     case 'production':
       return 'integration';
@@ -41,7 +29,7 @@ const getSlackMessageButtonBaseUrl = (): string => {
   switch (nodeEnv) {
     case 'development':
       return `http://localhost:3006/test`;
-    case 'test':
+    case 'staging':
       return `https://www.app-staging.citodata.com/test`;
     case 'production':
       return `https://www.app.citodata.com/test`;
@@ -56,37 +44,17 @@ export interface MongoDbConfig {
   dataKeyId: string;
 }
 
-const getMongodbConfig = (): MongoDbConfig => {
-  switch (nodeEnv) {
-    case 'development': {
-      return {
-        url: process.env.DATABASE_DEV_URL || '',
-        dbName: process.env.DATABASE_DEV_NAME || '',
-        dataKeyId: process.env.DATABASE_DATA_KEY_ID || '',
-      };
-    }
-    case 'test':
-      return {
-        url: process.env.DATABASE_TEST_URL || '',
-        dbName: process.env.DATABASE_TEST_NAME || '',
-        dataKeyId: process.env.DATABASE_DATA_KEY_ID || '',
-      };
-    case 'production':
-      return {
-        url: process.env.DATABASE_URL_PROD || '',
-        dbName: process.env.DATABASE_NAME_PROD || '',
-        dataKeyId: process.env.DATABASE_DATA_KEY_ID || '',
-      };
-    default:
-      throw new Error('Node environment mismatch');
-  }
-};
+const getMongodbConfig = (): MongoDbConfig => ({
+  url: process.env.DATABASE_URL || '',
+  dbName: process.env.DATABASE_NAME || '',
+  dataKeyId: process.env.DATABASE_DATA_KEY_ID || '',
+});
 
 const getCognitoUserPoolId = (): string => {
   switch (nodeEnv) {
     case 'development':
       return 'eu-central-1_0Z8JhFj8z';
-    case 'test':
+    case 'staging':
       return '';
     case 'production':
       return 'eu-central-1_0muGtKMk3';
@@ -103,8 +71,7 @@ export interface SystemInternalAuthConfig {
 const getSystemInternalAuthConfig = (): SystemInternalAuthConfig => {
   switch (nodeEnv) {
     case 'development': {
-      const clientSecret =
-        process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET_DEV || '';
+      const clientSecret = process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET || '';
       if (!clientSecret) throw new Error('auth client secret missing');
 
       const clientId = '3o029nji154v0bm109hkvkoi5h';
@@ -112,27 +79,51 @@ const getSystemInternalAuthConfig = (): SystemInternalAuthConfig => {
         'https://auth-cito-dev.auth.eu-central-1.amazoncognito.com/oauth2/token';
       return { clientSecret, clientId, tokenUrl };
     }
-    case 'test': {
-      const clientSecret =
-        process.env.AUTH_SCHEDULER_CLIENT_SECRET_STAGING || '';
-      if (!clientSecret) throw new Error('auth client secret missing');
-
-      const clientId = '';
-      const tokenUrl = '';
-      return { clientSecret, clientId, tokenUrl };
+    case 'staging': {
+      throw new Error('Staging not configured');
     }
     case 'production': {
-      const clientSecret =
-        process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET_PROD || '';
+      const clientSecret = process.env.SYSTEM_INTERNAL_AUTH_CLIENT_SECRET || '';
       if (!clientSecret) throw new Error('auth client secret missing');
 
       const clientId = '54n1ig9sb07d4d9tiihdi0kifq';
       const tokenUrl = 'https://auth.citodata.com/oauth2/token';
       return { clientSecret, clientId, tokenUrl };
     }
-    default:
-      throw new Error('node env misconfiguration');
+    default: {      
+      throw new Error(`node env misconfiguration. Provided state: ${nodeEnv}`);
+    }
   }
+};
+
+interface GithubConfig {
+  privateKey: string;
+  appId: number;
+  webhookSecret: string;
+  clientId: string;
+  clientSecret: string;
+}
+
+const getGithubConfig = (): GithubConfig => {
+  const privateKey = process.env.GITHUB_PRIVATE_KEY;
+  if (!privateKey) throw new Error('Private key not available');
+
+
+  const appId = process.env.GITHUB_APP_IDENTIFIER
+    ? parseInt(process.env.GITHUB_APP_IDENTIFIER, 10)
+    : undefined;
+  if (!appId) throw new Error('App id not available');
+
+  const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+  if (!webhookSecret) throw new Error('Webhook secret not available');
+
+  const clientId = process.env.GITHUB_APP_CLIENT_ID;
+  if (!clientId) throw new Error('Client id not available');
+
+  const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
+  if (!clientSecret) throw new Error('Client secret not available');
+
+  return { privateKey: privateKey.replace(/\\n/gm, '\n'), appId, webhookSecret, clientId, clientSecret };
 };
 
 export const appConfig = {
@@ -147,9 +138,7 @@ export const appConfig = {
     userPoolId: getCognitoUserPoolId(),
     region: 'eu-central-1',
   },
-  mongodb: {
-    ...getMongodbConfig(),
-  },
+  mongodb: getMongodbConfig(),
   slack: {
     buttonBaseUrl: getSlackMessageButtonBaseUrl(),
   },
@@ -157,11 +146,5 @@ export const appConfig = {
     applicationName:
       process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector',
   },
-  github: {
-    privateKey: githubPrivateKey,
-    appId: githubAppId,
-    webhookSecret: githubWebhookSecret,
-    clientId: githubClientId,
-    clientSecret: githubClientSecret,
-  },
+  github: getGithubConfig(),
 };
