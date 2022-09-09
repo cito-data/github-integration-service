@@ -14,6 +14,8 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
       const results: SnowflakeQuery[] = [];
 
       const destroy = (conn: Connection, error?: Error): void => {
+        if (!conn.isUp()) return;
+
         conn.destroy((destroyError: any, connectionToDestroy: Connection) => {
           if (destroyError)
             throw new Error(`Unable to disconnect: ${destroyError.message}`);
@@ -66,7 +68,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           stream.on('data', (row: any) => {
             if (row) results.push(row);
           });
-          stream.on('error', handleStreamError);
+          stream.on('error', handleStreamError(error));
           stream.on('end', () => destroy(conn));
         } catch (error: unknown) {
           if (typeof error === 'string') reject(error);

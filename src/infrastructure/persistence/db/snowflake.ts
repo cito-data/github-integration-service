@@ -4,4 +4,4 @@ export const connect = (options: snowflake.ConnectionOptions): snowflake.Connect
 
 export const handleStreamEnd = ():void => console.log('All rows consumed');
 
-export const handleStreamError = (): void => {console.log('Unable to consume all rows');};
+export const handleStreamError = (err: Error): void => {console.log(`Snowflake query failed. Error: ${err}`);};
