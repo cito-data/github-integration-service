@@ -1,7 +1,9 @@
 import { Endpoints } from '@octokit/types';
 import axios, { AxiosRequestConfig } from 'axios';
+import { TextEncoder, TextDecoder } from 'util';
 import { App } from 'octokit';
 import EventSource from 'eventsource';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { GithubProfile } from '../../domain/entities/github-profile';
 import { appConfig } from '../../config';
 import getRoot from '../shared/api-root-builder';
@@ -12,6 +14,12 @@ export interface GithubConfig {
   webhookSecret: string;
   clientId: string;
   clientSecret: string;
+}
+
+interface InternalLineageInvoke {
+  internalInvokeType: string;
+  auth: { jwt: string };
+  req: { catalog: string; manifest: string; targetOrganizationId: string };
 }
 
 export default (): App => {
@@ -181,12 +189,45 @@ export default (): App => {
   };
 
   const requestLineageCreation = async (
-    catalogContent: string,
-    manifestContent: string,
+    base64CatalogContent: string,
+    base64ManifestContent: string,
     organizationId: string
   ): Promise<any> => {
     try {
       const jwt = await getJwt();
+
+      if (appConfig.express.mode === 'production') {
+        const payload: InternalLineageInvoke = {
+          internalInvokeType: 'create-lineage',
+          auth: {
+            jwt,
+          },
+          req: {
+            catalog: base64CatalogContent,
+            manifest: base64ManifestContent,
+            targetOrganizationId: organizationId,
+          },
+        };
+
+        const encoder = new TextEncoder();
+        const command = new InvokeCommand({
+          FunctionName:
+            'arn:aws:lambda:eu-central-1:966593446935:function:lineage-service-production-app',
+          Payload: encoder.encode(JSON.stringify(payload)),
+        });
+
+        const client = new LambdaClient({ region: 'eu-central-1' });
+
+        const response = await client.send(command);
+        const decoder = new TextDecoder();
+        const resPayload = decoder.decode(response.Payload);
+
+        if (/status.*:.*201/.test(resPayload))
+          return { ...response, Payload: resPayload };
+        throw new Error(
+          `Unexpected http status code when creating lineage: ${resPayload}`
+        );
+      }
 
       const configuration: AxiosRequestConfig = {
         headers: {
@@ -195,18 +236,15 @@ export default (): App => {
         },
       };
 
-      const gateway =
-        appConfig.express.mode === 'production'
-          ? 'kga7x5r9la.execute-api.eu-central-1.amazonaws.com/production'
-          : '3000';
+      const gateway = '3000';
 
       const apiRoot = await getRoot(gateway, 'api/v1');
 
       const response = await axios.post(
         `${apiRoot}/lineage`,
         {
-          catalog: catalogContent,
-          manifest: manifestContent,
+          catalog: base64CatalogContent,
+          manifest: base64ManifestContent,
           targetOrganizationId: organizationId,
         },
         configuration
@@ -223,7 +261,7 @@ export default (): App => {
     }
   };
 
-  const getRepoFileContent = async (
+  const getBase64RepoFileContent = async (
     ownerLogin: string,
     repoName: string,
     fileSearchPattern: string,
@@ -244,12 +282,14 @@ export default (): App => {
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
 
     type ContentResponseType = Endpoints[typeof endpoint]['response'];
-    const catalogResponse: ContentResponseType =
-      await octokit.request(endpoint, {
+    const catalogResponse: ContentResponseType = await octokit.request(
+      endpoint,
+      {
         owner: ownerLogin,
         repo: repoName,
         path,
-      });
+      }
+    );
 
     if (catalogResponse.status !== 200) throw new Error('Reading file failed');
 
@@ -263,8 +303,9 @@ export default (): App => {
       );
     if (encoding !== 'base64') throw new Error('Unexpected encoding type');
 
-    const catalogBuffer = Buffer.from(content, encoding);
-    return catalogBuffer.toString('utf-8');
+    // Unclear which base64 encoding variant is used by Github. Therefore transformation to Node variant
+    const utf8Content = Buffer.from(content, encoding).toString('utf8');
+    return Buffer.from(utf8Content, 'utf8').toString('base64');
   };
 
   const handlePush = async (payload: any): Promise<void> => {
@@ -284,7 +325,7 @@ export default (): App => {
     const octokit = await githubApp.getInstallationOctokit(installationId);
 
     const catalogSearchPattern = `filename:catalog+extension:json+repo:${ownerLogin}/${repoName}`;
-    const catalogContent = await getRepoFileContent(
+    const catalogContent = await getBase64RepoFileContent(
       ownerLogin,
       repoName,
       catalogSearchPattern,
@@ -292,7 +333,7 @@ export default (): App => {
     );
 
     const manifestSearchPattern = `filename:manifest+extension:json+repo:${ownerLogin}/${repoName}`;
-    const manifestContent = await getRepoFileContent(
+    const manifestContent = await getBase64RepoFileContent(
       ownerLogin,
       repoName,
       manifestSearchPattern,
