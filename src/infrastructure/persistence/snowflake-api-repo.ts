@@ -68,7 +68,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           stream.on('data', (row: any) => {
             if (row) results.push(row);
           });
-          stream.on('error', handleStreamError(error));
+          stream.on('error', handleStreamError);
           stream.on('end', () => destroy(conn));
         } catch (error: unknown) {
           if (typeof error === 'string') reject(error);
