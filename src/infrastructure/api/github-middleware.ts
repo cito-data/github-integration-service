@@ -123,6 +123,8 @@ export default (
     repositoriesToRemove?: string[]
   ): Promise<any> => {
     try {
+      console.log('Updating Github profile...');
+      
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
@@ -228,6 +230,7 @@ export default (
         const client = new LambdaClient({ region: 'eu-central-1' });
 
         const response = await client.send(command);
+
         const decoder = new TextDecoder();
         const resPayload = decoder.decode(response.Payload);
 
@@ -372,6 +375,7 @@ export default (
     );
 
     if (result) await updateGithubProfile(installationId, organizationId, true);
+    else throw new Error('Unclear lineage creation status. No result object available');
   };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
