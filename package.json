@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run tsc && npm run lint",
     "start": "npm run build && set NODE_ENV=production&&  nodemon ./src/index.ts",
     "dev": "npm run build && set NODE_ENV=development&&  nodemon ./src/index.ts",
-    "start-dependencies": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./start-dependencies.ps1 -serviceDependencyNames @('account')",
+    "start-deps": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./start-dependencies.ps1 -serviceDependencyNames @('account')",
     "deploy": "npm run build && serverless deploy && npm run write-env ",
     "write-env": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./write-env.ps1 -functionName integration-service-production-app",
     "debug": "npm run build && set NODE_ENV=development&& nodemon --inspect=3003 ./src/index.ts"
@@ -53,6 +53,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.165.0",
     "@octokit/types": "^7.2.0",
     "@slack/web-api": "^6.7.2",
     "@types/snowflake-sdk": "^1.6.7",

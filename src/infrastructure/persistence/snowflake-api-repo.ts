@@ -14,6 +14,8 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
       const results: SnowflakeQuery[] = [];
 
       const destroy = (conn: Connection, error?: Error): void => {
+        if (!conn.isUp()) return;
+
         conn.destroy((destroyError: any, connectionToDestroy: Connection) => {
           if (destroyError)
             throw new Error(`Unable to disconnect: ${destroyError.message}`);
@@ -42,7 +44,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
 
           // Optional: store the connection ID.
           const connectionId = conn.getId();
-          console.log(`sf connection: ${connectionId}`);
+          console.log(`SF connection: ${connectionId} executing ${query.substring(0, 100)}...`);
 
           const complete = (error: any, stmt: Statement): void => {
             if (error) {
