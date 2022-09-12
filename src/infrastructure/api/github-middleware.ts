@@ -7,6 +7,8 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { GithubProfile } from '../../domain/entities/github-profile';
 import { appConfig } from '../../config';
 import getRoot from '../shared/api-root-builder';
+import { CreateMetadata } from '../../domain/metadata/create-metadata';
+import { DbConnection } from '../../domain/services/i-db';
 
 export interface GithubConfig {
   privateKey: string;
@@ -22,7 +24,10 @@ interface InternalLineageInvoke {
   req: { catalog: string; manifest: string; targetOrganizationId: string };
 }
 
-export default (): App => {
+export default (
+  createMetadata: CreateMetadata,
+  dbConnection: DbConnection
+): App => {
   const githubApp = new App({
     appId: appConfig.github.appId,
     privateKey: appConfig.github.privateKey,
@@ -194,6 +199,10 @@ export default (): App => {
     organizationId: string
   ): Promise<any> => {
     try {
+      console.log(
+        `Requesting lineage creation for organization ${organizationId}`
+      );
+
       const jwt = await getJwt();
 
       if (appConfig.express.mode === 'production') {
@@ -309,15 +318,20 @@ export default (): App => {
   };
 
   const handlePush = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id;
+    const installationId = payload.installation.id.toString(10);
 
     const githubProfile = await getGithubProfile(
-      new URLSearchParams({ installationId: installationId.toString(10) })
+      new URLSearchParams({ installationId })
     );
 
     const { organizationId, firstLineageCreated } = githubProfile;
 
-    if (firstLineageCreated) return;
+    if (firstLineageCreated) {
+      console.warn(
+        `Lineage creation triggered for org ${organizationId} but lineage was already created`
+      );
+      return;
+    }
 
     const ownerLogin = payload.repository.owner.login;
     const repoName = payload.repository.name;
@@ -340,24 +354,30 @@ export default (): App => {
       octokit
     );
 
+    const createMetadataResult = await createMetadata.execute(
+      { organizationId, installationId, manifestContent, catalogContent },
+      { isSystemInternal: true },
+      dbConnection
+    );
+
+    if (!createMetadataResult.success)
+      throw new Error('Not able to store metadata to persistence');
+
+    console.log('Metadata successfully stored');
+
     const result = await requestLineageCreation(
       catalogContent,
       manifestContent,
       organizationId
     );
 
-    if (result)
-      await updateGithubProfile(
-        installationId.toString(10),
-        organizationId,
-        true
-      );
+    if (result) await updateGithubProfile(installationId, organizationId, true);
   };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id;
+    const installationId = payload.installation.idtoString(10);
     const githubProfile = await getGithubProfile(
-      new URLSearchParams({ installationId: installationId.toString(10) })
+      new URLSearchParams({ installationId })
     );
 
     const { organizationId } = githubProfile;
@@ -366,10 +386,10 @@ export default (): App => {
   };
 
   const handleInstallationReposAdded = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id;
+    const installationId = payload.installation.id.toString(10);
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
-        installationId: installationId.toString(10),
+        installationId,
       })
     );
 
@@ -379,7 +399,7 @@ export default (): App => {
     const addedRepoNames = addedRepos.map((repo: any) => repo.full_name);
 
     await updateGithubProfile(
-      installationId.toString(10),
+      installationId,
       organizationId,
       undefined,
       addedRepoNames
@@ -392,7 +412,7 @@ export default (): App => {
     const installationId = payload.installation.id;
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
-        installationId: installationId.toString(10),
+        installationId,
       })
     );
 
@@ -402,7 +422,7 @@ export default (): App => {
     const removedRepoNames = removedRepos.map((repo: any) => repo.full_name);
 
     await updateGithubProfile(
-      installationId.toString(10),
+      installationId,
       organizationId,
       undefined,
       undefined,
@@ -443,6 +463,10 @@ export default (): App => {
           console.warn(`Unhandled ${event} GitHub event`);
           break;
       }
+
+      console.log(
+        `Successfully created lineage for installation ${payload.installation.id}`
+      );
     } catch (error: unknown) {
       if (typeof error === 'string')
         console.error(`Error in github-webhook-middleware: ${error}`);
@@ -455,18 +479,18 @@ export default (): App => {
   if (appConfig.express.mode === 'development') {
     const webhookProxyUrl = 'https://smee.io/jn9bVXprxGxZMZD';
     const source = new EventSource(webhookProxyUrl);
-    source.onmessage = (event: any) => {
+    source.onmessage = async (event: any) => {
       const webhookEvent = JSON.parse(event.data);
-      handleEvent(
+      await handleEvent(
         webhookEvent['x-github-delivery'],
         webhookEvent['x-github-event'],
         webhookEvent.body
       );
     };
   } else
-    githubApp.webhooks.onAny(async ({ id, name, payload }) =>
-      handleEvent(id, name, payload)
-    );
+    githubApp.webhooks.onAny(async ({ id, name, payload }) => {
+      await handleEvent(id, name, payload);
+    });
 
   return githubApp;
 };

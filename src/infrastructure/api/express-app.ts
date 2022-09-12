@@ -14,24 +14,23 @@ import { appConfig } from '../../config';
 export default class ExpressApp {
   #expressApp: Application;
 
+  #dbo: Dbo;
+
   constructor() {
     this.#expressApp = express();
+    this.#dbo = iocRegister.resolve('dbo');
   }
 
   async start(runningLocal: boolean): Promise<Application> {
-    const dbo: Dbo = iocRegister.resolve('dbo');
-
     try {
-      await dbo.connectToServer();
+      await this.#dbo.connectToServer();
 
       this.configApp();
 
       if (runningLocal)
         this.#expressApp.listen(appConfig.express.port, () => {
           console.log(
-            `App running under pid ${process.pid} and listening on port: ${
-              appConfig.express.port
-            } in ${appConfig.express.mode} mode`
+            `App running under pid ${process.pid} and listening on port: ${appConfig.express.port} in ${appConfig.express.mode} mode`
           );
         });
 
@@ -48,9 +47,14 @@ export default class ExpressApp {
     this.#expressApp.use(cors());
     this.#expressApp.use(compression());
     this.#expressApp.use(helmet());
-    // listens on /api/github/(webhooks)
+    // listens on /api/github/webhooks
     this.#expressApp.use(
-      createNodeMiddleware(githubMiddleware())
+      createNodeMiddleware(
+        githubMiddleware(
+          iocRegister.resolve('createMetadata'),
+          this.#dbo.dbConnection
+        )
+      )
     );
     this.#expressApp.use(v1Router);
   }

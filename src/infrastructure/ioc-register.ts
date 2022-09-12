@@ -26,6 +26,8 @@ import { DeleteGithubProfile } from '../domain/github-profile/delete-github-prof
 import { UpdateSnowflakeProfile } from '../domain/snowflake-profile/update-snowflake-profile';
 import { GetGithubAccessToken } from '../domain/github-api/get-access-token';
 import GithubApiRepo from './persistence/github-api-repo';
+import { CreateMetadata } from '../domain/metadata/create-metadata';
+import MetadataRepo from './persistence/metadata-repo';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -34,6 +36,7 @@ iocRegister.register({
   createSlackProfile: asClass(CreateSlackProfile),
   createGithubProfile: asClass(CreateGithubProfile),
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
+  createMetadata: asClass(CreateMetadata),
 
   deleteGithubProfile: asClass(DeleteGithubProfile),
 
@@ -59,6 +62,7 @@ iocRegister.register({
   snowflakeProfileRepo: asClass(SnowflakeProfileRepo),
   slackProfileRepo: asClass(SlackProfileRepo),
   githubProfileRepo: asClass(GithubProfileRepo),
+  metadataRepo: asClass(MetadataRepo),
 
   snowflakeApiRepo: asClass(SnowflakeApiRepo),
   slackApiRepo: asClass(SlackApiRepo),
