@@ -15,6 +15,7 @@ const schema = {
         { name: 'column_name', type: 'string' },
         { name: 'target_resource_id', type: 'string' },
         { name: 'organization_id', type: 'string' },
+        { name: 'cron', type: 'string' },
       ],
     },
     {
@@ -29,6 +30,7 @@ const schema = {
         { name: 'sql_logic', type: 'string' },
         { name: 'target_resource_ids', type: 'array' },
         { name: 'organization_id', type: 'string' },
+        { name: 'cron', type: 'string' },
       ],
     },
     {
