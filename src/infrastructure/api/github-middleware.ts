@@ -439,7 +439,7 @@ export default (
     name: string,
     payload: any
   ): Promise<void> => {
-    console.log(`Receiving GitHub event - id: ${id}, name: ${name}`);
+    console.log(`Receiving GitHub event from installation ${payload.installation.id} - id: ${id}, name: ${name}`);
 
     const event = payload.action ? `${name}.${payload.action}` : name;
 
