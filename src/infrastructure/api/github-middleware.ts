@@ -124,7 +124,7 @@ export default (
   ): Promise<any> => {
     try {
       console.log('Updating Github profile...');
-      
+
       const jwt = await getJwt();
 
       const configuration: AxiosRequestConfig = {
@@ -234,8 +234,11 @@ export default (
         const decoder = new TextDecoder();
         const resPayload = decoder.decode(response.Payload);
 
-        if (/status.*:.*201/.test(resPayload))
+        if (/status.*:.*201/.test(resPayload)) {
+          console.log(`Successfully created lineage for installation`);
+
           return { ...response, Payload: resPayload };
+        }
         throw new Error(
           `Unexpected http status code when creating lineage: ${resPayload}`
         );
@@ -264,7 +267,11 @@ export default (
 
       const jsonResponse = response.data;
 
-      if (response.status === 201) return jsonResponse;
+      if (response.status === 201) {
+        console.log(`Successfully created lineage for installation`);
+
+        return jsonResponse;
+      }
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
@@ -375,11 +382,14 @@ export default (
     );
 
     if (result) await updateGithubProfile(installationId, organizationId, true);
-    else throw new Error('Unclear lineage creation status. No result object available');
+    else
+      throw new Error(
+        'Unclear lineage creation status. No result object available'
+      );
   };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.idtoString(10);
+    const installationId = payload.installation.id.toString(10);
     const githubProfile = await getGithubProfile(
       new URLSearchParams({ installationId })
     );
@@ -439,7 +449,9 @@ export default (
     name: string,
     payload: any
   ): Promise<void> => {
-    console.log(`Receiving GitHub event from installation ${payload.installation.id} - id: ${id}, name: ${name}`);
+    console.log(
+      `Receiving GitHub event from installation ${payload.installation.id} - id: ${id}, name: ${name}`
+    );
 
     const event = payload.action ? `${name}.${payload.action}` : name;
 
@@ -467,10 +479,6 @@ export default (
           console.warn(`Unhandled ${event} GitHub event`);
           break;
       }
-
-      console.log(
-        `Successfully created lineage for installation ${payload.installation.id}`
-      );
     } catch (error: unknown) {
       if (typeof error === 'string')
         console.error(`Error in github-webhook-middleware: ${error}`);
