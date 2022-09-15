@@ -9,6 +9,10 @@ import { appConfig } from '../../config';
 import getRoot from '../shared/api-root-builder';
 import { CreateMetadata } from '../../domain/metadata/create-metadata';
 import { DbConnection } from '../../domain/services/i-db';
+import {
+  UpdateGithubProfile,
+  UpdateGithubProfileResponseDto,
+} from '../../domain/github-profile/update-github-profile';
 
 export interface GithubConfig {
   privateKey: string;
@@ -24,8 +28,17 @@ interface InternalLineageInvoke {
   req: { catalog: string; manifest: string; targetOrganizationId: string };
 }
 
+interface UpdateProfileProps {
+  installationId: string;
+  targetOrganizationId: string;
+  firstLineageCreated?: boolean;
+  repositoriesToAdd?: string[];
+  repositoriesToRemove?: string[];
+}
+
 export default (
   createMetadata: CreateMetadata,
+  updateGithubProfile: UpdateGithubProfile,
   dbConnection: DbConnection
 ): App => {
   const githubApp = new App({
@@ -115,45 +128,30 @@ export default (
     }
   };
 
-  const updateGithubProfile = async (
-    installationId: string,
-    targetOrganizationId: string,
-    firstLineageCreated?: boolean,
-    repositoriesToAdd?: string[],
-    repositoriesToRemove?: string[]
-  ): Promise<any> => {
+  const updateProfile = async (props: UpdateProfileProps): Promise<any> => {
     try {
       console.log('Updating Github profile...');
 
-      const jwt = await getJwt();
+      const { targetOrganizationId, ...updateDto } = props;
 
-      const configuration: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const apiRoot = await getSelfApiRoute();
-
-      const response = await axios.patch(
-        `${apiRoot}/github/profile`,
-        {
-          targetOrganizationId,
-          updateDto: {
-            firstLineageCreated,
-            repositoriesToAdd,
-            repositoriesToRemove,
-            installationId,
+      const useCaseResult: UpdateGithubProfileResponseDto =
+        await updateGithubProfile.execute(
+          {
+            targetOrganizationId,
+            updateDto,
           },
-        },
-        configuration
-      );
+          { isSystemInternal: true },
+          dbConnection
+        );
 
-      const jsonResponse = response.data;
+      if (!useCaseResult.success) {
+        throw new Error(useCaseResult.error);
+      }
 
-      if (response.status === 200) return jsonResponse;
-      throw new Error(jsonResponse.message);
+      console.log('...Profile updated');
+      
+
+      return useCaseResult.value;
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -328,7 +326,7 @@ export default (
   };
 
   const handlePush = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id.toString(10);
+    const installationId = payload.installation.id.toString();
 
     const githubProfile = await getGithubProfile(
       new URLSearchParams({ installationId })
@@ -381,7 +379,12 @@ export default (
       organizationId
     );
 
-    if (result) await updateGithubProfile(installationId, organizationId, true);
+    if (result)
+      await updateProfile({
+        installationId,
+        targetOrganizationId: organizationId,
+        firstLineageCreated: true,
+      });
     else
       throw new Error(
         'Unclear lineage creation status. No result object available'
@@ -389,7 +392,7 @@ export default (
   };
 
   const handleInstallationDeleted = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id.toString(10);
+    const installationId = payload.installation.id.toString();
     const githubProfile = await getGithubProfile(
       new URLSearchParams({ installationId })
     );
@@ -400,7 +403,7 @@ export default (
   };
 
   const handleInstallationReposAdded = async (payload: any): Promise<void> => {
-    const installationId = payload.installation.id.toString(10);
+    const installationId = payload.installation.id.toString();
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
         installationId,
@@ -412,18 +415,17 @@ export default (
     const addedRepos = payload.repositories_added;
     const addedRepoNames = addedRepos.map((repo: any) => repo.full_name);
 
-    await updateGithubProfile(
+    await updateProfile({
       installationId,
-      organizationId,
-      undefined,
-      addedRepoNames
-    );
+      targetOrganizationId: organizationId,
+      repositoriesToAdd: addedRepoNames,
+    });
   };
 
   const handleInstallationReposRemoved = async (
     payload: any
   ): Promise<void> => {
-    const installationId = payload.installation.id;
+    const installationId = payload.installation.id.toString();
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
         installationId,
@@ -435,13 +437,11 @@ export default (
     const removedRepos = payload.repositories_removed;
     const removedRepoNames = removedRepos.map((repo: any) => repo.full_name);
 
-    await updateGithubProfile(
+    await updateProfile({
       installationId,
-      organizationId,
-      undefined,
-      undefined,
-      removedRepoNames
-    );
+      targetOrganizationId: organizationId,
+      repositoriesToRemove: removedRepoNames,
+    });
   };
 
   const handleEvent = async (
