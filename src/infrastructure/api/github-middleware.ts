@@ -256,26 +256,27 @@ export default (
   const getBase64RepoFileContent = async (
     ownerLogin: string,
     repoName: string,
-    fileSearchPattern: string,
+    fileName: string,
     octokit: any
   ): Promise<string> => {
+    const searchPattern = `filename:${fileName}+extension:json+repo:${ownerLogin}/${repoName}`;
+
     const catalogRes = await octokit.request('GET /search/code', {
-      q: fileSearchPattern,
+      q: searchPattern,
     });
 
-    console.log(
-      `Owner: ${ownerLogin}, RepoName: ${repoName}, searchPattern: ${fileSearchPattern}`
-    );
-
-    console.log(`CatalogRes: ${catalogRes}`);
-    
+    console.log(`Found file items: ${catalogRes.data.items}`);
 
     let { data }: any = catalogRes;
     const { items } = data;
 
-    if (items.length > 1) throw Error('More than 1 file found');
+    const matchingItems = items.filter(
+      (el: any) => el.name === `${fileName}.json`
+    );
 
-    const [item] = items;
+    if (matchingItems.length > 1) throw Error('More than 1 file found');
+
+    const [item] = matchingItems;
     const { path } = item;
 
     const endpoint = 'GET /repos/{owner}/{repo}/contents/{path}';
@@ -328,19 +329,17 @@ export default (
 
     const octokit = await githubApp.getInstallationOctokit(installationId);
 
-    const catalogSearchPattern = `filename:catalog+extension:json+repo:${ownerLogin}/${repoName}`;
     const catalogContent = await getBase64RepoFileContent(
       ownerLogin,
       repoName,
-      catalogSearchPattern,
+      'catalog',
       octokit
     );
 
-    const manifestSearchPattern = `filename:manifest+extension:json+repo:${ownerLogin}/${repoName}`;
     const manifestContent = await getBase64RepoFileContent(
       ownerLogin,
       repoName,
-      manifestSearchPattern,
+      'manifest',
       octokit
     );
 
