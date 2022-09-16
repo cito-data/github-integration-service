@@ -265,7 +265,7 @@ export default (
       q: searchPattern,
     });
 
-    console.log(`Found file items: ${catalogRes.data.items}`);
+    console.log(`Number of matches for files with name '${fileName}': ${catalogRes.data.items.length}`);
 
     let { data }: any = catalogRes;
     const { items } = data;
