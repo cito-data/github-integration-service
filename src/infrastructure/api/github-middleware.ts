@@ -275,6 +275,7 @@ export default (
       (el: any) => el.name === `${fileName}.json`
     );
 
+    if (!matchingItems.length) throw Error(`${fileName}.json missing`);
     if (matchingItems.length > 1) throw Error('More than 1 file found');
 
     const [item] = matchingItems;
