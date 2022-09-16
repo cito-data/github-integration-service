@@ -3,8 +3,7 @@ import { DbConnection } from '../services/i-db';
 
 export interface GithubProfileUpdateDto {
   firstLineageCreated?: boolean;
-  repositoriesToAdd?: string[];
-  repositoriesToRemove?: string[];
+  repositoryNames?: string[];
   installationId?: string;
 }
 export interface IGithubProfileRepo {
@@ -21,7 +20,6 @@ export interface IGithubProfileRepo {
 
   updateOne(
     id: string,
-    currentRepoNames: string[],
     updateDto: GithubProfileUpdateDto,
     dbConnection: DbConnection
   ): Promise<string>;

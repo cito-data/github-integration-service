@@ -32,8 +32,7 @@ interface UpdateProfileProps {
   installationId: string;
   targetOrganizationId: string;
   firstLineageCreated?: boolean;
-  repositoriesToAdd?: string[];
-  repositoriesToRemove?: string[];
+  repositoryNames?: string[];
 }
 
 export default (
@@ -265,7 +264,9 @@ export default (
       q: searchPattern,
     });
 
-    console.log(`Number of matches for files with name '${fileName}': ${catalogRes.data.items.length}`);
+    console.log(
+      `Number of matches for files with name '${fileName}': ${catalogRes.data.items.length}`
+    );
 
     let { data }: any = catalogRes;
     const { items } = data;
@@ -383,7 +384,7 @@ export default (
     await deleteGithubProfile(organizationId);
   };
 
-  const handleInstallationReposAdded = async (payload: any): Promise<void> => {
+  const handleInstallationRepoChange = async (payload: any): Promise<void> => {
     const installationId = payload.installation.id.toString();
     const githubProfile = await getGithubProfile(
       new URLSearchParams({
@@ -393,35 +394,20 @@ export default (
 
     const { organizationId } = githubProfile;
 
-    const addedRepos = payload.repositories_added;
-    const addedRepoNames = addedRepos.map((repo: any) => repo.full_name);
+    const octokit = await githubApp.getInstallationOctokit(installationId);
+
+    const endpoint = 'GET /installation/repositories';
+
+    const reposResponse = await octokit.request(endpoint, {});
+
+    const repos = reposResponse.data.repositories;
+
+    const repoNames = repos.map((repo: any) => repo.full_name);
 
     await updateProfile({
       installationId,
       targetOrganizationId: organizationId,
-      repositoriesToAdd: addedRepoNames,
-    });
-  };
-
-  const handleInstallationReposRemoved = async (
-    payload: any
-  ): Promise<void> => {
-    const installationId = payload.installation.id.toString();
-    const githubProfile = await getGithubProfile(
-      new URLSearchParams({
-        installationId,
-      })
-    );
-
-    const { organizationId } = githubProfile;
-
-    const removedRepos = payload.repositories_removed;
-    const removedRepoNames = removedRepos.map((repo: any) => repo.full_name);
-
-    await updateProfile({
-      installationId,
-      targetOrganizationId: organizationId,
-      repositoriesToRemove: removedRepoNames,
+      repositoryNames: repoNames,
     });
   };
 
@@ -450,11 +436,11 @@ export default (
           break;
         case 'installation_repositories.added':
           console.log(handlingMessage);
-          await handleInstallationReposAdded(payload);
+          await handleInstallationRepoChange(payload);
           break;
         case 'installation_repositories.removed':
           console.log(handlingMessage);
-          await handleInstallationReposRemoved(payload);
+          await handleInstallationRepoChange(payload);
           break;
         default:
           console.warn(`Unhandled ${event} GitHub event`);

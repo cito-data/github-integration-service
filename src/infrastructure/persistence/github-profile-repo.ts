@@ -88,22 +88,14 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
   #buildUpdateFilter = async (
     updateDto: GithubProfileUpdateDto,
-    currentRepositoryNames: string[]
   ): Promise<GithubProfileUpdateFilter> => {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
     if (updateDto.firstLineageCreated)
       setFilter.firstLineageCreated = updateDto.firstLineageCreated;
-    if (updateDto.repositoriesToAdd)
-      setFilter.repositoryNames = currentRepositoryNames.concat(
-        updateDto.repositoriesToAdd
-      );
-    const reposToRemove = updateDto.repositoriesToRemove;
-    if (reposToRemove)
-      setFilter.repositoryNames = currentRepositoryNames.filter(
-        (repoName) => !reposToRemove.includes(repoName)
-      );
+    if (updateDto.repositoryNames)
+      setFilter.repositoryNames = updateDto.repositoryNames;
     if (updateDto.installationId)
       setFilter.installationId = updateDto.installationId;
 
@@ -112,7 +104,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
   updateOne = async (
     id: string,
-    currentRepoNames: string[],
     updateDto: GithubProfileUpdateDto,
     dbConnection: Db
   ): Promise<string> => {
@@ -123,7 +114,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
           { _id: new ObjectId(sanitize(id)) },
           await this.#buildUpdateFilter(
             sanitize(updateDto),
-            currentRepoNames
           )
         );
 

@@ -9,8 +9,7 @@ import { ReadGithubProfile } from './read-github-profile';
 
 export interface RequestUpdateDto {
   firstLineageCreated?: boolean;
-  repositoriesToAdd?: string[];
-  repositoriesToRemove?: string[];
+  repositoryNames?: string[];
   installationId?: string;
 }
 
@@ -93,7 +92,6 @@ export class UpdateGithubProfile
 
       const updateResult = await this.#githubProfileRepo.updateOne(
         readGithubProfileResult.value.id,
-        readGithubProfileResult.value.repositoryNames,
         this.#buildUpdateDto({
           ...request,
         }),
@@ -113,7 +111,6 @@ export class UpdateGithubProfile
   ): GithubProfileUpdateDto => ({
     firstLineageCreated: request.updateDto.firstLineageCreated,
     installationId: request.updateDto.installationId,
-    repositoriesToAdd: request.updateDto.repositoriesToAdd,
-    repositoriesToRemove: request.updateDto.repositoriesToRemove,
+    repositoryNames: request.updateDto.repositoryNames,
   });
 }
