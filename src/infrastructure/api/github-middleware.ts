@@ -149,7 +149,6 @@ export default (
       }
 
       console.log('...Profile updated');
-      
 
       return useCaseResult.value;
     } catch (error: unknown) {
@@ -242,35 +241,11 @@ export default (
         );
       }
 
-      const configuration: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const gateway = '3000';
-
-      const apiRoot = await getRoot(gateway, 'api/v1');
-
-      const response = await axios.post(
-        `${apiRoot}/lineage`,
-        {
-          catalog: base64CatalogContent,
-          manifest: base64ManifestContent,
-          targetOrganizationId: organizationId,
-        },
-        configuration
+      console.warn(
+        `Github middleware lineage creation not in place for mode ${appConfig.express.mode} `
       );
 
-      const jsonResponse = response.data;
-
-      if (response.status === 201) {
-        console.log(`Successfully created lineage for installation`);
-
-        return jsonResponse;
-      }
-      throw new Error(jsonResponse.message);
+      return undefined;
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
@@ -287,6 +262,13 @@ export default (
     const catalogRes = await octokit.request('GET /search/code', {
       q: fileSearchPattern,
     });
+
+    console.log(
+      `Owner: ${ownerLogin}, RepoName: ${repoName}, searchPattern: ${fileSearchPattern}`
+    );
+
+    console.log(`CatalogRes: ${catalogRes}`);
+    
 
     let { data }: any = catalogRes;
     const { items } = data;
