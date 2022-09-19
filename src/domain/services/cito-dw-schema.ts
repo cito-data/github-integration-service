@@ -72,6 +72,19 @@ const schema = {
       ],
     },
     {
+      name: 'schema_change_test_results',
+      columns: [
+        { name: 'id', type: 'string' },
+        { name: 'test_type', type: 'string' },
+        { name: 'expected_value', type: 'string' },
+        { name: 'value', type: 'string'},
+        { name: 'deviation', type: 'string' },
+        { name: 'is_anomalous', type: 'boolean' },
+        { name: 'test_suite_id', type: 'string' },
+        { name: 'execution_id', type: 'string' },
+      ],
+    },
+    {
       name: 'alerts',
       columns: [
         { name: 'id', type: 'string' },
