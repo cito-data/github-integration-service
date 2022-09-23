@@ -13,6 +13,7 @@ import {
   UpdateGithubProfile,
   UpdateGithubProfileResponseDto,
 } from '../../domain/github-profile/update-github-profile';
+import { PostLineage } from '../../domain/lineage-api/post-lineage';
 
 export interface GithubConfig {
   privateKey: string;
@@ -38,6 +39,7 @@ interface UpdateProfileProps {
 export default (
   createMetadata: CreateMetadata,
   updateGithubProfile: UpdateGithubProfile,
+  postLineage: PostLineage,
   dbConnection: DbConnection
 ): App => {
   const githubApp = new App({
@@ -240,11 +242,22 @@ export default (
         );
       }
 
-      console.warn(
-        `Github middleware lineage creation not in place for mode ${appConfig.express.mode} `
+      const postLineageResult = await postLineage.execute(
+        {
+          base64CatalogContent,
+          base64ManifestContent,
+          targetOrganizationId: organizationId,
+        },
+        { jwt }
       );
 
-      return undefined;
+      if (!postLineageResult.success) throw new Error(postLineageResult.error);
+      if (!postLineageResult.value)
+        throw new Error(
+          'Lineage creation went wrong - Request did not return expected object'
+        );
+
+      return postLineageResult.value;
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);

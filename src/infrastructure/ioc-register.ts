@@ -28,6 +28,8 @@ import { GetGithubAccessToken } from '../domain/github-api/get-access-token';
 import GithubApiRepo from './persistence/github-api-repo';
 import { CreateMetadata } from '../domain/metadata/create-metadata';
 import MetadataRepo from './persistence/metadata-repo';
+import { PostLineage } from '../domain/lineage-api/post-lineage';
+import LineageApiRepo from './persistence/lineage-api-repo';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -58,6 +60,7 @@ iocRegister.register({
   joinSlackConversation: asClass(JoinSlackConversation),
 
   getAccounts: asClass(GetAccounts),
+  postLineage: asClass(PostLineage),
 
   snowflakeProfileRepo: asClass(SnowflakeProfileRepo),
   slackProfileRepo: asClass(SlackProfileRepo),
@@ -69,6 +72,7 @@ iocRegister.register({
   githubApiRepo: asClass(GithubApiRepo),
 
   accountApiRepo: asClass(AccountApiRepo),
+  lineageApiRepo: asClass(LineageApiRepo),
 
   dbo: asClass(Dbo).singleton(),
 });

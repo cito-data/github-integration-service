@@ -2,11 +2,16 @@ import citoSchema from './cito-dw-schema';
 
 export const citoMaterializationTypes = [
   'test_suites',
-  'custom_test_suites',
-  'executions',
+  'test_suites_custom',
   'test_history',
   'test_results',
-  'alerts',
+  'test_alerts',
+  'test_executions',
+  'test_suites_nominal',
+  'test_history_nominal',
+  'test_results_nominal',
+  'test_alerts_nominal',
+  'test_executions_nominal',
 ] as const;
 export type CitoMaterializationType = typeof citoMaterializationTypes[number];
 

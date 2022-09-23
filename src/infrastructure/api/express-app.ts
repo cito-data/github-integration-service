@@ -53,6 +53,7 @@ export default class ExpressApp {
         githubMiddleware(
           iocRegister.resolve('createMetadata'),
           iocRegister.resolve('updateGithubProfile'),
+          iocRegister.resolve('postLineage'),
           this.#dbo.dbConnection
         )
       )
