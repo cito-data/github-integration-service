@@ -273,12 +273,15 @@ export default (
   ): Promise<string> => {
     const searchPattern = `filename:${fileName}+extension:json+repo:${ownerLogin}/${repoName}`;
 
+    console.log(`Searching for ${fileName} file...`);
+    
+
     const catalogRes = await octokit.request('GET /search/code', {
       q: searchPattern,
     });
 
     console.log(
-      `Number of matches for files with name '${fileName}': ${catalogRes.data.items.length}`
+      `...Number of matches for files with name '${fileName}': ${catalogRes.data.items.length}`
     );
 
     let { data }: any = catalogRes;
