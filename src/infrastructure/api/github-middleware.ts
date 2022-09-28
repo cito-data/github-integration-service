@@ -320,6 +320,9 @@ export default (
 
     // Unclear which base64 encoding variant is used by Github. Therefore transformation to Node variant
     const utf8Content = Buffer.from(content, encoding).toString('utf8');
+
+    console.log(`Content for ${fileName} file successfully retrieved`);
+    
     return Buffer.from(utf8Content, 'utf8').toString('base64');
   };
 
