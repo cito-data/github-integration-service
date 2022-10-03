@@ -40,10 +40,12 @@ export default class QuerySnowflakeController extends BaseController {
     targetOrganizationId: httpRequest.body.targetOrganizationId,
   });
 
-  #buildAuthDto = (userAccountInfo: UserAccountInfo): QuerySnowflakeAuthDto => ({
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
-      isSystemInternal: userAccountInfo.isSystemInternal,
-    });
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): QuerySnowflakeAuthDto => ({
+    callerOrganizationId: userAccountInfo.callerOrganizationId,
+    isSystemInternal: userAccountInfo.isSystemInternal,
+  });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
@@ -77,11 +79,11 @@ export default class QuerySnowflakeController extends BaseController {
         await this.#querySnowflake.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return QuerySnowflakeController.badRequest(res, useCaseResult.error);
+        return QuerySnowflakeController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value
@@ -90,12 +92,10 @@ export default class QuerySnowflakeController extends BaseController {
 
       return QuerySnowflakeController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return QuerySnowflakeController.fail(res, error);
-      if (error instanceof Error)
-        return QuerySnowflakeController.fail(res, error);
-      return QuerySnowflakeController.fail(res, 'Unknown error occured');
+      return QuerySnowflakeController.fail(
+        res,
+        'Unknown internal error occured'
+      );
     }
   }
 }

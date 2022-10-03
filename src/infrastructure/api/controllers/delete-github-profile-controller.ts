@@ -87,7 +87,7 @@ export default class DeleteGithubProfileController extends BaseController {
       if (!useCaseResult.success) {
         return DeleteGithubProfileController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -97,11 +97,8 @@ export default class DeleteGithubProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
-      if (typeof error === 'string')
-        return DeleteGithubProfileController.fail(res, error);
-      if (error instanceof Error)
-        return DeleteGithubProfileController.fail(res, error);
-      return DeleteGithubProfileController.fail(res, 'Unknown error occured');
+      
+      return DeleteGithubProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

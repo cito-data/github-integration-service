@@ -83,28 +83,24 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
         await this.#createCitoSnowflakeEnv.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return CreateCitoSnowflakeEnvController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return CreateCitoSnowflakeEnvController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value;
 
-      return CreateCitoSnowflakeEnvController.ok(res, resultValue, CodeHttp.CREATED);
+      return CreateCitoSnowflakeEnvController.ok(
+        res,
+        resultValue,
+        CodeHttp.CREATED
+      );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return CreateCitoSnowflakeEnvController.fail(res, error);
-      if (error instanceof Error)
-        return CreateCitoSnowflakeEnvController.fail(res, error);
       return CreateCitoSnowflakeEnvController.fail(
         res,
-        'Unknown error occured'
+        'Unknown internal error occured'
       );
     }
   }

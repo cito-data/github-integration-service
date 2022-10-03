@@ -79,7 +79,7 @@ export default class ReadGithubAccessTokenController extends BaseController {
       if (!useCaseResult.success) {
         return ReadGithubAccessTokenController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -89,12 +89,8 @@ export default class ReadGithubAccessTokenController extends BaseController {
         CodeHttp.CREATED
       );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return ReadGithubAccessTokenController.fail(res, error);
-      if (error instanceof Error)
-        return ReadGithubAccessTokenController.fail(res, error);
-      return ReadGithubAccessTokenController.fail(res, 'Unknown error occured');
+      
+      return ReadGithubAccessTokenController.fail(res, 'Unknown internal error occured');
     }
   }
 }

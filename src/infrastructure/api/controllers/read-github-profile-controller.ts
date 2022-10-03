@@ -90,7 +90,7 @@ export default class ReadGithubProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return ReadGithubProfileController.badRequest(res, useCaseResult.error);
+        return ReadGithubProfileController.badRequest(res, );
       }
 
       const resultValue = useCaseResult.value
@@ -99,11 +99,8 @@ export default class ReadGithubProfileController extends BaseController {
 
       return ReadGithubProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
-      if (typeof error === 'string')
-        return ReadGithubProfileController.fail(res, error);
-      if (error instanceof Error)
-        return ReadGithubProfileController.fail(res, error);
-      return ReadGithubProfileController.fail(res, 'Unknown error occured');
+      
+      return ReadGithubProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

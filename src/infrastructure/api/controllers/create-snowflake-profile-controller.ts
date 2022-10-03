@@ -90,30 +90,26 @@ export default class CreateSnowflakeProfileController extends BaseController {
         await this.#createSnowflakeProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return CreateSnowflakeProfileController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return CreateSnowflakeProfileController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value
         ? buildSnowflakeProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CreateSnowflakeProfileController.ok(res, resultValue, CodeHttp.CREATED);
+      return CreateSnowflakeProfileController.ok(
+        res,
+        resultValue,
+        CodeHttp.CREATED
+      );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return CreateSnowflakeProfileController.fail(res, error);
-      if (error instanceof Error)
-        return CreateSnowflakeProfileController.fail(res, error);
       return CreateSnowflakeProfileController.fail(
         res,
-        'Unknown error occured'
+        'Unknown internal error occured'
       );
     }
   }

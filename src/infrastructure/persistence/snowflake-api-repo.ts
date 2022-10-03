@@ -44,7 +44,12 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
 
           // Optional: store the connection ID.
           const connectionId = conn.getId();
-          console.log(`SF connection: ${connectionId} executing ${query.substring(0, 100)}...`);
+          console.log(
+            `SF connection: ${connectionId} executing ${query.substring(
+              0,
+              100
+            )}...`
+          );
 
           const complete = (error: any, stmt: Statement): void => {
             if (error) {
@@ -71,9 +76,10 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           stream.on('error', handleStreamError);
           stream.on('end', () => destroy(conn));
         } catch (error: unknown) {
-          if (typeof error === 'string') reject(error);
-          if (error instanceof Error) reject(error.message);
-          reject(new Error('Unknown error occured'));
+          if (error instanceof Error && error.message)
+            console.trace(error.message);
+          else if (!(error instanceof Error) && error) console.trace(error);
+          reject(new Error(''));
         }
       });
     });

@@ -90,7 +90,7 @@ export default class ReadSnowflakeProfilesController extends BaseController {
       if (!useCaseResult.success) {
         return ReadSnowflakeProfilesController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
       if (!useCaseResult.value)
@@ -102,12 +102,8 @@ export default class ReadSnowflakeProfilesController extends BaseController {
 
       return ReadSnowflakeProfilesController.ok(res, profileDtos, CodeHttp.OK);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return ReadSnowflakeProfilesController.fail(res, error);
-      if (error instanceof Error)
-        return ReadSnowflakeProfilesController.fail(res, error);
-      return ReadSnowflakeProfilesController.fail(res, 'Unknown error occured');
+      
+      return ReadSnowflakeProfilesController.fail(res, 'Unknown internal error occured');
     }
   }
 }

@@ -39,7 +39,7 @@ export default class JoinSlackConversationController extends BaseController {
   ): JoinSlackConversationRequestDto => ({
     oldChannelId: httpRequest.body.oldChannelId,
     newChannelId: httpRequest.body.newChannelId,
-    accessToken: httpRequest.body.accessToken
+    accessToken: httpRequest.body.accessToken,
   });
 
   #buildAuthDto = (
@@ -78,7 +78,8 @@ export default class JoinSlackConversationController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: JoinSlackConversationRequestDto = this.#buildRequestDto(req);
+      const requestDto: JoinSlackConversationRequestDto =
+        this.#buildRequestDto(req);
       const authDto: JoinSlackConversationAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
@@ -87,14 +88,11 @@ export default class JoinSlackConversationController extends BaseController {
         await this.#joinSlackConversation.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return JoinSlackConversationController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return JoinSlackConversationController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value;
@@ -105,12 +103,10 @@ export default class JoinSlackConversationController extends BaseController {
         CodeHttp.CREATED
       );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return JoinSlackConversationController.fail(res, error);
-      if (error instanceof Error)
-        return JoinSlackConversationController.fail(res, error);
-      return JoinSlackConversationController.fail(res, 'Unknown error occured');
+      return JoinSlackConversationController.fail(
+        res,
+        'Unknown internal error occured'
+      );
     }
   }
 }

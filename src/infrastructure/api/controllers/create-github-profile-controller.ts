@@ -48,7 +48,7 @@ export default class CreateGithubProfileController extends BaseController {
 
     return {
       callerOrganizationId: userAccountInfo.callerOrganizationId,
-      isSystemInternal: userAccountInfo.isSystemInternal
+      isSystemInternal: userAccountInfo.isSystemInternal,
     };
   };
 
@@ -85,27 +85,27 @@ export default class CreateGithubProfileController extends BaseController {
         await this.#createGithubProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return CreateGithubProfileController.badRequest(
-          res,
-          useCaseResult.error
-        );
+        return CreateGithubProfileController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value
         ? buildGithubProfileDto(useCaseResult.value)
         : useCaseResult.value;
 
-      return CreateGithubProfileController.ok(res, resultValue, CodeHttp.CREATED);
+      return CreateGithubProfileController.ok(
+        res,
+        resultValue,
+        CodeHttp.CREATED
+      );
     } catch (error: unknown) {
-      if (typeof error === 'string')
-        return CreateGithubProfileController.fail(res, error);
-      if (error instanceof Error)
-        return CreateGithubProfileController.fail(res, error);
-      return CreateGithubProfileController.fail(res, 'Unknown error occured');
+      return CreateGithubProfileController.fail(
+        res,
+        'Unknown internal error occured'
+      );
     }
   }
 }

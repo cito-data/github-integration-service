@@ -81,7 +81,7 @@ export default class ReadSlackProfileController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return ReadSlackProfileController.badRequest(res, useCaseResult.error);
+        return ReadSlackProfileController.badRequest(res, );
       }
 
       const resultValue = useCaseResult.value
@@ -90,12 +90,8 @@ export default class ReadSlackProfileController extends BaseController {
 
       return ReadSlackProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return ReadSlackProfileController.fail(res, error);
-      if (error instanceof Error)
-        return ReadSlackProfileController.fail(res, error);
-      return ReadSlackProfileController.fail(res, 'Unknown error occured');
+      
+      return ReadSlackProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

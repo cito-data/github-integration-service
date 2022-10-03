@@ -95,7 +95,7 @@ export default class ReadSlackConversationsController extends BaseController {
       if (!useCaseResult.success) {
         return ReadSlackConversationsController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -107,14 +107,10 @@ export default class ReadSlackConversationsController extends BaseController {
 
       return ReadSlackConversationsController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return ReadSlackConversationsController.fail(res, error);
-      if (error instanceof Error)
-        return ReadSlackConversationsController.fail(res, error);
+      
       return ReadSlackConversationsController.fail(
         res,
-        'Unknown error occured'
+        'Unknown internal error occured'
       );
     }
   }

@@ -90,7 +90,7 @@ export default class CreateSlackProfileController extends BaseController {
       if (!useCaseResult.success) {
         return CreateSlackProfileController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -100,12 +100,8 @@ export default class CreateSlackProfileController extends BaseController {
 
       return CreateSlackProfileController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return CreateSlackProfileController.fail(res, error);
-      if (error instanceof Error)
-        return CreateSlackProfileController.fail(res, error);
-      return CreateSlackProfileController.fail(res, 'Unknown error occured');
+      
+      return CreateSlackProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }
