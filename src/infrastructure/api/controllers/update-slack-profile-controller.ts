@@ -89,7 +89,7 @@ export default class UpdateSlackProfileController extends BaseController {
       if (!useCaseResult.success) {
         return UpdateSlackProfileController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -99,12 +99,7 @@ export default class UpdateSlackProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return UpdateSlackProfileController.fail(res, error);
-      if (error instanceof Error)
-        return UpdateSlackProfileController.fail(res, error);
-      return UpdateSlackProfileController.fail(res, 'Unknown error occured');
+      return UpdateSlackProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

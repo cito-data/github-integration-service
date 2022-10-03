@@ -90,7 +90,7 @@ export default class UpdateSnowflakeProfileController extends BaseController {
       if (!useCaseResult.success) {
         return UpdateSnowflakeProfileController.badRequest(
           res,
-          useCaseResult.error
+
         );
       }
 
@@ -100,12 +100,7 @@ export default class UpdateSnowflakeProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return UpdateSnowflakeProfileController.fail(res, error);
-      if (error instanceof Error)
-        return UpdateSnowflakeProfileController.fail(res, error);
-      return UpdateSnowflakeProfileController.fail(res, 'Unknown error occured');
+      return UpdateSnowflakeProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

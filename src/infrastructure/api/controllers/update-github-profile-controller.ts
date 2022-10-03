@@ -85,7 +85,7 @@ export default class UpdateGithubProfileController extends BaseController {
       if (!useCaseResult.success) {
         return UpdateGithubProfileController.badRequest(
           res,
-          useCaseResult.error
+          
         );
       }
 
@@ -95,11 +95,8 @@ export default class UpdateGithubProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
-      if (typeof error === 'string')
-        return UpdateGithubProfileController.fail(res, error);
-      if (error instanceof Error)
-        return UpdateGithubProfileController.fail(res, error);
-      return UpdateGithubProfileController.fail(res, 'Unknown error occured');
+      
+      return UpdateGithubProfileController.fail(res, 'Unknown internal error occured');
     }
   }
 }

@@ -84,19 +84,15 @@ export default class SendSlackAlertController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return SendSlackAlertController.badRequest(res, useCaseResult.error);
+        return SendSlackAlertController.badRequest(res, );
       }
 
       const resultValue = useCaseResult.value;
 
       return SendSlackAlertController.ok(res, resultValue, CodeHttp.CREATED);
     } catch (error: unknown) {
-      console.error(error);
-      if (typeof error === 'string')
-        return SendSlackAlertController.fail(res, error);
-      if (error instanceof Error)
-        return SendSlackAlertController.fail(res, error);
-      return SendSlackAlertController.fail(res, 'Unknown error occured');
+      
+      return SendSlackAlertController.fail(res, 'Unknown internal error occured');
     }
   }
 }
