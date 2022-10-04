@@ -1,17 +1,18 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
-import { DbConnection} from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
   citoMaterializationTypes,
   getCreateTableQuery,
+  getCreateDbSchemaQuery,
 } from '../services/snowflake-materialization-creation-model';
 
 export type CreateCitoSnowflakeEnvRequestDto = null;
 
 export interface CreateCitoSnowflakeEnvAuthDto {
   callerOrganizationId: string;
-  isSystemInternal: boolean
+  isSystemInternal: boolean;
 }
 
 export type CreateCitoSnowflakeEnvResponseDto = Result<{
@@ -39,11 +40,24 @@ export class CreateCitoSnowflakeEnv
   async execute(
     request: CreateCitoSnowflakeEnvRequestDto,
     auth: CreateCitoSnowflakeEnvAuthDto,
-    dbConnection: DbConnection,
+    dbConnection: DbConnection
   ): Promise<CreateCitoSnowflakeEnvResponseDto> {
     try {
-
       this.#dbConnection = dbConnection;
+
+      const createSchemaResult = await await this.#querySnowflake.execute(
+        {
+          query: getCreateDbSchemaQuery(),
+        },
+        {
+          callerOrganizationId: auth.callerOrganizationId,
+          isSystemInternal: auth.isSystemInternal,
+        },
+        this.#dbConnection
+      );
+
+      if (!createSchemaResult.success)
+        throw new Error(createSchemaResult.error);
 
       const createTableResults = await Promise.all(
         citoMaterializationTypes.map(async (type) => {
@@ -52,8 +66,11 @@ export class CreateCitoSnowflakeEnv
             {
               query,
             },
-            { callerOrganizationId: auth.callerOrganizationId, isSystemInternal: auth.isSystemInternal },
-            this.#dbConnection,
+            {
+              callerOrganizationId: auth.callerOrganizationId,
+              isSystemInternal: auth.isSystemInternal,
+            },
+            this.#dbConnection
           );
 
           return createTableResult;
@@ -66,9 +83,12 @@ export class CreateCitoSnowflakeEnv
       // if (snowflakeCreate.organizationId !== auth.organizationId)
       //   throw new Error('Not authorized to perform action');
 
-      return Result.ok({ organizationId: auth.callerOrganizationId, success: true });
+      return Result.ok({
+        organizationId: auth.callerOrganizationId,
+        success: true,
+      });
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message);
+      if (error instanceof Error && error.message) console.trace(error.message);
       else if (!(error instanceof Error) && error) console.trace(error);
       return Result.fail('');
     }

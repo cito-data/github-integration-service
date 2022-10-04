@@ -46,7 +46,9 @@ export const getCreateTableQuery = (
     .join(', ');
    
   return `
-    create table if not exists cito.public.${citoMaterializationType} 
+    create table if not exists cito.observability.${citoMaterializationType} 
       ${`(${columnDefinitionString})`};
     `;
 };
+
+export const getCreateDbSchemaQuery = (): string => `create schema if not exists cito.observability`;
