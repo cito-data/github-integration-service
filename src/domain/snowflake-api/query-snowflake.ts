@@ -118,7 +118,7 @@ export class QuerySnowflake
               account: profile.accountId,
               username: profile.username,
               password: profile.password,
-              warehouseName: profile.warehouseName
+              warehouse: profile.warehouseName
             }
           );
           snowflakeQuery[profile.organizationId] = queryResult;
