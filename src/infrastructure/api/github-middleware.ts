@@ -32,7 +32,6 @@ interface InternalLineageInvoke {
 interface UpdateProfileProps {
   installationId: string;
   targetOrganizationId: string;
-  firstLineageCreated?: boolean;
   repositoryNames?: string[];
 }
 
@@ -91,9 +90,9 @@ export default (
         throw new Error('Did not receive an access token');
       return jsonResponse.access_token;
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -123,9 +122,9 @@ export default (
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -153,9 +152,9 @@ export default (
 
       return useCaseResult.value;
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -187,9 +186,9 @@ export default (
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -259,9 +258,9 @@ export default (
 
       return postLineageResult.value;
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -274,7 +273,6 @@ export default (
     const searchPattern = `filename:${fileName}+extension:json+repo:${ownerLogin}/${repoName}`;
 
     console.log(`Searching for ${fileName} file...`);
-    
 
     const catalogRes = await octokit.request('GET /search/code', {
       q: searchPattern,
@@ -325,7 +323,7 @@ export default (
     const utf8Content = Buffer.from(content, encoding).toString('utf8');
 
     console.log(`Content for ${fileName} file successfully retrieved`);
-    
+
     return Buffer.from(utf8Content, 'utf8').toString('base64');
   };
 
@@ -336,14 +334,7 @@ export default (
       new URLSearchParams({ installationId })
     );
 
-    const { organizationId, firstLineageCreated } = githubProfile;
-
-    if (firstLineageCreated) {
-      console.warn(
-        `Lineage creation triggered for org ${organizationId} but lineage was already created`
-      );
-      return;
-    }
+    const { organizationId } = githubProfile;
 
     const ownerLogin = payload.repository.owner.login;
     const repoName = payload.repository.name;
@@ -381,13 +372,7 @@ export default (
       organizationId
     );
 
-    if (result)
-      await updateProfile({
-        installationId,
-        targetOrganizationId: organizationId,
-        firstLineageCreated: true,
-      });
-    else
+    if (!result)
       throw new Error(
         'Unclear lineage creation status. No result object available'
       );

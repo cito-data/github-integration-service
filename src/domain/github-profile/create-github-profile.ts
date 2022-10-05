@@ -55,7 +55,6 @@ export class CreateGithubProfile
         installationId: request.installationId,
         organizationId: request.organizationId,
         repositoryNames: request.repositoryNames,
-        firstLineageCreated: false,
       });
 
       const readGithubProfileResult = await this.#readGithubProfile.execute(

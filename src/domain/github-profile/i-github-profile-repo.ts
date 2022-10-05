@@ -2,7 +2,6 @@ import { GithubProfile } from '../entities/github-profile';
 import { DbConnection } from '../services/i-db';
 
 export interface GithubProfileUpdateDto {
-  firstLineageCreated?: boolean;
   repositoryNames?: string[];
   installationId?: string;
 }

@@ -24,7 +24,6 @@ interface GithubProfilePersistence {
   installationId: string;
   organizationId: string;
   repositoryNames: string[];
-  firstLineageCreated: boolean;
 }
 
 interface GithubProfileUpdateFilter {
@@ -92,8 +91,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     const setFilter: { [key: string]: unknown } = {};
     const pushFilter: { [key: string]: unknown } = {};
 
-    if (updateDto.firstLineageCreated)
-      setFilter.firstLineageCreated = updateDto.firstLineageCreated;
     if (updateDto.repositoryNames)
       setFilter.repositoryNames = updateDto.repositoryNames;
     if (updateDto.installationId)
@@ -158,7 +155,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
     installationId: githubProfile.installationId,
     organizationId: githubProfile.organizationId,
     repositoryNames: githubProfile.repositoryNames,
-    firstLineageCreated: githubProfile.firstLineageCreated,
   });
 
   #toPersistence = async (githubProfile: GithubProfile): Promise<Document> => {
@@ -167,7 +163,6 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
       installationId: githubProfile.installationId,
       organizationId: githubProfile.organizationId,
       repositoryNames: githubProfile.repositoryNames,
-      firstLineageCreated: githubProfile.firstLineageCreated,
     };
 
     return persistenceObject;

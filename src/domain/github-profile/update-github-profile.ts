@@ -8,7 +8,6 @@ import {
 import { ReadGithubProfile } from './read-github-profile';
 
 export interface RequestUpdateDto {
-  firstLineageCreated?: boolean;
   repositoryNames?: string[];
   installationId?: string;
 }
@@ -109,7 +108,6 @@ export class UpdateGithubProfile
   #buildUpdateDto = (
     request: UpdateGithubProfileRequestDto
   ): GithubProfileUpdateDto => ({
-    firstLineageCreated: request.updateDto.firstLineageCreated,
     installationId: request.updateDto.installationId,
     repositoryNames: request.updateDto.repositoryNames,
   });
