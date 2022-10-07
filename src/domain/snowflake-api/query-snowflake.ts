@@ -128,8 +128,17 @@ export class QuerySnowflake
             );
           else if (!queryResult.success) throw new Error(queryResult.error);
 
-          snowflakeQuery[profile.organizationId] =
-            queryResult.success && queryResult.value ? queryResult.value : [];
+          const value =
+            queryResult.success && queryResult.value
+              ? JSON.parse(
+                  JSON.stringify(queryResult.value).replace(
+                    /[", ']null[", ']/g,
+                    'null'
+                  )
+                )
+              : [];
+
+          snowflakeQuery[profile.organizationId] = value;
         })
       );
 

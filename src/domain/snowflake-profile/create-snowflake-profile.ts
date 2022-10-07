@@ -53,7 +53,7 @@ export class CreateSnowflakeProfile
       const snowflakeProfile = SnowflakeProfile.create({
         id: new ObjectId().toHexString(),
         organizationId: auth.callerOrganizationId,
-        accountId: request.accountId,
+        accountId: request.accountId.replace('.', '-'),
         username: request.username,
         password: request.password,
         warehouseName: request.warehouseName
