@@ -4,13 +4,14 @@ import { connect, handleStreamError } from './db/snowflake';
 import { SnowflakeQuery } from '../../domain/value-types/snowflake-query';
 import { ISnowflakeApiRepo } from '../../domain/snowflake-api/i-snowflake-api-repo';
 import { appConfig } from '../../config';
+import Result from '../../domain/value-types/transient-types/result';
 
 export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
   runQuery = async (
     query: string,
     options: DbOptions
-  ): Promise<SnowflakeQuery[]> =>
-    new Promise((resolve, reject) => {
+  ): Promise<Result<SnowflakeQuery[]>> =>
+    new Promise((resolve) => {
       const results: SnowflakeQuery[] = [];
 
       const destroy = (conn: Connection, error?: Error): void => {
@@ -23,8 +24,8 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
             console.log(
               `Disconnected connection with id: ${connectionToDestroy.getId()}`
             );
-            if (error) reject(error);
-            resolve(results);
+            if (error) resolve(Result.fail(error.message));
+            resolve(Result.ok(results));
           }
         });
       };
@@ -37,9 +38,9 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
       connection.connect((err, conn) => {
         try {
           if (err) {
-            if (typeof err === 'string') reject(err);
-            if (err instanceof Error) reject(err.message);
-            reject(new Error('Unknown Snowflake connection error occured'));
+            if (typeof err === 'string') resolve(Result.fail(err));
+            if (err instanceof Error) resolve(Result.fail(err.message));
+            resolve(Result.fail('Unknown Snowflake connection error occured'));
           }
 
           // Optional: store the connection ID.
@@ -79,7 +80,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           if (error instanceof Error && error.message)
             console.trace(error.message);
           else if (!(error instanceof Error) && error) console.trace(error);
-          reject(new Error(''));
+          resolve(Result.fail(''));
         }
       });
     });

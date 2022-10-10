@@ -118,10 +118,27 @@ export class QuerySnowflake
               account: profile.accountId,
               username: profile.username,
               password: profile.password,
-              warehouse: profile.warehouseName
+              warehouse: profile.warehouseName,
             }
           );
-          snowflakeQuery[profile.organizationId] = queryResult;
+
+          if (!queryResult.success && auth.isSystemInternal)
+            console.error(
+              `Query for sf profile with sf acccountId ${profile.accountId} failed. Error msg: ${queryResult.error}`
+            );
+          else if (!queryResult.success) throw new Error(queryResult.error);
+
+          const value =
+            queryResult.success && queryResult.value
+              ? JSON.parse(
+                  JSON.stringify(queryResult.value).replace(
+                    /[", ']null[", ']/g,
+                    'null'
+                  )
+                )
+              : [];
+
+          snowflakeQuery[profile.organizationId] = value;
         })
       );
 
@@ -130,7 +147,7 @@ export class QuerySnowflake
 
       return Result.ok(snowflakeQuery);
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message);
+      if (error instanceof Error && error.message) console.trace(error.message);
       else if (!(error instanceof Error) && error) console.trace(error);
       return Result.fail('');
     }

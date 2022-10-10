@@ -103,7 +103,7 @@ const schema = {
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
-        { name: 'value', type: 'object' },
+        { name: 'value', type: 'string' },
         { name: 'is_identical', type: 'boolean' },
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
@@ -115,8 +115,8 @@ const schema = {
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
-        { name: 'expected_value', type: 'object' },
-        { name: 'deviation', type: 'object' },
+        { name: 'expected_value', type: 'string' },
+        { name: 'deviation', type: 'string' },
         { name: 'is_identical', type: 'boolean' },
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
