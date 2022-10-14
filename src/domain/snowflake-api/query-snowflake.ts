@@ -112,10 +112,6 @@ export class QuerySnowflake
 
       await Promise.all(
         snowflakeProfiles.map(async (profile) => {
-          console.log(
-            `Querying sf for organization ${profile.organizationId}...`
-          );
-
           const queryResult = await this.#snowflakeApiRepo.runQuery(
             request.query,
             {
@@ -126,11 +122,20 @@ export class QuerySnowflake
             }
           );
 
+          const queryResultBaseMsg = `AcccountId: ${
+            profile.accountId
+          } \nOrganizationId: ${
+            profile.organizationId
+          } \n${request.query.substring(0, 1000)}${
+            request.query.length > 1000 ? '...' : ''
+          }`;
+
           if (!queryResult.success && auth.isSystemInternal)
             console.error(
-              `... Query for sf profile with sf acccountId ${profile.accountId} for organization ${profile.organizationId} failed. Error msg: ${queryResult.error}`
+              `Sf query failed \n${queryResultBaseMsg} \nError msg: ${queryResult.error}`
             );
           else if (!queryResult.success) throw new Error(queryResult.error);
+          else console.log(`Sf query succeeded \n${queryResultBaseMsg}`);
 
           const value =
             queryResult.success && queryResult.value

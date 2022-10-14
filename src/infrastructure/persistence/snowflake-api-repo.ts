@@ -46,10 +46,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           // Optional: store the connection ID.
           const connectionId = conn.getId();
           console.log(
-            `SF connection: ${connectionId} executing ${query.substring(
-              0,
-              1000
-            )}${query.length >= 1000? '...': ''}`
+            `Executing sf query \nConnectionId: ${connectionId}`
           );
 
           const complete = (error: any, stmt: Statement): void => {
