@@ -49,7 +49,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
             `SF connection: ${connectionId} executing ${query.substring(
               0,
               1000
-            )}...`
+            )}${query.length > 1000-1? '...': ''}`
           );
 
           const complete = (error: any, stmt: Statement): void => {
