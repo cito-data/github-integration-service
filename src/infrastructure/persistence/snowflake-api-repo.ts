@@ -48,7 +48,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           console.log(
             `SF connection: ${connectionId} executing ${query.substring(
               0,
-              100
+              1000
             )}...`
           );
 
