@@ -134,7 +134,10 @@ export class QuerySnowflake
             console.error(
               `Sf query failed \n${queryResultBaseMsg} \nError msg: ${queryResult.error}`
             );
-          else if (!queryResult.success) throw new Error(queryResult.error);
+          else if (!queryResult.success)
+            throw new Error(
+              `Sf query failed \n${queryResultBaseMsg} \nError msg: ${queryResult.error}`
+            );
           else console.log(`Sf query succeeded \n${queryResultBaseMsg}`);
 
           const value =
