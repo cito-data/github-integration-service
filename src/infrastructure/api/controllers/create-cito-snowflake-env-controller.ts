@@ -98,6 +98,8 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
         CodeHttp.CREATED
       );
     } catch (error: unknown) {
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
       return CreateCitoSnowflakeEnvController.fail(
         res,
         'Unknown internal error occured'

@@ -99,7 +99,8 @@ export default class ReadGithubProfileController extends BaseController {
 
       return ReadGithubProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
-      
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
       return ReadGithubProfileController.fail(res, 'Unknown internal error occured');
     }
   }

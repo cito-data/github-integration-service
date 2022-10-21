@@ -95,7 +95,8 @@ export default class ReadSnowflakeProfileController extends BaseController {
 
       return ReadSnowflakeProfileController.ok(res, resultValue, CodeHttp.OK);
     } catch (error: unknown) {
-      
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
       return ReadSnowflakeProfileController.fail(res, 'Unknown internal error occured');
     }
   }

@@ -100,6 +100,8 @@ export default class UpdateSnowflakeProfileController extends BaseController {
         CodeHttp.OK
       );
     } catch (error: unknown) {
+      if (error instanceof Error && error.message) console.trace(error.message);
+      else if (!(error instanceof Error) && error) console.trace(error);
       return UpdateSnowflakeProfileController.fail(res, 'Unknown internal error occured');
     }
   }
