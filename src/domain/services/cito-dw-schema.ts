@@ -16,6 +16,7 @@ const schema = {
         { name: 'target_resource_id', type: 'string' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
+        {name: 'execution_type', type: 'string'}
       ],
     },
     {
@@ -31,6 +32,7 @@ const schema = {
         { name: 'target_resource_ids', type: 'array' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
+        {name: 'execution_type', type: 'string'}
       ],
     },
     {
@@ -96,6 +98,7 @@ const schema = {
         { name: 'target_resource_id', type: 'string' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
+        {name: 'execution_type', type: 'string'}
       ],
     },
     {
