@@ -1,6 +1,17 @@
 import citoSchema from './cito-dw-schema';
 
-export const citoMaterializationTypes = [
+export const citoSchemaNames = ['observability', 'lineage'] as const;
+export type CitoSchemaName = typeof citoSchemaNames[number];
+
+export const parseCitoSchemaName = (type: unknown): CitoSchemaName => {
+  const identifiedFrequency = citoSchemaNames.find(
+    (element) => element === type
+  );
+  if (identifiedFrequency) return identifiedFrequency;
+  throw new Error('Provision of invalid Cito schema name');
+};
+
+export const citoMaterializationNames = [
   'test_suites',
   'test_suites_custom',
   'test_history',
@@ -12,25 +23,35 @@ export const citoMaterializationTypes = [
   'test_results_nominal',
   'test_alerts_nominal',
   'test_executions_nominal',
+  'lineage',
+  'logic',
+  'materialization',
+  'column',
+  'dependency',
+  'dashboard',
 ] as const;
-export type CitoMaterializationType = typeof citoMaterializationTypes[number];
+export type CitoMaterializationName = typeof citoMaterializationNames[number];
 
-export const parseCitoMaterializationType = (
-  citoMaterializationType: unknown
-): CitoMaterializationType => {
-  const identifiedFrequency = citoMaterializationTypes.find(
-    (element) => element === citoMaterializationType
+export const parseCitoMaterializationName = (
+  type: unknown
+): CitoMaterializationName => {
+  const identifiedFrequency = citoMaterializationNames.find(
+    (element) => element === type
   );
   if (identifiedFrequency) return identifiedFrequency;
-  throw new Error('Provision of invalid Cito materialization type');
+  throw new Error('Provision of invalid Cito materialization name');
 };
 
 const getCitoMaterializationSchema = (
-  citoMaterializationType: CitoMaterializationType
-): { [key: string]: any } => {
+  citoMaterializationType: CitoMaterializationName
+): {
+  name: string;
+  columns: { name: string; type: string }[];
+  schemaName: string;
+} => {
   const { tables } = citoSchema;
   const matchingTables = tables.filter(
-    (el: any) => el.name === citoMaterializationType
+    (el) => el.name === citoMaterializationType
   );
   if (matchingTables.length !== 1)
     throw new Error('More than one or no potential schema found');
@@ -38,17 +59,20 @@ const getCitoMaterializationSchema = (
 };
 
 export const getCreateTableQuery = (
-  citoMaterializationType: CitoMaterializationType
+  citoMaterializationType: CitoMaterializationName
 ): string => {
   const schema = getCitoMaterializationSchema(citoMaterializationType);
   const columnDefinitionString = schema.columns
     .map((el: any) => `${el.name} ${el.type}`)
     .join(', ');
-   
+
   return `
-    create table if not exists cito.observability.${citoMaterializationType} 
+    create table if not exists cito.${
+      schema.schemaName
+    }.${citoMaterializationType} 
       ${`(${columnDefinitionString})`};
     `;
 };
 
-export const getCreateDbSchemaQuery = (): string => `create schema if not exists cito.observability`;
+export const getCreateDbSchemaQuery = (schemaName: CitoSchemaName): string =>
+  `create schema if not exists cito.${schemaName}`;

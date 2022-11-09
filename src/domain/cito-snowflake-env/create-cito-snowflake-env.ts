@@ -3,9 +3,10 @@ import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
-  citoMaterializationTypes,
+  citoMaterializationNames,
   getCreateTableQuery,
   getCreateDbSchemaQuery,
+  CitoSchemaName,
 } from '../services/snowflake-materialization-creation-model';
 
 export type CreateCitoSnowflakeEnvRequestDto = null;
@@ -37,6 +38,23 @@ export class CreateCitoSnowflakeEnv
     this.#querySnowflake = querySnowflake;
   }
 
+  #createSchema = async (
+    schemaName: CitoSchemaName,
+    auth: { callerOrganizationId: string; isSystemInternal: boolean }
+  ): Promise<void> => {
+    const createObservabilitySchemaResult =
+      await await this.#querySnowflake.execute(
+        {
+          query: getCreateDbSchemaQuery(schemaName),
+        },
+        auth,
+        this.#dbConnection
+      );
+
+    if (!createObservabilitySchemaResult.success)
+      throw new Error(createObservabilitySchemaResult.error);
+  };
+
   async execute(
     request: CreateCitoSnowflakeEnvRequestDto,
     auth: CreateCitoSnowflakeEnvAuthDto,
@@ -45,22 +63,11 @@ export class CreateCitoSnowflakeEnv
     try {
       this.#dbConnection = dbConnection;
 
-      const createSchemaResult = await await this.#querySnowflake.execute(
-        {
-          query: getCreateDbSchemaQuery(),
-        },
-        {
-          callerOrganizationId: auth.callerOrganizationId,
-          isSystemInternal: auth.isSystemInternal,
-        },
-        this.#dbConnection
-      );
-
-      if (!createSchemaResult.success)
-        throw new Error(createSchemaResult.error);
+      await this.#createSchema('observability', auth);
+      await this.#createSchema('lineage', auth);
 
       const createTableResults = await Promise.all(
-        citoMaterializationTypes.map(async (type) => {
+        citoMaterializationNames.map(async (type) => {
           const query = getCreateTableQuery(type);
           const createTableResult = await this.#querySnowflake.execute(
             {
