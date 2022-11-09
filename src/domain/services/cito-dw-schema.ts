@@ -16,9 +16,9 @@ const schema = {
         { name: 'target_resource_id', type: 'string' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
-        {name: 'execution_type', type: 'string'}
+        { name: 'execution_type', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_suite_custom',
@@ -33,9 +33,9 @@ const schema = {
         { name: 'target_resource_ids', type: 'array' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
-        {name: 'execution_type', type: 'string'}
+        { name: 'execution_type', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_history',
@@ -49,7 +49,7 @@ const schema = {
         { name: 'execution_id', type: 'string' },
         { name: 'alert_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_result',
@@ -67,7 +67,7 @@ const schema = {
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_execution',
@@ -76,8 +76,8 @@ const schema = {
         { name: 'executed_on', type: 'timestamp_ntz' },
         { name: 'test_suite_id', type: 'string' },
       ],
-      schemaName: 'observability'
-    },    
+      schemaName: 'observability',
+    },
     {
       name: 'test_alert',
       columns: [
@@ -87,7 +87,7 @@ const schema = {
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_suite_nominal',
@@ -104,9 +104,9 @@ const schema = {
         { name: 'target_resource_id', type: 'string' },
         { name: 'organization_id', type: 'string' },
         { name: 'cron', type: 'string' },
-        {name: 'execution_type', type: 'string'}
+        { name: 'execution_type', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_history_nominal',
@@ -119,7 +119,7 @@ const schema = {
         { name: 'execution_id', type: 'string' },
         { name: 'alert_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_result_nominal',
@@ -132,7 +132,7 @@ const schema = {
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'test_execution_nominal',
@@ -141,8 +141,8 @@ const schema = {
         { name: 'executed_on', type: 'timestamp_ntz' },
         { name: 'test_suite_id', type: 'string' },
       ],
-      schemaName: 'observability'
-    },    
+      schemaName: 'observability',
+    },
     {
       name: 'test_alert_nominal',
       columns: [
@@ -152,51 +152,88 @@ const schema = {
         { name: 'test_suite_id', type: 'string' },
         { name: 'execution_id', type: 'string' },
       ],
-      schemaName: 'observability'
+      schemaName: 'observability',
     },
     {
       name: 'lineage',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'created_at', type: 'timestamp_ntz' },
+        { name: 'completed', type: 'boolean' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
     {
       name: 'column',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'name', type: 'string' },
+        { name: 'relation_name', type: 'string' },
+        { name: 'index', type: 'string' },
+        { name: 'data_type', type: 'string' },
+        { name: 'is_identity', type: 'boolean' },
+        { name: 'is_nullable', type: 'boolean' },
+        { name: 'materialization_id', type: 'string' },
+        { name: 'lineage_ids', type: 'string' },
+        { name: 'comment', type: 'string' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
     {
       name: 'materialization',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'name', type: 'string' },
+        { name: 'schema_name', type: 'string' },
+        { name: 'database_name', type: 'string' },
+        { name: 'relation_name', type: 'string' },
+        { name: 'type', type: 'string' },
+        { name: 'isTransient', type: 'boolean' },
+        { name: 'logicId', type: 'string' },
+        { name: 'ownerId', type: 'string' },
+        { name: 'lineageIds', type: 'string' },
+        { name: 'comment', type: 'string' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
     {
       name: 'logic',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'relation_name', type: 'string' },
+        { name: 'sql', type: 'string' },
+        { name: 'dependent_on', type: 'string' },
+        { name: 'parsed_logic', type: 'string' },
+        { name: 'statement_refs', type: 'string' },
+        { name: 'lineage_ids', type: 'string' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
     {
       name: 'dependency',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'type', type: 'string' },
+        { name: 'head_id', type: 'string' },
+        { name: 'tail_id', type: 'string' },
+        { name: 'lineage_id', type: 'string' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
     {
       name: 'dashboard',
       columns: [
-        { name: 'execution_id', type: 'string' },
+        { name: 'id', type: 'string' },
+        { name: 'name', type: 'string' },
+        { name: 'url', type: 'string' },
+        { name: 'materialization_name', type: 'string' },
+        { name: 'materialization_id', type: 'string' },
+        { name: 'column_name', type: 'string' },
+        { name: 'column_id', type: 'string' },
+        { name: 'lineageIds', type: 'string' },
       ],
-      schemaName: 'lineage'
+      schemaName: 'lineage',
     },
-
   ],
 };
 
