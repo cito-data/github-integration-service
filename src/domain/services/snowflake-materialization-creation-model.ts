@@ -23,12 +23,12 @@ export const citoMaterializationNames = [
   'test_results_nominal',
   'test_alerts_nominal',
   'test_executions_nominal',
-  'lineage',
-  'logic',
-  'materialization',
-  'column',
-  'dependency',
-  'dashboard',
+  'lineage_snapshots',
+  'logics',
+  'materializations',
+  'columns',
+  'dependencies',
+  'dashboards',
 ] as const;
 export type CitoMaterializationName = typeof citoMaterializationNames[number];
 
