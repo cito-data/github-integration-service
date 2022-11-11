@@ -1,7 +1,7 @@
 const schema = {
   tables: [
     {
-      name: 'test_suite',
+      name: 'test_suites',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -21,7 +21,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_suite_custom',
+      name: 'test_suites_custom',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'activated', type: 'boolean' },
@@ -52,7 +52,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_result',
+      name: 'test_results',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -70,7 +70,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_execution',
+      name: 'test_executions',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'executed_on', type: 'timestamp_ntz' },
@@ -79,7 +79,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_alert',
+      name: 'test_alerts',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -90,7 +90,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_suite_nominal',
+      name: 'test_suites_nominal',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -122,7 +122,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_result_nominal',
+      name: 'test_results_nominal',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -135,7 +135,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_execution_nominal',
+      name: 'test_executions_nominal',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'executed_on', type: 'timestamp_ntz' },
@@ -144,7 +144,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_alert_nominal',
+      name: 'test_alerts_nominal',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'test_type', type: 'string' },
@@ -155,7 +155,7 @@ const schema = {
       schemaName: 'observability',
     },
     {
-      name: 'lineage',
+      name: 'lineage_snapshots',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'created_at', type: 'timestamp_ntz' },
@@ -164,7 +164,7 @@ const schema = {
       schemaName: 'lineage',
     },
     {
-      name: 'column',
+      name: 'columns',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
@@ -180,7 +180,7 @@ const schema = {
       schemaName: 'lineage',
     },
     {
-      name: 'materialization',
+      name: 'materializations',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
@@ -197,7 +197,7 @@ const schema = {
       schemaName: 'lineage',
     },
     {
-      name: 'logic',
+      name: 'logics',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'relation_name', type: 'string' },
@@ -210,18 +210,18 @@ const schema = {
       schemaName: 'lineage',
     },
     {
-      name: 'dependency',
+      name: 'dependencies',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'type', type: 'string' },
         { name: 'head_id', type: 'string' },
         { name: 'tail_id', type: 'string' },
-        { name: 'lineage_id', type: 'string' },
+        { name: 'lineage_ids', type: 'array' },
       ],
       schemaName: 'lineage',
     },
     {
-      name: 'dashboard',
+      name: 'dashboards',
       columns: [
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
