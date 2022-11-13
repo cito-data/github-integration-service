@@ -4,7 +4,6 @@ import { DbConnection } from '../services/i-db';
 import { SnowflakeQuery } from '../value-types/snowflake-query';
 import { ISnowflakeApiRepo } from './i-snowflake-api-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
-import { ReadSnowflakeProfiles } from '../snowflake-profile/read-snowflake-profiles';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
 
 export interface QuerySnowflakeRequestDto {
@@ -32,18 +31,15 @@ export class QuerySnowflake
 
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
-  readonly #readSnowflakeProfiles: ReadSnowflakeProfiles;
 
   #dbConnection: DbConnection;
 
   constructor(
     snowflakeApiRepo: ISnowflakeApiRepo,
     readSnowflakeProfile: ReadSnowflakeProfile,
-    readSnowflakeProfiles: ReadSnowflakeProfiles
   ) {
     this.#snowflakeApiRepo = snowflakeApiRepo;
     this.#readSnowflakeProfile = readSnowflakeProfile;
-    this.#readSnowflakeProfiles = readSnowflakeProfiles;
   }
 
   #getSnowflakeProfile = async (
@@ -65,26 +61,6 @@ export class QuerySnowflake
     return readSnowflakeProfileResult.value;
   };
 
-  #getSnowflakeProfiles = async (
-    isSystemInternal: boolean
-  ): Promise<SnowflakeProfile[]> => {
-    const readSnowflakeProfilesResult =
-      await this.#readSnowflakeProfiles.execute(
-        null,
-        {
-          isSystemInternal,
-        },
-        this.#dbConnection
-      );
-
-    if (!readSnowflakeProfilesResult.success)
-      throw new Error(readSnowflakeProfilesResult.error);
-    if (!readSnowflakeProfilesResult.value)
-      throw new Error('SnowflakeProfiles do not exist');
-
-    return readSnowflakeProfilesResult.value;
-  };
-
   async execute(
     request: QuerySnowflakeRequestDto,
     auth: QuerySnowflakeAuthDto,
@@ -98,10 +74,6 @@ export class QuerySnowflake
         snowflakeProfiles = [
           await this.#getSnowflakeProfile(request.targetOrganizationId),
         ];
-      else if (auth.isSystemInternal)
-        snowflakeProfiles = await this.#getSnowflakeProfiles(
-          auth.isSystemInternal
-        );
       else if (auth.callerOrganizationId)
         snowflakeProfiles = [
           await this.#getSnowflakeProfile(auth.callerOrganizationId),

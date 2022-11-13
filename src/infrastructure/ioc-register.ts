@@ -7,7 +7,6 @@ import { ReadSlackProfile } from '../domain/slack-profile/read-slack-profile';
 import { UpdateSlackProfile } from '../domain/slack-profile/update-slack-profile';
 import { CreateSnowflakeProfile } from '../domain/snowflake-profile/create-snowflake-profile';
 import { ReadSnowflakeProfile } from '../domain/snowflake-profile/read-snowflake-profile';
-import { ReadSnowflakeProfiles } from '../domain/snowflake-profile/read-snowflake-profiles';
 import { CreateGithubProfile } from '../domain/github-profile/create-github-profile';
 import { ReadGithubProfile } from '../domain/github-profile/read-github-profile';
 import { QuerySnowflake } from '../domain/snowflake-api/query-snowflake';
@@ -49,7 +48,6 @@ iocRegister.register({
   readSnowflakeProfile: asClass(ReadSnowflakeProfile),
   readSlackProfile: asClass(ReadSlackProfile),
   readGithubProfile: asClass(ReadGithubProfile),
-  readSnowflakeProfiles: asClass(ReadSnowflakeProfiles),
 
   querySnowflake: asClass(QuerySnowflake),
 
