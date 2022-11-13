@@ -3,7 +3,7 @@ import { LineageDto } from "./lineage-dto";
 export interface PostLineagePayload {
   catalog: string,
   manifest: string,
-  targetOrganizationId: string
+  targetOrgId: string
 }
 
 export interface ILineageApiRepo {

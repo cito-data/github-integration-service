@@ -13,12 +13,12 @@ export interface RequestUpdateDto {
 }
 
 export interface UpdateGithubProfileRequestDto {
-  targetOrganizationId?: string;
+  targetOrgId?: string;
   updateDto: RequestUpdateDto;
 }
 
 export interface UpdateGithubProfileAuthDto {
-  callerOrganizationId?: string;
+  callerOrgId?: string;
   isSystemInternal: boolean;
 }
 
@@ -53,18 +53,18 @@ export class UpdateGithubProfile
     dbConnection: DbConnection
   ): Promise<UpdateGithubProfileResponseDto> {
     try {
-      if (auth.isSystemInternal && !request.targetOrganizationId)
+      if (auth.isSystemInternal && !request.targetOrgId)
         throw new Error('Target organization id missing');
-      if (!auth.isSystemInternal && !auth.callerOrganizationId)
+      if (!auth.isSystemInternal && !auth.callerOrgId)
         throw new Error('Caller organization id missing');
-      if (!request.targetOrganizationId && !auth.callerOrganizationId)
+      if (!request.targetOrgId && !auth.callerOrgId)
         throw new Error('No organization Id provided');
 
       let organizationId;
-      if (auth.isSystemInternal && request.targetOrganizationId)
-        organizationId = request.targetOrganizationId;
-      else if (auth.callerOrganizationId)
-        organizationId = auth.callerOrganizationId;
+      if (auth.isSystemInternal && request.targetOrgId)
+        organizationId = request.targetOrgId;
+      else if (auth.callerOrgId)
+        organizationId = auth.callerOrgId;
       else throw new Error('Unhandled organizationId allocation');
 
       this.#dbConnection = dbConnection;
@@ -72,11 +72,11 @@ export class UpdateGithubProfile
       const readGithubProfileResult = await this.#readGithubProfile.execute(
         {
           installationId: request.updateDto.installationId,
-          targetOrganizationId: request.targetOrganizationId,
+          targetOrgId: request.targetOrgId,
         },
         {
           isSystemInternal: auth.isSystemInternal,
-          callerOrganizationId: auth.callerOrganizationId,
+          callerOrgId: auth.callerOrgId,
         },
         this.#dbConnection
       );

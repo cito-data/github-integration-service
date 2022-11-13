@@ -35,11 +35,11 @@ export default class DeleteGithubProfileController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): DeleteGithubProfileRequestDto => {
-    const targetOrganizationId = httpRequest.query.organizationId;
-    if(!targetOrganizationId) throw new Error('missing organizationId in deletion operation');
-    if(typeof targetOrganizationId !== 'string') throw new Error('Query param need to be provided as string');
+    const targetOrgId = httpRequest.query.organizationId;
+    if(!targetOrgId) throw new Error('missing organizationId in deletion operation');
+    if(typeof targetOrgId !== 'string') throw new Error('Query param need to be provided as string');
 
-    return  {targetOrganizationId};
+    return  {targetOrgId};
   };
 
   #buildAuthDto = (

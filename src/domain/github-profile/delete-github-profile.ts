@@ -7,7 +7,7 @@ import {
 import { ReadGithubProfile } from './read-github-profile';
 
 export interface DeleteGithubProfileRequestDto {
-  targetOrganizationId: string;
+  targetOrgId: string;
 }
 
 export interface DeleteGithubProfileAuthDto {
@@ -52,7 +52,7 @@ export class DeleteGithubProfile
       const readGithubProfileResult =
         await this.#readGithubProfile.execute(
           {
-            targetOrganizationId: request.targetOrganizationId,
+            targetOrgId: request.targetOrgId,
           },
           { isSystemInternal: auth.isSystemInternal },
           this.#dbConnection,
@@ -63,7 +63,7 @@ export class DeleteGithubProfile
       if (!readGithubProfileResult.value)
         throw new Error('Github profile retrieval went wrong');
 
-      if (readGithubProfileResult.value.organizationId !== request.targetOrganizationId)
+      if (readGithubProfileResult.value.organizationId !== request.targetOrgId)
         throw new Error('Not allowed to perform action');
 
       const deleteResult = await this.#githubProfileRepo.deleteOne(

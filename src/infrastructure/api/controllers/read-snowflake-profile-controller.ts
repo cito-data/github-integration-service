@@ -35,14 +35,25 @@ export default class ReadSnowflakeProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  
+  #buildRequestDto = (httpRequest: Request): ReadSnowflakeProfileRequestDto => {
+    const { targetOrgId } = httpRequest.query;
+
+    if (targetOrgId && typeof targetOrgId !== 'string')
+      throw new Error('Query param targetOrgId need to by of type string');
+
+    return {
+      targetOrgId,
+    };
+  };
+
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSnowflakeProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
+      isSystemInternal: userAccountInfo.isSystemInternal
     };
   };
 
@@ -69,8 +80,7 @@ export default class ReadSnowflakeProfileController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSnowflakeProfileRequestDto =
-        null;
+      const requestDto: ReadSnowflakeProfileRequestDto = this.#buildRequestDto(req);
       const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
@@ -79,14 +89,11 @@ export default class ReadSnowflakeProfileController extends BaseController {
         await this.#readSnowflakeProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return ReadSnowflakeProfileController.badRequest(
-          res,
-          
-        );
+        return ReadSnowflakeProfileController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value
@@ -97,7 +104,10 @@ export default class ReadSnowflakeProfileController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (!(error instanceof Error) && error) console.trace(error);
-      return ReadSnowflakeProfileController.fail(res, 'Unknown internal error occured');
+      return ReadSnowflakeProfileController.fail(
+        res,
+        'Unknown internal error occured'
+      );
     }
   }
 }

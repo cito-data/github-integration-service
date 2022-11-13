@@ -4,7 +4,7 @@ import { ILineageApiRepo } from './i-lineage-api-repo';
 import { LineageDto } from './lineage-dto';
 
 export interface PostLineageRequestDto {
-  targetOrganizationId: string,
+  targetOrgId: string,
   base64CatalogContent: string,
   base64ManifestContent: string,
 }
@@ -32,7 +32,7 @@ export class PostLineage
     try {
       const postLineageResponse: LineageDto =
         await this.#lineageApiRepo.post(
-          {catalog: request.base64CatalogContent, manifest: request.base64ManifestContent, targetOrganizationId: request.targetOrganizationId},
+          {catalog: request.base64CatalogContent, manifest: request.base64ManifestContent, targetOrgId: request.targetOrgId},
           auth.jwt
         );
 

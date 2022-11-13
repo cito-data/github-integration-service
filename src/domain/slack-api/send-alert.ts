@@ -7,7 +7,7 @@ import { SlackProfile } from '../entities/slack-profile';
 
 export interface SendSlackAlertRequestDto {
   messageConfig: SlackMessageConfig;
-  targetOrganizationId: string;
+  targetOrgId: string;
 }
 
 export interface SendSlackAlertAuthDto {
@@ -40,7 +40,7 @@ export class SendSlackAlert
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
-        callerOrganizationId: organizationId,
+        callerOrgId: organizationId,
       },
       this.#dbConnection
     );
@@ -65,7 +65,7 @@ export class SendSlackAlert
       this.#dbConnection = dbConnection;
 
       const slackProfile = await this.#getSlackProfile(
-        request.targetOrganizationId
+        request.targetOrgId
       );
 
       await this.#slackApiRepo.sendAlert(

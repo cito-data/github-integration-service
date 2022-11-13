@@ -14,7 +14,7 @@ export interface UpdateSlackProfileRequestDto {
 }
 
 export interface UpdateSlackProfileAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
 }
 
 export type UpdateSlackProfileResponseDto = Result<string>;
@@ -52,7 +52,7 @@ export class UpdateSlackProfile
 
       const readSlackProfileResult = await this.#readSlackProfile.execute(
         null,
-        { callerOrganizationId: auth.callerOrganizationId },
+        { callerOrgId: auth.callerOrgId },
         this.#dbConnection
       );
 
@@ -63,7 +63,7 @@ export class UpdateSlackProfile
 
       if (
         readSlackProfileResult.value.organizationId !==
-        auth.callerOrganizationId
+        auth.callerOrgId
       )
         throw new Error('Not allowed to perform action');
 

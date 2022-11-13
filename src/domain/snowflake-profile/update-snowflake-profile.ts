@@ -15,7 +15,8 @@ export interface UpdateSnowflakeProfileRequestDto {
 }
 
 export interface UpdateSnowflakeProfileAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
+  isSystemInternal: boolean;
 }
 
 export type UpdateSnowflakeProfileResponseDto = Result<string>;
@@ -53,8 +54,11 @@ export class UpdateSnowflakeProfile
 
       const readSnowflakeProfileResult =
         await this.#readSnowflakeProfile.execute(
-          null,
-          { callerOrganizationId: auth.callerOrganizationId },
+          {},
+          {
+            callerOrgId: auth.callerOrgId,
+            isSystemInternal: auth.isSystemInternal,
+          },
           this.#dbConnection
         );
 
@@ -63,10 +67,7 @@ export class UpdateSnowflakeProfile
       if (!readSnowflakeProfileResult.value)
         throw new Error('Snowflake profile retrieval went wrong');
 
-      if (
-        readSnowflakeProfileResult.value.organizationId !==
-        auth.callerOrganizationId
-      )
+      if (readSnowflakeProfileResult.value.organizationId !== auth.callerOrgId)
         throw new Error('Not allowed to perform action');
 
       const updateResult = await this.#snowflakeProfileRepo.updateOne(
@@ -77,7 +78,7 @@ export class UpdateSnowflakeProfile
 
       return Result.ok(updateResult);
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message);
+      if (error instanceof Error && error.message) console.trace(error.message);
       else if (!(error instanceof Error) && error) console.trace(error);
       return Result.fail('');
     }

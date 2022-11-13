@@ -35,7 +35,7 @@ export default class SendSlackAlertController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): SendSlackAlertRequestDto => ({
-    targetOrganizationId: httpRequest.body.targetOrganizationId,
+    targetOrgId: httpRequest.body.targetOrgId,
     messageConfig: httpRequest.body.messageConfig,
   });
 

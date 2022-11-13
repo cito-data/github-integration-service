@@ -11,7 +11,7 @@ export type GetSlackConversationsRequestDto = {
 };
 
 export interface GetSlackConversationsAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
 }
 
 export type GetSlackConversationsResponseDto = Result<SlackConversationInfo[]>;
@@ -42,7 +42,7 @@ export class GetSlackConversations
     const readSlackProfileResult = await this.#readSlackProfile.execute(
       null,
       {
-        callerOrganizationId: organizationId,
+        callerOrgId: organizationId,
       },
       this.#dbConnection
     );
@@ -65,7 +65,7 @@ export class GetSlackConversations
 
       if (!accessToken) {
         const slackProfile = await this.#getSlackProfile(
-          auth.callerOrganizationId
+          auth.callerOrgId
         );
 
         if (!slackProfile) return Result.ok([]);

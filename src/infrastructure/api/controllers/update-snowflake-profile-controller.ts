@@ -34,20 +34,23 @@ export default class UpdateSnowflakeProfileController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): UpdateSnowflakeProfileRequestDto => ({
+  #buildRequestDto = (
+    httpRequest: Request
+  ): UpdateSnowflakeProfileRequestDto => ({
     accountId: httpRequest.body.accountId || undefined,
     username: httpRequest.body.username || undefined,
     password: httpRequest.body.password || undefined,
-    warehouseName: httpRequest.body.warehouseName || undefined
+    warehouseName: httpRequest.body.warehouseName || undefined,
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): UpdateSnowflakeProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
+      isSystemInternal: userAccountInfo.isSystemInternal,
     };
   };
 
@@ -56,7 +59,10 @@ export default class UpdateSnowflakeProfileController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return UpdateSnowflakeProfileController.unauthorized(res, 'Unauthorized');
+        return UpdateSnowflakeProfileController.unauthorized(
+          res,
+          'Unauthorized'
+        );
 
       const jwt = authHeader.split(' ')[1];
 
@@ -84,14 +90,11 @@ export default class UpdateSnowflakeProfileController extends BaseController {
         await this.#updateSnowflakeProfile.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return UpdateSnowflakeProfileController.badRequest(
-          res,
-
-        );
+        return UpdateSnowflakeProfileController.badRequest(res);
       }
 
       return UpdateSnowflakeProfileController.ok(
@@ -102,7 +105,10 @@ export default class UpdateSnowflakeProfileController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (!(error instanceof Error) && error) console.trace(error);
-      return UpdateSnowflakeProfileController.fail(res, 'Unknown internal error occured');
+      return UpdateSnowflakeProfileController.fail(
+        res,
+        'Unknown internal error occured'
+      );
     }
   }
 }

@@ -8,11 +8,11 @@ import { SnowflakeProfile } from '../entities/snowflake-profile';
 
 export interface QuerySnowflakeRequestDto {
   query: string;
-  targetOrganizationId?: string;
+  targetOrgId?: string;
 }
 
 export interface QuerySnowflakeAuthDto {
-  callerOrganizationId?: string;
+  callerOrgId?: string;
   isSystemInternal: boolean;
 }
 
@@ -31,25 +31,23 @@ export class QuerySnowflake
 
   readonly #readSnowflakeProfile: ReadSnowflakeProfile;
 
-
   #dbConnection: DbConnection;
 
   constructor(
     snowflakeApiRepo: ISnowflakeApiRepo,
-    readSnowflakeProfile: ReadSnowflakeProfile,
+    readSnowflakeProfile: ReadSnowflakeProfile
   ) {
     this.#snowflakeApiRepo = snowflakeApiRepo;
     this.#readSnowflakeProfile = readSnowflakeProfile;
   }
 
   #getSnowflakeProfile = async (
-    organizationId: string
+    auth: QuerySnowflakeAuthDto,
+    targetOrgId?: string
   ): Promise<SnowflakeProfile> => {
     const readSnowflakeProfileResult = await this.#readSnowflakeProfile.execute(
-      null,
-      {
-        callerOrganizationId: organizationId,
-      },
+      { targetOrgId },
+      auth,
       this.#dbConnection
     );
 
@@ -70,13 +68,13 @@ export class QuerySnowflake
       this.#dbConnection = dbConnection;
 
       let snowflakeProfiles: SnowflakeProfile[];
-      if (auth.isSystemInternal && request.targetOrganizationId)
+      if (auth.isSystemInternal && request.targetOrgId)
         snowflakeProfiles = [
-          await this.#getSnowflakeProfile(request.targetOrganizationId),
+          await this.#getSnowflakeProfile(auth, request.targetOrgId),
         ];
-      else if (auth.callerOrganizationId)
+      else if (auth.callerOrgId)
         snowflakeProfiles = [
-          await this.#getSnowflakeProfile(auth.callerOrganizationId),
+          await this.#getSnowflakeProfile(auth, request.targetOrgId),
         ];
       else throw new Error('Unhandled authorization');
 

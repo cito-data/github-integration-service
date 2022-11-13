@@ -36,7 +36,7 @@ export default class ReadGithubProfileController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): ReadGithubProfileRequestDto => ({
-    targetOrganizationId:
+    targetOrgId:
       typeof httpRequest.query.organizationId === 'string'
         ? httpRequest.query.organizationId
         : undefined,
@@ -49,7 +49,7 @@ export default class ReadGithubProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadGithubProfileAuthDto => ({
-    callerOrganizationId: userAccountInfo.callerOrganizationId,
+    callerOrgId: userAccountInfo.callerOrgId,
     isSystemInternal: userAccountInfo.isSystemInternal,
   });
 

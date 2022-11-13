@@ -45,10 +45,10 @@ export default class JoinSlackConversationController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): JoinSlackConversationAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
     };
   };
 

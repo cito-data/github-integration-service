@@ -26,12 +26,12 @@ export interface GithubConfig {
 interface InternalLineageInvoke {
   internalInvokeType: string;
   auth: { jwt: string };
-  req: { catalog: string; manifest: string; targetOrganizationId: string };
+  req: { catalog: string; manifest: string; targetOrgId: string };
 }
 
 interface UpdateProfileProps {
   installationId: string;
-  targetOrganizationId: string;
+  targetOrgId: string;
   repositoryNames?: string[];
 }
 
@@ -132,12 +132,12 @@ export default (
     try {
       console.log('Updating Github profile...');
 
-      const { targetOrganizationId, ...updateDto } = props;
+      const { targetOrgId, ...updateDto } = props;
 
       const useCaseResult: UpdateGithubProfileResponseDto =
         await updateGithubProfile.execute(
           {
-            targetOrganizationId,
+            targetOrgId,
             updateDto,
           },
           { isSystemInternal: true },
@@ -159,7 +159,7 @@ export default (
   };
 
   const deleteGithubProfile = async (
-    targetOrganizationId: string
+    targetOrgId: string
   ): Promise<any> => {
     try {
       const jwt = await getJwt();
@@ -170,7 +170,7 @@ export default (
           'Content-Type': 'application/json',
         },
         params: new URLSearchParams({
-          organizationId: targetOrganizationId,
+          organizationId: targetOrgId,
         }),
       };
 
@@ -213,7 +213,7 @@ export default (
           req: {
             catalog: base64CatalogContent,
             manifest: base64ManifestContent,
-            targetOrganizationId: organizationId,
+            targetOrgId: organizationId,
           },
         };
 
@@ -245,7 +245,7 @@ export default (
         {
           base64CatalogContent,
           base64ManifestContent,
-          targetOrganizationId: organizationId,
+          targetOrgId: organizationId,
         },
         { jwt }
       );
@@ -411,7 +411,7 @@ export default (
 
     await updateProfile({
       installationId,
-      targetOrganizationId: organizationId,
+      targetOrgId: organizationId,
       repositoryNames: repoNames,
     });
   };

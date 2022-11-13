@@ -7,7 +7,7 @@ import { DbConnection } from '../services/i-db';
 export type ReadSlackProfileRequestDto = null;
 
 export interface ReadSlackProfileAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
 }
 
 export type ReadSlackProfileResponseDto = Result<SlackProfile|undefined>;
@@ -39,13 +39,13 @@ export class ReadSlackProfile
       this.#dbConnection = dbConnection;
 
       const slackProfile = await this.#slackProfileRepo.findOne(
-        auth.callerOrganizationId,
+        auth.callerOrgId,
         this.#dbConnection
       );
       if (!slackProfile)
         return Result.ok(undefined);
 
-      if (slackProfile.organizationId !== auth.callerOrganizationId)
+      if (slackProfile.organizationId !== auth.callerOrgId)
         throw new Error('Not authorized to perform action');
 
       return Result.ok(slackProfile);

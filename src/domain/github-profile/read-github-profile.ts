@@ -6,11 +6,11 @@ import { DbConnection } from '../services/i-db';
 
 export type ReadGithubProfileRequestDto = {
   installationId?: string;
-  targetOrganizationId?: string;
+  targetOrgId?: string;
 };
 
 export interface ReadGithubProfileAuthDto {
-  callerOrganizationId?: string;
+  callerOrgId?: string;
   isSystemInternal: boolean;
 }
 
@@ -41,19 +41,19 @@ export class ReadGithubProfile
     try {
       if (
         auth.isSystemInternal &&
-        !(request.targetOrganizationId || request.installationId)
+        !(request.targetOrgId || request.installationId)
       )
         throw new Error('Target organization id or installation id missing');
-      if (!auth.isSystemInternal && !auth.callerOrganizationId)
+      if (!auth.isSystemInternal && !auth.callerOrgId)
         throw new Error('Caller organization id missing');
-      if (!request.targetOrganizationId && !auth.callerOrganizationId && !request.installationId)
+      if (!request.targetOrgId && !auth.callerOrgId && !request.installationId)
         throw new Error('No potential profile identifier provided');
 
       let organizationId;
-      if (auth.isSystemInternal && request.targetOrganizationId)
-        organizationId = request.targetOrganizationId;
-      else if (auth.callerOrganizationId)
-        organizationId = auth.callerOrganizationId;
+      if (auth.isSystemInternal && request.targetOrgId)
+        organizationId = request.targetOrgId;
+      else if (auth.callerOrgId)
+        organizationId = auth.callerOrgId;
       this.#dbConnection = dbConnection;
 
       const githubProfile = await this.#githubProfileRepo.findOne(

@@ -47,10 +47,11 @@ export default class CreateSnowflakeProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): CreateSnowflakeProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
+      isSystemInternal: userAccountInfo.isSystemInternal
     };
   };
 

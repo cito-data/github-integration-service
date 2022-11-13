@@ -11,7 +11,7 @@ export type JoinSlackConversationRequestDto = {
 };
 
 export interface JoinSlackConversationAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
 }
 
 export type JoinSlackConversationResponseDto = Result<null>;
@@ -40,7 +40,7 @@ export class JoinSlackConversation
   //   const readSlackProfileResult = await this.#readSlackProfile.execute(
   //     null,
   //     {
-  //       callerOrganizationId: organizationId,
+  //       callerOrgId: organizationId,
   //     },
   //     this.#dbConnection
   //   );

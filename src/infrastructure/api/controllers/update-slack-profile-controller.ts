@@ -43,10 +43,10 @@ export default class UpdateSlackProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): UpdateSlackProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
     };
   };
 

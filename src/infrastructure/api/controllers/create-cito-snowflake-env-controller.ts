@@ -39,10 +39,10 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): CreateCitoSnowflakeEnvAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
       isSystemInternal: userAccountInfo.isSystemInternal,
     };
   };

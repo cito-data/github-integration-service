@@ -12,7 +12,7 @@ import {
 export type CreateCitoSnowflakeEnvRequestDto = null;
 
 export interface CreateCitoSnowflakeEnvAuthDto {
-  callerOrganizationId: string;
+  callerOrgId: string;
   isSystemInternal: boolean;
 }
 
@@ -40,7 +40,7 @@ export class CreateCitoSnowflakeEnv
 
   #createSchema = async (
     schemaName: CitoSchemaName,
-    auth: { callerOrganizationId: string; isSystemInternal: boolean }
+    auth: { callerOrgId: string; isSystemInternal: boolean }
   ): Promise<void> => {
     const createObservabilitySchemaResult =
       await await this.#querySnowflake.execute(
@@ -74,7 +74,7 @@ export class CreateCitoSnowflakeEnv
               query,
             },
             {
-              callerOrganizationId: auth.callerOrganizationId,
+              callerOrgId: auth.callerOrgId,
               isSystemInternal: auth.isSystemInternal,
             },
             this.#dbConnection
@@ -91,7 +91,7 @@ export class CreateCitoSnowflakeEnv
       //   throw new Error('Not authorized to perform action');
 
       return Result.ok({
-        organizationId: auth.callerOrganizationId,
+        organizationId: auth.callerOrgId,
         success: true,
       });
     } catch (error: unknown) {

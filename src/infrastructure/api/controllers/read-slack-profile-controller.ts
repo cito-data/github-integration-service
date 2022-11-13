@@ -38,10 +38,10 @@ export default class ReadSlackProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSlackProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
     };
   };
 

@@ -44,10 +44,10 @@ export default class CreateSlackProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): CreateSlackProfileAuthDto => {
-    if (!userAccountInfo.callerOrganizationId) throw new Error('Unauthorized');
+    if (!userAccountInfo.callerOrgId) throw new Error('Unauthorized');
 
     return {
-      callerOrganizationId: userAccountInfo.callerOrganizationId,
+      callerOrgId: userAccountInfo.callerOrgId,
     };
   };
 
