@@ -1,4 +1,4 @@
-import citoSchema from './cito-dw-schema';
+import citoSchema, { TableDefinition } from './cito-dw-schema';
 
 export const citoSchemaNames = ['observability', 'lineage'] as const;
 export type CitoSchemaName = typeof citoSchemaNames[number];
@@ -44,11 +44,7 @@ export const parseCitoMaterializationName = (
 
 const getCitoMaterializationSchema = (
   citoMaterializationType: CitoMaterializationName
-): {
-  name: string;
-  columns: { name: string; type: string }[];
-  schemaName: string;
-} => {
+): TableDefinition => {
   const { tables } = citoSchema;
   const matchingTables = tables.filter(
     (el) => el.name === citoMaterializationType
@@ -63,7 +59,7 @@ export const getCreateTableQuery = (
 ): string => {
   const schema = getCitoMaterializationSchema(citoMaterializationType);
   const columnDefinitionString = schema.columns
-    .map((el: any) => `${el.name} ${el.type}`)
+    .map((el) => `${el.name} ${el.type} ${el.nullable? '': 'not null'}`)
     .join(', ');
 
   return `
