@@ -60,9 +60,6 @@ export class ReadSnowflakeProfile
       );
       if (!snowflakeProfile) return Result.ok(undefined);
 
-      if (snowflakeProfile.organizationId !== auth.callerOrgId)
-        throw new Error('Not authorized to perform action');
-
       return Result.ok(snowflakeProfile);
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
