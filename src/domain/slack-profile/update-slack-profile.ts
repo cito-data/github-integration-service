@@ -75,8 +75,8 @@ export class UpdateSlackProfile
 
       return Result.ok(updateResult);
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack);
+      else if (error) console.trace(error);
       return Result.fail('');
     }
   }

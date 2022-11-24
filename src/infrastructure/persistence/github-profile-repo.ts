@@ -57,8 +57,8 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
       return this.#toEntity(await this.#buildProperties(result));
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };
@@ -79,8 +79,8 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
       return result.insertedId.toHexString();
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };
@@ -119,8 +119,8 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
       return result.upsertedId;
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };
@@ -138,8 +138,8 @@ export default class GithubProfileRepo implements IGithubProfileRepo {
 
       return result.deletedCount.toString();
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };

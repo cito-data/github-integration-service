@@ -91,7 +91,7 @@ export default (
       return jsonResponse.access_token;
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };
@@ -123,7 +123,7 @@ export default (
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };
@@ -153,7 +153,7 @@ export default (
       return useCaseResult.value;
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };
@@ -187,7 +187,7 @@ export default (
       throw new Error(jsonResponse.message);
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };
@@ -259,7 +259,7 @@ export default (
       return postLineageResult.value;
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };

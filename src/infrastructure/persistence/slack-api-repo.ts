@@ -101,8 +101,8 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };
@@ -136,8 +136,8 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return channelInfo;
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };
@@ -158,8 +158,8 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-      else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+      else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
   };
@@ -180,8 +180,8 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error && error.message) console.trace(error.message); 
-    else if (!(error instanceof Error) && error) console.trace(error);
+      if(error instanceof Error) console.error(error.stack); 
+    else if (error) console.trace(error);
     return Promise.reject(new Error(''));
     }
   };

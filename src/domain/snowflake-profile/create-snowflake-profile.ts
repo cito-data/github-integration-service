@@ -84,7 +84,7 @@ export class CreateSnowflakeProfile
       return Result.ok(snowflakeProfile);
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
-      else if (!(error instanceof Error) && error) console.trace(error);
+      else if (error) console.trace(error);
       return Result.fail('');
     }
   }
