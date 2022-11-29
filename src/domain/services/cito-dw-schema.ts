@@ -1,17 +1,17 @@
 export interface ColumnDefinition {
-  name:string,
-  type:string,
-  nullable: boolean
+  name: string;
+  type: string;
+  nullable: boolean;
 }
 
 export interface TableDefinition {
-  name: string,
-  columns: ColumnDefinition[]
+  name: string;
+  columns: ColumnDefinition[];
   schemaName: string;
 }
 
 export interface Schema {
-  tables: TableDefinition[]
+  tables: TableDefinition[];
 }
 
 // todo - fix nullable settings for observability columns (all set to true rn)
@@ -36,7 +36,7 @@ export const schema: Schema = {
         { name: 'execution_type', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_suites_custom',
       columns: [
@@ -53,7 +53,7 @@ export const schema: Schema = {
         { name: 'execution_type', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_history',
       columns: [
@@ -67,7 +67,7 @@ export const schema: Schema = {
         { name: 'alert_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_results',
       columns: [
@@ -85,7 +85,7 @@ export const schema: Schema = {
         { name: 'execution_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_executions',
       columns: [
@@ -94,7 +94,7 @@ export const schema: Schema = {
         { name: 'test_suite_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_alerts',
       columns: [
@@ -105,7 +105,7 @@ export const schema: Schema = {
         { name: 'execution_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_suites_nominal',
       columns: [
@@ -124,7 +124,7 @@ export const schema: Schema = {
         { name: 'execution_type', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_history_nominal',
       columns: [
@@ -137,7 +137,7 @@ export const schema: Schema = {
         { name: 'alert_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_results_nominal',
       columns: [
@@ -150,7 +150,7 @@ export const schema: Schema = {
         { name: 'execution_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_executions_nominal',
       columns: [
@@ -159,7 +159,7 @@ export const schema: Schema = {
         { name: 'test_suite_id', type: 'string', nullable: true },
       ],
       schemaName: 'observability',
-   },
+    },
     {
       name: 'test_alerts_nominal',
       columns: [
@@ -177,6 +177,8 @@ export const schema: Schema = {
         { name: 'id', type: 'string', nullable: false },
         { name: 'created_at', type: 'timestamp_ntz', nullable: false },
         { name: 'completed', type: 'boolean', nullable: false },
+        { name: 'diff', type: 'string', nullable: true },
+        { name: 'db_covered_names', type: 'array', nullable: false },
       ],
       schemaName: 'lineage',
     },
@@ -191,7 +193,6 @@ export const schema: Schema = {
         { name: 'is_identity', type: 'boolean', nullable: true },
         { name: 'is_nullable', type: 'boolean', nullable: true },
         { name: 'materialization_id', type: 'string', nullable: false },
-        { name: 'lineage_ids', type: 'array', nullable: false },
         { name: 'comment', type: 'string', nullable: true },
       ],
       schemaName: 'lineage',
@@ -208,7 +209,6 @@ export const schema: Schema = {
         { name: 'is_transient', type: 'boolean', nullable: true },
         { name: 'logic_id', type: 'string', nullable: true },
         { name: 'owner_id', type: 'string', nullable: true },
-        { name: 'lineage_ids', type: 'array', nullable: false },
         { name: 'comment', type: 'string', nullable: true },
       ],
       schemaName: 'lineage',
@@ -222,7 +222,6 @@ export const schema: Schema = {
         { name: 'dependent_on', type: 'object', nullable: false },
         { name: 'parsed_logic', type: 'string', nullable: false },
         { name: 'statement_refs', type: 'object', nullable: false },
-        { name: 'lineage_ids', type: 'array', nullable: false },
       ],
       schemaName: 'lineage',
     },
@@ -233,7 +232,6 @@ export const schema: Schema = {
         { name: 'type', type: 'string', nullable: false },
         { name: 'head_id', type: 'string', nullable: false },
         { name: 'tail_id', type: 'string', nullable: false },
-        { name: 'lineage_ids', type: 'array', nullable: false },
       ],
       schemaName: 'lineage',
     },
@@ -247,7 +245,6 @@ export const schema: Schema = {
         { name: 'materialization_id', type: 'string', nullable: false },
         { name: 'column_name', type: 'string', nullable: false },
         { name: 'column_id', type: 'string', nullable: false },
-        { name: 'lineage_ids', type: 'array', nullable: false },
       ],
       schemaName: 'lineage',
     },
