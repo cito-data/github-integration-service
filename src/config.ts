@@ -90,7 +90,7 @@ const getSystemInternalAuthConfig = (): SystemInternalAuthConfig => {
       const tokenUrl = 'https://auth.citodata.com/oauth2/token';
       return { clientSecret, clientId, tokenUrl };
     }
-    default: {      
+    default: {
       throw new Error(`node env misconfiguration. Provided state: ${nodeEnv}`);
     }
   }
@@ -108,7 +108,6 @@ const getGithubConfig = (): GithubConfig => {
   const privateKey = process.env.GITHUB_PRIVATE_KEY;
   if (!privateKey) throw new Error('Private key not available');
 
-
   const appId = process.env.GITHUB_APP_IDENTIFIER
     ? parseInt(process.env.GITHUB_APP_IDENTIFIER, 10)
     : undefined;
@@ -123,7 +122,30 @@ const getGithubConfig = (): GithubConfig => {
   const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
   if (!clientSecret) throw new Error('Client secret not available');
 
-  return { privateKey: privateKey.replace(/\\n/gm, '\n'), appId, webhookSecret, clientId, clientSecret };
+  return {
+    privateKey: privateKey.replace(/\\n/gm, '\n'),
+    appId,
+    webhookSecret,
+    clientId,
+    clientSecret,
+  };
+};
+
+export interface BaseUrlConfig {
+  accountService: string;
+  integrationService: string;
+  lineageAnalysisService: string;
+}
+
+const getBaseUrlConfig = (): BaseUrlConfig => {
+  const integrationService = process.env.BASE_URL_INTEGRATION_SERVICE;
+  const accountService = process.env.BASE_URL_ACCOUNT_SERVICE;
+  const lineageAnalysisService = process.env.BASE_URL_LINEAGE_ANALYSIS;
+
+  if (!integrationService || !accountService || !lineageAnalysisService)
+    throw new Error('Missing Base url env values');
+
+  return { integrationService, accountService, lineageAnalysisService };
 };
 
 export const appConfig = {
@@ -147,4 +169,5 @@ export const appConfig = {
       process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector',
   },
   github: getGithubConfig(),
+  baseUrl: getBaseUrlConfig(),
 };

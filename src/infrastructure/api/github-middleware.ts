@@ -6,7 +6,6 @@ import EventSource from 'eventsource';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { GithubProfile } from '../../domain/entities/github-profile';
 import { appConfig } from '../../config';
-import getRoot from '../shared/api-root-builder';
 import { CreateMetadata } from '../../domain/metadata/create-metadata';
 import { DbConnection } from '../../domain/services/i-db';
 import {
@@ -52,17 +51,6 @@ export default (
       clientSecret: appConfig.github.clientSecret,
     },
   });
-
-  const getSelfApiRoute = async (): Promise<string> => {
-    const gateway =
-      appConfig.express.mode === 'production'
-        ? 'wej7xjkvug.execute-api.eu-central-1.amazonaws.com/production'
-        : '3002';
-
-    const apiRoot = await getRoot(gateway, 'api/v1');
-
-    return apiRoot;
-  };
 
   const getJwt = async (): Promise<string> => {
     try {
@@ -110,10 +98,8 @@ export default (
         params,
       };
 
-      const apiRoot = await getSelfApiRoute();
-
       const response = await axios.get(
-        `${apiRoot}/github/profile`,
+        `${appConfig.baseUrl.integrationService}/${appConfig.express.apiRoot}/v1/github/profile`,
         configuration
       );
 
@@ -174,10 +160,8 @@ export default (
         }),
       };
 
-      const apiRoot = await getSelfApiRoute();
-
       const response = await axios.delete(
-        `${apiRoot}/github/profile`,
+        `${appConfig.baseUrl.integrationService}/${appConfig.express.apiRoot}/v1/github/profile`,
         configuration
       );
 

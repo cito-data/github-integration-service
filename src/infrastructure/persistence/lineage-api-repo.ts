@@ -5,7 +5,6 @@ import {
   ILineageApiRepo,
   PostLineagePayload,
 } from '../../domain/lineage-api/i-lineage-api-repo';
-import getRoot from '../shared/api-root-builder';
 
 export default class LineageApiRepo implements ILineageApiRepo {
   #path = 'api/v1';
@@ -22,15 +21,11 @@ export default class LineageApiRepo implements ILineageApiRepo {
           'Only suitable for local testing purposes in development mode'
         );
 
-      const gateway = this.#port;
-
-      const apiRoot = await getRoot(gateway, this.#path);
-
       const config: AxiosRequestConfig = {
         headers: { Authorization: `Bearer ${jwt}` },
       };
 
-      const response = await axios.post(`${apiRoot}/lineage`, payload, config);
+      const response = await axios.post(`${appConfig.baseUrl.lineageAnalysisService}/${appConfig.express.apiRoot}/v1/lineage`, payload, config);
       const jsonResponse = response.data;
       if (response.status === 201) return jsonResponse;
       throw new Error(jsonResponse.message);
