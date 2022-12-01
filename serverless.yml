@@ -20,12 +20,3 @@ functions:
   app:
     handler: dist/lambda.handler
     url: true
-    events: 
-      - http: 
-          path: /
-          method: ANY
-          cors: true
-      - http: 
-          path: /{proxy+}
-          method: ANY
-          cors: true
