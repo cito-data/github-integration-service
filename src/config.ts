@@ -28,11 +28,11 @@ const getServiceDiscoveryNamespace = (): string | null => {
 const getSlackMessageButtonBaseUrl = (): string => {
   switch (nodeEnv) {
     case 'development':
-      return `http://localhost:3006/test`;
+      return `http://localhost:3006/model-feedback`;
     case 'staging':
-      return `https://www.app-staging.citodata.com/test`;
+      return `https://www.app-staging.citodata.com/model-feedback`;
     case 'production':
-      return `https://www.app.citodata.com/test`;
+      return `https://www.app.citodata.com/model-feedback`;
     default:
       throw new Error('nodenv type not found');
   }
