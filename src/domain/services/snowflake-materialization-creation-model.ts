@@ -4,10 +4,10 @@ export const citoSchemaNames = ['observability', 'lineage'] as const;
 export type CitoSchemaName = typeof citoSchemaNames[number];
 
 export const parseCitoSchemaName = (type: unknown): CitoSchemaName => {
-  const identifiedFrequency = citoSchemaNames.find(
+  const identifiedType = citoSchemaNames.find(
     (element) => element === type
   );
-  if (identifiedFrequency) return identifiedFrequency;
+  if (identifiedType) return identifiedType;
   throw new Error('Provision of invalid Cito schema name');
 };
 
@@ -35,10 +35,10 @@ export type CitoMaterializationName = typeof citoMaterializationNames[number];
 export const parseCitoMaterializationName = (
   type: unknown
 ): CitoMaterializationName => {
-  const identifiedFrequency = citoMaterializationNames.find(
+  const identifiedType = citoMaterializationNames.find(
     (element) => element === type
   );
-  if (identifiedFrequency) return identifiedFrequency;
+  if (identifiedType) return identifiedType;
   throw new Error('Provision of invalid Cito materialization name');
 };
 
