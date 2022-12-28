@@ -88,7 +88,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
             elements: [
               {
                 type: 'plain_text',
-                text: `occured on: ${messageConfig.occuredOn}`,
+                text: `occurred on: ${messageConfig.occurredOn}`,
               },
               {
                 type: 'plain_text',

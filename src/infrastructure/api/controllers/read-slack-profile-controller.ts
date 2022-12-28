@@ -92,7 +92,7 @@ export default class ReadSlackProfileController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (error) console.trace(error);
-      return ReadSlackProfileController.fail(res, 'Unknown internal error occured');
+      return ReadSlackProfileController.fail(res, 'Unknown internal error occurred');
     }
   }
 }

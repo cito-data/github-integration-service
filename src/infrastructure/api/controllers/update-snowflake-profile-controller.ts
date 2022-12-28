@@ -107,7 +107,7 @@ export default class UpdateSnowflakeProfileController extends BaseController {
       else if (error) console.trace(error);
       return UpdateSnowflakeProfileController.fail(
         res,
-        'Unknown internal error occured'
+        'Unknown internal error occurred'
       );
     }
   }

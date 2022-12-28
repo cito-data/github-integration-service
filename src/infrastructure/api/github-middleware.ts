@@ -440,7 +440,7 @@ export default (
         console.error(`Error in github-webhook-middleware: ${error}`);
       if (error instanceof Error)
         console.error(`Error in github-webhook-middleware: ${error.message}`);
-      console.error('Unknown error occured in github-webhook-middleware');
+      console.error('Unknown error occurred in github-webhook-middleware');
     }
   };
 

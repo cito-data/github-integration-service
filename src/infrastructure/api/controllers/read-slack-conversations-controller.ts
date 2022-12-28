@@ -111,7 +111,7 @@ export default class ReadSlackConversationsController extends BaseController {
       else if (error) console.trace(error);
       return ReadSlackConversationsController.fail(
         res,
-        'Unknown internal error occured'
+        'Unknown internal error occurred'
       );
     }
   }

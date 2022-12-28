@@ -2,7 +2,7 @@ import { SlackConversationInfo } from "../value-types/slack-conversation-info";
 
 export interface SlackMessageConfig {
   anomalyMessagePart: string,
-  occuredOn: string,
+  occurredOn: string,
   alertId: string,
   testType: string,
   summaryPart: string,

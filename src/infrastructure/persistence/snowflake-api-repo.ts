@@ -40,7 +40,7 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
           if (err) {
             if (typeof err === 'string') resolve(Result.fail(err));
             if (err instanceof Error) resolve(Result.fail(err.message));
-            resolve(Result.fail('Unknown Snowflake connection error occured'));
+            resolve(Result.fail('Unknown Snowflake connection error occurred'));
           }
 
           // Optional: store the connection ID.

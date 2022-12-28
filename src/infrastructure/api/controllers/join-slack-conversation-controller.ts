@@ -107,7 +107,7 @@ export default class JoinSlackConversationController extends BaseController {
       else if (error) console.trace(error);
       return JoinSlackConversationController.fail(
         res,
-        'Unknown internal error occured'
+        'Unknown internal error occurred'
       );
     }
   }

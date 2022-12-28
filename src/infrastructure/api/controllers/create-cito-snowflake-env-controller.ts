@@ -102,7 +102,7 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
       else if (error) console.trace(error);
       return CreateCitoSnowflakeEnvController.fail(
         res,
-        'Unknown internal error occured'
+        'Unknown internal error occurred'
       );
     }
   }

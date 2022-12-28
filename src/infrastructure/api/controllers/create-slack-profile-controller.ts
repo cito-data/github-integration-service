@@ -102,7 +102,7 @@ export default class CreateSlackProfileController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (error) console.trace(error);
-      return CreateSlackProfileController.fail(res, 'Unknown internal error occured');
+      return CreateSlackProfileController.fail(res, 'Unknown internal error occurred');
     }
   }
 }

@@ -96,7 +96,7 @@ export default class QuerySnowflakeController extends BaseController {
       else if (error) console.trace(error);
       return QuerySnowflakeController.fail(
         res,
-        'Unknown internal error occured'
+        'Unknown internal error occurred'
       );
     }
   }

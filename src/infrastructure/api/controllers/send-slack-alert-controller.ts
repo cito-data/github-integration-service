@@ -93,7 +93,7 @@ export default class SendSlackAlertController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (error) console.trace(error);
-      return SendSlackAlertController.fail(res, 'Unknown internal error occured');
+      return SendSlackAlertController.fail(res, 'Unknown internal error occurred');
     }
   }
 }
