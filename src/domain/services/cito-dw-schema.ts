@@ -103,7 +103,7 @@ export const schema: Schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_suites_qualitative',
+      name: 'test_suites_qual',
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
@@ -120,7 +120,7 @@ export const schema: Schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_history_qualitative',
+      name: 'test_history_qual',
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
@@ -133,7 +133,7 @@ export const schema: Schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_results_qualitative',
+      name: 'test_results_qual',
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
@@ -146,7 +146,7 @@ export const schema: Schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_executions_qualitative',
+      name: 'test_executions_qual',
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'executed_on', type: 'timestamp_ntz', nullable: false },
@@ -155,7 +155,7 @@ export const schema: Schema = {
       schemaName: 'observability',
     },
     {
-      name: 'test_alerts_qualitative',
+      name: 'test_alerts_qual',
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
