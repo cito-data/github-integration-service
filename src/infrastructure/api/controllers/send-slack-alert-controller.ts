@@ -80,11 +80,11 @@ export default class SendSlackAlertController extends BaseController {
         await this.#sendSlackAlert.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection,
+          this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return SendSlackAlertController.badRequest(res, );
+        return SendSlackAlertController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value;
@@ -93,7 +93,10 @@ export default class SendSlackAlertController extends BaseController {
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (error) console.trace(error);
-      return SendSlackAlertController.fail(res, 'Unknown internal error occurred');
+      return SendSlackAlertController.fail(
+        res,
+        'Unknown internal error occurred'
+      );
     }
   }
 }

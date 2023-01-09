@@ -10,7 +10,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
   sendAlert = async (
     accessToken: string,
     channelName: string,
-    messageConfig: SlackMessageConfig,
+    messageConfig: SlackMessageConfig
   ): Promise<void> => {
     try {
       const client = new WebClient(accessToken);
@@ -37,7 +37,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
             },
           },
           {
-            type: 'section', 
+            type: 'section',
             text: {
               text: messageConfig.summaryPart,
               type: 'mrkdwn',
@@ -53,6 +53,17 @@ export default class SlackApiRepo implements ISlackApiRepo {
               },
             ],
           },
+          messageConfig.imageUrl ? ({
+            type: 'image',
+            title: {
+              type: 'plain_text',
+              text: 'Test History Chart',
+              emoji: true,
+            },
+            image_url:
+              messageConfig.imageUrl,
+            alt_text: 'chart',
+          }),
           {
             type: 'actions',
             elements: [
@@ -101,9 +112,9 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error) console.error(error.stack); 
-    else if (error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error) console.error(error.stack);
+      else if (error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -136,9 +147,9 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return channelInfo;
     } catch (error: unknown) {
-      if(error instanceof Error) console.error(error.stack); 
-    else if (error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error) console.error(error.stack);
+      else if (error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 
@@ -158,7 +169,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error) console.error(error.stack); 
+      if (error instanceof Error) console.error(error.stack);
       else if (error) console.trace(error);
       return Promise.reject(new Error(''));
     }
@@ -180,9 +191,9 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       return await Promise.resolve();
     } catch (error: unknown) {
-      if(error instanceof Error) console.error(error.stack); 
-    else if (error) console.trace(error);
-    return Promise.reject(new Error(''));
+      if (error instanceof Error) console.error(error.stack);
+      else if (error) console.trace(error);
+      return Promise.reject(new Error(''));
     }
   };
 }
