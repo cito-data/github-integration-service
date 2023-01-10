@@ -1,5 +1,5 @@
 import { SlackProfile } from '../entities/slack-profile';
-import { DbConnection,  } from '../services/i-db';
+import { DbConnection } from '../services/i-db';
 
 export interface SlackProfileUpdateDto {
   channelId?: string;
@@ -10,16 +10,16 @@ export interface SlackProfileUpdateDto {
 export interface ISlackProfileRepo {
   findOne(
     organizationId: string,
-    dbConnection: DbConnection,
+    dbConnection: DbConnection
   ): Promise<SlackProfile | null>;
   insertOne(
     slackProfile: SlackProfile,
-    dbConnection: DbConnection,
+    dbConnection: DbConnection
   ): Promise<string>;
   updateOne(
     id: string,
     updateDto: SlackProfileUpdateDto,
-    dbConnection: DbConnection,
+    dbConnection: DbConnection
   ): Promise<string>;
   deleteOne(id: string, dbConnection: DbConnection): Promise<string>;
 }

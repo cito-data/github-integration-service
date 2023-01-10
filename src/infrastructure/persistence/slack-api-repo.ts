@@ -1,4 +1,4 @@
-import { WebClient } from '@slack/web-api';
+import { Block, KnownBlock, WebClient } from '@slack/web-api';
 import { appConfig } from '../../config';
 import {
   ISlackApiRepo,
@@ -7,6 +7,93 @@ import {
 import { SlackConversationInfo } from '../../domain/value-types/slack-conversation-info';
 
 export default class SlackApiRepo implements ISlackApiRepo {
+  #buildMsgBlocks = (msgConfig: SlackMessageConfig): (Block | KnownBlock)[] => {
+    const blocks = [];
+
+    blocks.push({
+      type: 'header',
+      text: {
+        type: 'plain_text',
+        text: `${msgConfig.anomalyMessagePart}`,
+      },
+    });
+
+    blocks.push({
+      type: 'section',
+      text: {
+        text: msgConfig.summaryPart,
+        type: 'mrkdwn',
+      },
+      fields: [
+        {
+          type: 'mrkdwn',
+          text: msgConfig.detectedValuePart,
+        },
+        {
+          type: 'mrkdwn',
+          text: msgConfig.expectedRangePart,
+        },
+      ],
+    });
+
+    if (msgConfig.imageUrl)
+      blocks.push({
+        type: 'image',
+        title: {
+          type: 'plain_text',
+          text: 'Test History Chart',
+          emoji: true,
+        },
+        image_url: msgConfig.imageUrl,
+        alt_text: 'chart',
+      });
+    blocks.push({
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          style: 'danger',
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&userFeedbackIsAnomaly=1`,
+          text: {
+            type: 'plain_text',
+            text: 'Mark as Anomaly',
+          },
+          value: 'click_me_123',
+          action_id: 'mark-anomaly-button',
+        },
+        {
+          type: 'button',
+          style: 'primary',
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&userFeedbackIsAnomaly=0`,
+          text: {
+            type: 'plain_text',
+            text: 'Mark as Normal',
+          },
+          value: 'click_me_123',
+          action_id: 'mark-normal-button',
+        },
+      ],
+    });
+    blocks.push({
+      type: 'divider',
+    });
+    blocks.push({
+      type: 'context',
+      elements: [
+        {
+          type: 'plain_text',
+          text: `occurred on: ${msgConfig.occurredOn}`,
+        },
+        {
+          type: 'plain_text',
+          text: `alert id: ${msgConfig.alertId}`,
+        },
+      ],
+    });
+
+    return blocks;
+  };
+
   sendAlert = async (
     accessToken: string,
     channelName: string,
@@ -15,99 +102,12 @@ export default class SlackApiRepo implements ISlackApiRepo {
     try {
       const client = new WebClient(accessToken);
 
+      const blocks = this.#buildMsgBlocks(messageConfig);
+
       await client.chat.postMessage({
         channel: `#${channelName}`,
         text: 'Something went wrong',
-        // attachments: [
-        //   {
-        //     mrkdwn_in: ['text'],
-        //     ...messageConfig,
-        //     color: '#6f47ef',
-        //     fields: messageFieldConfigs,
-        //     footer_icon:
-        //       'https://platform.slack-edge.com/img/default_application_icon.png',
-        //   },
-        // ],
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: `${messageConfig.anomalyMessagePart}`,
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              text: messageConfig.summaryPart,
-              type: 'mrkdwn',
-            },
-            fields: [
-              {
-                type: 'mrkdwn',
-                text: messageConfig.detectedValuePart,
-              },
-              {
-                type: 'mrkdwn',
-                text: messageConfig.expectedRangePart,
-              },
-            ],
-          },
-          messageConfig.imageUrl ? ({
-            type: 'image',
-            title: {
-              type: 'plain_text',
-              text: 'Test History Chart',
-              emoji: true,
-            },
-            image_url:
-              messageConfig.imageUrl,
-            alt_text: 'chart',
-          }),
-          {
-            type: 'actions',
-            elements: [
-              {
-                type: 'button',
-                style: 'danger',
-                url: `${appConfig.slack.buttonBaseUrl}?alertId=${messageConfig.alertId}&testType=${messageConfig.testType}&userFeedbackIsAnomaly=1`,
-                text: {
-                  type: 'plain_text',
-                  text: 'Mark as Anomaly',
-                },
-                value: 'click_me_123',
-                action_id: 'mark-anomaly-button',
-              },
-              {
-                type: 'button',
-                style: 'primary',
-                url: `${appConfig.slack.buttonBaseUrl}?alertId=${messageConfig.alertId}&testType=${messageConfig.testType}&userFeedbackIsAnomaly=0`,
-                text: {
-                  type: 'plain_text',
-                  text: 'Mark as Normal',
-                },
-                value: 'click_me_123',
-                action_id: 'mark-normal-button',
-              },
-            ],
-          },
-          {
-            type: 'divider',
-          },
-          {
-            type: 'context',
-            elements: [
-              {
-                type: 'plain_text',
-                text: `occurred on: ${messageConfig.occurredOn}`,
-              },
-              {
-                type: 'plain_text',
-                text: `alert id: ${messageConfig.alertId}`,
-              },
-            ],
-          },
-        ],
+        blocks,
       });
 
       return await Promise.resolve();

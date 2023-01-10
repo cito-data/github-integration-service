@@ -64,9 +64,7 @@ export class SendSlackAlert
 
       this.#dbConnection = dbConnection;
 
-      const slackProfile = await this.#getSlackProfile(
-        request.targetOrgId
-      );
+      const slackProfile = await this.#getSlackProfile(request.targetOrgId);
 
       await this.#slackApiRepo.sendAlert(
         slackProfile.accessToken,
@@ -76,7 +74,7 @@ export class SendSlackAlert
 
       return Result.ok(null);
     } catch (error: unknown) {
-      if(error instanceof Error) console.error(error.stack);
+      if (error instanceof Error) console.error(error.stack);
       else if (error) console.trace(error);
       return Result.fail('');
     }
