@@ -8,6 +8,7 @@ export interface SlackMessageConfig {
   summaryPart: string;
   expectedRangePart: string;
   detectedValuePart: string;
+  importanceSensitivity: string;
   imageUrl?: string;
 }
 
