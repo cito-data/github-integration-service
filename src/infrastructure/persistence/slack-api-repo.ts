@@ -53,7 +53,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
         {
           type: 'button',
           style: 'danger',
-          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&userFeedbackIsAnomaly=1&importanceSensitivity=${msgConfig.importanceSensitivity}`,
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&userFeedbackIsAnomaly=1`,
           text: {
             type: 'plain_text',
             text: 'Mark as Anomaly',
@@ -64,7 +64,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
         {
           type: 'button',
           style: 'primary',
-          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&userFeedbackIsAnomaly=0`,
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&importance=${msgConfig}&userFeedbackIsAnomaly=0`,
           text: {
             type: 'plain_text',
             text: 'Mark as Normal',
