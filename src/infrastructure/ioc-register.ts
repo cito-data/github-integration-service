@@ -16,7 +16,7 @@ import SlackProfileRepo from './persistence/slack-profile-repo';
 import SnowflakeProfileRepo from './persistence/snowflake-profile-repo';
 import GithubProfileRepo from './persistence/github-profile-repo';
 import SnowflakeApiRepo from './persistence/snowflake-api-repo';
-import { SendSlackAlert } from '../domain/slack-api/send-alert';
+import { SendSlackQuantAlert } from '../domain/slack-api/send-quant-alert';
 import { GetSlackConversations } from '../domain/slack-api/get-conversations';
 import SlackApiRepo from './persistence/slack-api-repo';
 import { JoinSlackConversation } from '../domain/slack-api/join-conversation';
@@ -29,6 +29,7 @@ import { CreateMetadata } from '../domain/metadata/create-metadata';
 import MetadataRepo from './persistence/metadata-repo';
 import { PostLineage } from '../domain/lineage-api/post-lineage';
 import LineageApiRepo from './persistence/lineage-api-repo';
+import { SendSlackQualAlert } from '../domain/slack-api/send-qual-alert';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -53,7 +54,8 @@ iocRegister.register({
 
   getGithubAccessToken: asClass(GetGithubAccessToken),
 
-  sendSlackAlert: asClass(SendSlackAlert),
+  sendSlackQualAlert: asClass(SendSlackQualAlert),
+  sendSlackQuantAlert: asClass(SendSlackQuantAlert),
   getSlackConversations: asClass(GetSlackConversations),
   joinSlackConversation: asClass(JoinSlackConversation),
 

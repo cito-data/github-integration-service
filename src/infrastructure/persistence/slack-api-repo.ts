@@ -2,12 +2,61 @@ import { Block, KnownBlock, WebClient } from '@slack/web-api';
 import { appConfig } from '../../config';
 import {
   ISlackApiRepo,
-  SlackMessageConfig,
+  QualAlertMsgConfig,
+  QuantAlertMsgConfig,
 } from '../../domain/slack-api/i-slack-api-repo';
 import { SlackConversationInfo } from '../../domain/value-types/slack-conversation-info';
 
 export default class SlackApiRepo implements ISlackApiRepo {
-  #buildMsgBlocks = (msgConfig: SlackMessageConfig): (Block | KnownBlock)[] => {
+  #buildQualMsgBlock = (
+    msgConfig: QualAlertMsgConfig
+  ): (Block | KnownBlock)[] => {
+    const blocks = [];
+
+    blocks.push({
+      type: 'header',
+      text: {
+        type: 'plain_text',
+        text: `${msgConfig.anomalyMessagePart}`,
+      },
+    });
+
+    blocks.push({
+      type: 'section',
+      text: {
+        text: msgConfig.summaryPart,
+        type: 'mrkdwn',
+      },
+      fields: [
+        {
+          type: 'mrkdwn',
+          text: msgConfig.detectedValuePart,
+        },
+      ],
+    });
+    blocks.push({
+      type: 'divider',
+    });
+    blocks.push({
+      type: 'context',
+      elements: [
+        {
+          type: 'plain_text',
+          text: `occurred on: ${msgConfig.occurredOn}`,
+        },
+        {
+          type: 'plain_text',
+          text: `alert id: ${msgConfig.alertId}`,
+        },
+      ],
+    });
+
+    return blocks;
+  };
+
+  #buildQuantMsgBlock = (
+    msgConfig: QuantAlertMsgConfig
+  ): (Block | KnownBlock)[] => {
     const blocks = [];
 
     blocks.push({
@@ -35,18 +84,16 @@ export default class SlackApiRepo implements ISlackApiRepo {
         },
       ],
     });
-
-    if (msgConfig.imageUrl)
-      blocks.push({
-        type: 'image',
-        title: {
-          type: 'plain_text',
-          text: 'Test History Chart',
-          emoji: true,
-        },
-        image_url: msgConfig.imageUrl,
-        alt_text: 'chart',
-      });
+    blocks.push({
+      type: 'image',
+      title: {
+        type: 'plain_text',
+        text: 'Test History Chart',
+        emoji: true,
+      },
+      image_url: msgConfig.imageUrl,
+      alt_text: 'chart',
+    });
     blocks.push({
       type: 'actions',
       elements: [
@@ -64,7 +111,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
         {
           type: 'button',
           style: 'primary',
-          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&importance=${msgConfig}&userFeedbackIsAnomaly=0`,
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&testSuiteId=${msgConfig.testSuiteId}&importance=${msgConfig.importance}&userFeedbackIsAnomaly=0`,
           text: {
             type: 'plain_text',
             text: 'Mark as Normal',
@@ -94,15 +141,39 @@ export default class SlackApiRepo implements ISlackApiRepo {
     return blocks;
   };
 
-  sendAlert = async (
+  sendQualAlert = async (
     accessToken: string,
     channelName: string,
-    messageConfig: SlackMessageConfig
+    messageConfig: QualAlertMsgConfig
   ): Promise<void> => {
     try {
       const client = new WebClient(accessToken);
 
-      const blocks = this.#buildMsgBlocks(messageConfig);
+      const blocks = this.#buildQualMsgBlock(messageConfig);
+
+      await client.chat.postMessage({
+        channel: `#${channelName}`,
+        text: 'Something went wrong',
+        blocks,
+      });
+
+      return await Promise.resolve();
+    } catch (error: unknown) {
+      if (error instanceof Error) console.error(error.stack);
+      else if (error) console.trace(error);
+      return Promise.reject(new Error(''));
+    }
+  };
+
+  sendQuantAlert = async (
+    accessToken: string,
+    channelName: string,
+    messageConfig: QuantAlertMsgConfig
+  ): Promise<void> => {
+    try {
+      const client = new WebClient(accessToken);
+
+      const blocks = this.#buildQuantMsgBlock(messageConfig);
 
       await client.chat.postMessage({
         channel: `#${channelName}`,

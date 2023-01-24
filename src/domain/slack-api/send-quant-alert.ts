@@ -1,27 +1,27 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
-import { ISlackApiRepo, SlackMessageConfig } from './i-slack-api-repo';
+import { ISlackApiRepo, QuantAlertMsgConfig } from './i-slack-api-repo';
 import { ReadSlackProfile } from '../slack-profile/read-slack-profile';
 import { SlackProfile } from '../entities/slack-profile';
 
-export interface SendSlackAlertRequestDto {
-  messageConfig: SlackMessageConfig;
+export interface SendSlackQuantAlertRequestDto {
+  messageConfig: QuantAlertMsgConfig;
   targetOrgId: string;
 }
 
-export interface SendSlackAlertAuthDto {
+export interface SendSlackQuantAlertAuthDto {
   isSystemInternal: boolean;
 }
 
-export type SendSlackAlertResponseDto = Result<null>;
+export type SendSlackQuantAlertResponseDto = Result<null>;
 
-export class SendSlackAlert
+export class SendSlackQuantAlert
   implements
     IUseCase<
-      SendSlackAlertRequestDto,
-      SendSlackAlertResponseDto,
-      SendSlackAlertAuthDto,
+      SendSlackQuantAlertRequestDto,
+      SendSlackQuantAlertResponseDto,
+      SendSlackQuantAlertAuthDto,
       DbConnection
     >
 {
@@ -54,10 +54,10 @@ export class SendSlackAlert
   };
 
   async execute(
-    request: SendSlackAlertRequestDto,
-    auth: SendSlackAlertAuthDto,
+    request: SendSlackQuantAlertRequestDto,
+    auth: SendSlackQuantAlertAuthDto,
     dbConnection: DbConnection
-  ): Promise<SendSlackAlertResponseDto> {
+  ): Promise<SendSlackQuantAlertResponseDto> {
     try {
       if (!auth.isSystemInternal)
         throw new Error('Not authorized to perform action');
@@ -66,7 +66,7 @@ export class SendSlackAlert
 
       const slackProfile = await this.#getSlackProfile(request.targetOrgId);
 
-      await this.#slackApiRepo.sendAlert(
+      await this.#slackApiRepo.sendQuantAlert(
         slackProfile.accessToken,
         slackProfile.channelName,
         request.messageConfig

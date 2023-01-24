@@ -4,7 +4,8 @@ import CreateSlackProfileController from '../controllers/create-slack-profile-co
 import JoinSlackConversationController from '../controllers/join-slack-conversation-controller';
 import ReadSlackConversationsController from '../controllers/read-slack-conversations-controller';
 import ReadSlackProfileController from '../controllers/read-slack-profile-controller';
-import SendSlackAlertController from '../controllers/send-slack-alert-controller';
+import SendSlackQualAlertController from '../controllers/send-slack-qual-alert-controller';
+import SendSlackQuantAlertController from '../controllers/send-slack-quant-alert-controller';
 import UpdateSlackProfileController from '../controllers/update-slack-profile-controller';
 
 const slackRoutes = Router();
@@ -30,8 +31,14 @@ const readSlackProfileController = new ReadSlackProfileController(
   dbo
 );
 
-const sendSlackAlertController = new SendSlackAlertController(
-  app.resolve('sendSlackAlert'),
+const sendSlackQualAlertController = new SendSlackQualAlertController(
+  app.resolve('sendSlackQualAlert'),
+  getAccounts,
+  dbo
+);
+
+const sendSlackQuantAlertController = new SendSlackQuantAlertController(
+  app.resolve('sendSlackQuantAlert'),
   getAccounts,
   dbo
 );
@@ -60,8 +67,12 @@ slackRoutes.patch('/profile', (req, res) => {
   updateSlackProfileController.execute(req, res);
 });
 
-slackRoutes.post('/alert', (req, res) => {
-  sendSlackAlertController.execute(req, res);
+slackRoutes.post('/alert/quant', (req, res) => {
+  sendSlackQuantAlertController.execute(req, res);
+});
+
+slackRoutes.post('/alert/qual', (req, res) => {
+  sendSlackQualAlertController.execute(req, res);
 });
 
 slackRoutes.post('/conversation/join', (req, res) => {

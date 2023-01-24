@@ -1,6 +1,15 @@
 import { SlackConversationInfo } from '../value-types/slack-conversation-info';
 
-export interface SlackMessageConfig {
+export interface QualAlertMsgConfig {
+  anomalyMessagePart: string;
+  occurredOn: string;
+  alertId: string;
+  testType: string;
+  summaryPart: string;
+  detectedValuePart: string;
+}
+
+export interface QuantAlertMsgConfig {
   anomalyMessagePart: string;
   occurredOn: string;
   alertId: string;
@@ -8,15 +17,21 @@ export interface SlackMessageConfig {
   summaryPart: string;
   expectedRangePart: string;
   detectedValuePart: string;
-  importance?: string;
-  imageUrl?: string;
+  importance: number;
+  testSuiteId: string;
+  imageUrl: string;
 }
 
 export interface ISlackApiRepo {
-  sendAlert(
+  sendQualAlert(
     accessToken: string,
     channelName: string,
-    messageProps: SlackMessageConfig
+    messageProps: QualAlertMsgConfig
+  ): Promise<void>;
+  sendQuantAlert(
+    accessToken: string,
+    channelName: string,
+    messageProps: QuantAlertMsgConfig
   ): Promise<void>;
   getConversations(accessToken: string): Promise<SlackConversationInfo[]>;
   joinConversation(accessToken: string, channelId: string): Promise<void>;

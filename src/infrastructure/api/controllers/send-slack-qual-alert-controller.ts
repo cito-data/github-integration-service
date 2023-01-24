@@ -2,11 +2,11 @@
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
-  SendSlackAlert,
-  SendSlackAlertAuthDto,
-  SendSlackAlertRequestDto,
-  SendSlackAlertResponseDto,
-} from '../../../domain/slack-api/send-alert';
+  SendSlackQualAlert,
+  SendSlackQualAlertAuthDto,
+  SendSlackQualAlertRequestDto,
+  SendSlackQualAlertResponseDto,
+} from '../../../domain/slack-api/send-qual-alert';
 import Result from '../../../domain/value-types/transient-types/result';
 import Dbo from '../../persistence/db/mongo-db';
 
@@ -16,32 +16,32 @@ import {
   UserAccountInfo,
 } from '../../shared/base-controller';
 
-export default class SendSlackAlertController extends BaseController {
-  readonly #sendSlackAlert: SendSlackAlert;
+export default class SendSlackQualAlertController extends BaseController {
+  readonly #sendSlackQualAlert: SendSlackQualAlert;
 
   readonly #getAccounts: GetAccounts;
 
   readonly #dbo: Dbo;
 
   constructor(
-    sendSlackAlert: SendSlackAlert,
+    sendSlackQualAlert: SendSlackQualAlert,
     getAccounts: GetAccounts,
     dbo: Dbo
   ) {
     super();
-    this.#sendSlackAlert = sendSlackAlert;
+    this.#sendSlackQualAlert = sendSlackQualAlert;
     this.#getAccounts = getAccounts;
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): SendSlackAlertRequestDto => ({
+  #buildRequestDto = (httpRequest: Request): SendSlackQualAlertRequestDto => ({
     targetOrgId: httpRequest.body.targetOrgId,
     messageConfig: httpRequest.body.messageConfig,
   });
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
-  ): SendSlackAlertAuthDto => ({
+  ): SendSlackQualAlertAuthDto => ({
     isSystemInternal: userAccountInfo.isSystemInternal,
   });
 
@@ -50,18 +50,18 @@ export default class SendSlackAlertController extends BaseController {
       const authHeader = req.headers.authorization;
 
       if (!authHeader)
-        return SendSlackAlertController.unauthorized(res, 'Unauthorized');
+        return SendSlackQualAlertController.unauthorized(res, 'Unauthorized');
 
       const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
-        await SendSlackAlertController.getUserAccountInfo(
+        await SendSlackQualAlertController.getUserAccountInfo(
           jwt,
           this.#getAccounts
         );
 
       if (!getUserAccountInfoResult.success)
-        return SendSlackAlertController.unauthorized(
+        return SendSlackQualAlertController.unauthorized(
           res,
           getUserAccountInfoResult.error
         );
@@ -69,31 +69,36 @@ export default class SendSlackAlertController extends BaseController {
         throw new ReferenceError('Authorization failed');
 
       if (!getUserAccountInfoResult.value.isSystemInternal)
-        return SendSlackAlertController.unauthorized(res, 'Not authorized');
+        return SendSlackQualAlertController.unauthorized(res, 'Not authorized');
 
-      const requestDto: SendSlackAlertRequestDto = this.#buildRequestDto(req);
-      const authDto: SendSlackAlertAuthDto = this.#buildAuthDto(
+      const requestDto: SendSlackQualAlertRequestDto =
+        this.#buildRequestDto(req);
+      const authDto: SendSlackQualAlertAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
-      const useCaseResult: SendSlackAlertResponseDto =
-        await this.#sendSlackAlert.execute(
+      const useCaseResult: SendSlackQualAlertResponseDto =
+        await this.#sendSlackQualAlert.execute(
           requestDto,
           authDto,
           this.#dbo.dbConnection
         );
 
       if (!useCaseResult.success) {
-        return SendSlackAlertController.badRequest(res);
+        return SendSlackQualAlertController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value;
 
-      return SendSlackAlertController.ok(res, resultValue, CodeHttp.CREATED);
+      return SendSlackQualAlertController.ok(
+        res,
+        resultValue,
+        CodeHttp.CREATED
+      );
     } catch (error: unknown) {
       if (error instanceof Error && error.message) console.trace(error.message);
       else if (error) console.trace(error);
-      return SendSlackAlertController.fail(
+      return SendSlackQualAlertController.fail(
         res,
         'Unknown internal error occurred'
       );
