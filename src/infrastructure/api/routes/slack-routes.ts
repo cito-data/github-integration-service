@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import app from '../../ioc-register';
+import CreateSlackInteractionController from '../controllers/create-slack-interaction-controller';
 import CreateSlackProfileController from '../controllers/create-slack-profile-controller';
 import JoinSlackConversationController from '../controllers/join-slack-conversation-controller';
 import ReadSlackConversationsController from '../controllers/read-slack-conversations-controller';
@@ -55,6 +56,12 @@ const joinSlackConversationController = new JoinSlackConversationController(
   dbo
 );
 
+const createSlackInteractionController = new CreateSlackInteractionController(
+  app.resolve('createSlackInteraction'),
+  getAccounts,
+  dbo
+);
+
 slackRoutes.post('/profile', (req, res) => {
   createSlackProfileController.execute(req, res);
 });
@@ -81,6 +88,10 @@ slackRoutes.post('/conversation/join', (req, res) => {
 
 slackRoutes.get('/conversations', (req, res) => {
   readSlackConversationsController.execute(req, res);
+});
+
+slackRoutes.post('/interaction', (req, res) => {
+  createSlackInteractionController.execute(req, res);
 });
 
 export default slackRoutes;

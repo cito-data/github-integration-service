@@ -30,6 +30,7 @@ import MetadataRepo from './persistence/metadata-repo';
 import { PostLineage } from '../domain/lineage-api/post-lineage';
 import LineageApiRepo from './persistence/lineage-api-repo';
 import { SendSlackQualAlert } from '../domain/slack-api/send-qual-alert';
+import { CreateSlackInteraction } from '../domain/slack-interaction/create-slack-interaction';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -39,6 +40,7 @@ iocRegister.register({
   createGithubProfile: asClass(CreateGithubProfile),
   createCitoSnowflakeEnv: asClass(CreateCitoSnowflakeEnv),
   createMetadata: asClass(CreateMetadata),
+  createSlackInteraction: asClass(CreateSlackInteraction),
 
   deleteGithubProfile: asClass(DeleteGithubProfile),
 

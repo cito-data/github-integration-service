@@ -18,7 +18,7 @@ export interface QuantAlertMsgConfig {
   expectedRangePart: string;
   detectedValuePart: string;
   importance: number;
-  boundIntervalRelative: number;
+  boundsIntervalRelative: number;
   testSuiteId: string;
   imageUrl: string;
 }

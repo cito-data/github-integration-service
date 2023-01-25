@@ -4,9 +4,7 @@ export const citoSchemaNames = ['observability', 'lineage'] as const;
 export type CitoSchemaName = typeof citoSchemaNames[number];
 
 export const parseCitoSchemaName = (type: unknown): CitoSchemaName => {
-  const identifiedType = citoSchemaNames.find(
-    (element) => element === type
-  );
+  const identifiedType = citoSchemaNames.find((element) => element === type);
   if (identifiedType) return identifiedType;
   throw new Error('Provision of invalid Cito schema name');
 };
@@ -59,7 +57,12 @@ export const getCreateTableQuery = (
 ): string => {
   const schema = getCitoMaterializationSchema(citoMaterializationType);
   const columnDefinitionString = schema.columns
-    .map((el) => `${el.name} ${el.type} ${el.nullable? '': 'not null'}`)
+    .map(
+      (el) =>
+        `${el.name} ${el.type} ${el.default ? `default ${el.default}` : ''} ${
+          el.nullable ? '' : 'not null'
+        }`
+    )
     .join(', ');
 
   return `

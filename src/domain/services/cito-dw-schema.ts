@@ -2,6 +2,7 @@ export interface ColumnDefinition {
   name: string;
   type: string;
   nullable: boolean;
+  default?: number;
 }
 
 export interface TableDefinition {
@@ -32,8 +33,18 @@ export const schema: Schema = {
         { name: 'target_resource_id', type: 'string', nullable: false },
         { name: 'cron', type: 'string', nullable: false },
         { name: 'execution_type', type: 'string', nullable: false },
-        { name: 'importance_threshold', type: 'float', nullable: false },
-        { name: 'bound_interval_relative', type: 'float', nullable: false },
+        {
+          name: 'importance_threshold',
+          type: 'float',
+          nullable: false,
+          default: -1,
+        },
+        {
+          name: 'bounds_interval_relative',
+          type: 'float',
+          nullable: false,
+          default: 0,
+        },
       ],
       schemaName: 'observability',
     },
@@ -50,7 +61,7 @@ export const schema: Schema = {
         { name: 'cron', type: 'string', nullable: false },
         { name: 'execution_type', type: 'string', nullable: false },
         { name: 'importance_threshold', type: 'float', nullable: false },
-        { name: 'bound_interval_relative', type: 'float', nullable: false },
+        { name: 'bounds_interval_relative', type: 'float', nullable: false },
       ],
       schemaName: 'observability',
     },
