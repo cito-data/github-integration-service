@@ -58,7 +58,6 @@ const joinSlackConversationController = new JoinSlackConversationController(
 
 const createSlackInteractionController = new CreateSlackInteractionController(
   app.resolve('createSlackInteraction'),
-  getAccounts,
   dbo
 );
 
