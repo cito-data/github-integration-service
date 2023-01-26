@@ -49,9 +49,9 @@ export default class ReadSnowflakeProfileController extends BaseController {
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
   ): ReadSnowflakeProfileAuthDto => ({
-      callerOrgId: userAccountInfo.callerOrgId,
-      isSystemInternal: userAccountInfo.isSystemInternal
-    });
+    callerOrgId: userAccountInfo.callerOrgId,
+    isSystemInternal: userAccountInfo.isSystemInternal,
+  });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
@@ -76,7 +76,8 @@ export default class ReadSnowflakeProfileController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: ReadSnowflakeProfileRequestDto = this.#buildRequestDto(req);
+      const requestDto: ReadSnowflakeProfileRequestDto =
+        this.#buildRequestDto(req);
       const authDto: ReadSnowflakeProfileAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
