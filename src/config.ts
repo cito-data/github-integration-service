@@ -165,8 +165,7 @@ export const appConfig = {
     buttonBaseUrl: getSlackMessageButtonBaseUrl(),
   },
   snowflake: {
-    applicationName:
-      process.env.SNOWFLAKE_APPLICATION_NAME || 'snowflake-connector',
+    applicationName: process.env.SNOWFLAKE_APPLICATION_NAME || 'Cito_CitoApp',
   },
   github: getGithubConfig(),
   baseUrl: getBaseUrlConfig(),
