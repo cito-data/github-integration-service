@@ -5,6 +5,7 @@ import { SnowflakeQuery } from '../value-types/snowflake-query';
 import { ISnowflakeApiRepo } from './i-snowflake-api-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
+import { appConfig } from '../../config';
 
 export interface QuerySnowflakeRequestDto {
   query: string;
@@ -89,6 +90,7 @@ export class QuerySnowflake
               username: profile.username,
               password: profile.password,
               warehouse: profile.warehouseName,
+              application: appConfig.snowflake.applicationName,
             }
           );
 
