@@ -276,11 +276,7 @@ export const schema: Schema = {
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'name', type: 'string', nullable: true },
-        { name: 'url', type: 'string', nullable: true },
-        { name: 'materialization_name', type: 'string', nullable: false },
-        { name: 'materialization_id', type: 'string', nullable: false },
-        { name: 'column_name', type: 'string', nullable: false },
-        { name: 'column_id', type: 'string', nullable: false },
+        { name: 'url', type: 'string', nullable: false },
       ],
       schemaName: 'lineage',
     },
