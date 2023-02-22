@@ -212,9 +212,9 @@ export const schema: Schema = {
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'created_at', type: 'timestamp_ntz', nullable: false },
-        { name: 'completed', type: 'boolean', nullable: false },
         { name: 'db_covered_names', type: 'array', nullable: false },
         { name: 'diff', type: 'string', nullable: true },
+        { name: 'creation_state', type: 'string', nullable: false },
       ],
       schemaName: 'lineage',
     },
