@@ -197,6 +197,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
       const result = await client.conversations.list({
         exclude_archived: true,
+        limit: 1000,
       });
 
       const { channels } = result;

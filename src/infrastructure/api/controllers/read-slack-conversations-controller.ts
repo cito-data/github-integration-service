@@ -80,7 +80,8 @@ export default class ReadSlackConversationsController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new ReferenceError('Authorization failed');
 
-      const requestDto: GetSlackConversationsRequestDto = this.#buildRequestDto(req);
+      const requestDto: GetSlackConversationsRequestDto =
+        this.#buildRequestDto(req);
       const authDto: GetSlackConversationsAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
@@ -93,10 +94,7 @@ export default class ReadSlackConversationsController extends BaseController {
         );
 
       if (!useCaseResult.success) {
-        return ReadSlackConversationsController.badRequest(
-          res,
-          
-        );
+        return ReadSlackConversationsController.badRequest(res);
       }
 
       const resultValue = useCaseResult.value
