@@ -2,7 +2,7 @@ export interface ColumnDefinition {
   name: string;
   type: string;
   nullable: boolean;
-  default?: number;
+  default?: string | number;
 }
 
 export interface TableDefinition {
@@ -24,10 +24,21 @@ export const schema: Schema = {
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
         { name: 'activated', type: 'boolean', nullable: false },
-        { name: 'upper_threshold_absolute', type: 'float', nullable: true },
-        { name: 'lower_threshold_absolute', type: 'float', nullable: true },
-        { name: 'upper_threshold_relative', type: 'float', nullable: true },
-        { name: 'lower_threshold_relative', type: 'float', nullable: true },
+        { name: 'upper_threshold', type: 'float', nullable: true },
+        { name: 'lower_threshold', type: 'float', nullable: true },
+        {
+          name: 'upper_threshold_type',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
+        },
+
+        {
+          name: 'lower_threshold_type',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
+        },
         { name: 'database_name', type: 'string', nullable: false },
         { name: 'schema_name', type: 'string', nullable: false },
         { name: 'materialization_name', type: 'string', nullable: false },
