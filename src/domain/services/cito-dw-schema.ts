@@ -24,17 +24,17 @@ export const schema: Schema = {
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
         { name: 'activated', type: 'boolean', nullable: false },
-        { name: 'upper_threshold', type: 'float', nullable: true },
-        { name: 'lower_threshold', type: 'float', nullable: true },
+        { name: 'custom_upper_threshold', type: 'float', nullable: true },
+        { name: 'custom_lower_threshold', type: 'float', nullable: true },
         {
-          name: 'upper_threshold_type',
+          name: 'custom_upper_threshold_mode',
           type: 'string',
           nullable: false,
           default: 'absolute',
         },
 
         {
-          name: 'lower_threshold_type',
+          name: 'custom_lower_threshold_mode',
           type: 'string',
           nullable: false,
           default: 'absolute',
