@@ -2,7 +2,7 @@ export interface ColumnDefinition {
   name: string;
   type: string;
   nullable: boolean;
-  default?: number;
+  default?: string | number;
 }
 
 export interface TableDefinition {
@@ -24,7 +24,6 @@ export const schema: Schema = {
         { name: 'id', type: 'string', nullable: false },
         { name: 'test_type', type: 'string', nullable: false },
         { name: 'activated', type: 'boolean', nullable: false },
-        { name: 'threshold', type: 'integer', nullable: false },
         { name: 'database_name', type: 'string', nullable: false },
         { name: 'schema_name', type: 'string', nullable: false },
         { name: 'materialization_name', type: 'string', nullable: false },
@@ -50,6 +49,20 @@ export const schema: Schema = {
           type: 'timestamp_ntz',
           nullable: true,
         },
+        { name: 'custom_lower_threshold', type: 'float', nullable: true },
+        {
+          name: 'custom_lower_threshold_mode',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
+        },
+        { name: 'custom_upper_threshold', type: 'float', nullable: true },
+        {
+          name: 'custom_upper_threshold_mode',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
+        },
       ],
       schemaName: 'observability',
     },
@@ -58,7 +71,6 @@ export const schema: Schema = {
       columns: [
         { name: 'id', type: 'string', nullable: false },
         { name: 'activated', type: 'boolean', nullable: false },
-        { name: 'threshold', type: 'integer', nullable: false },
         { name: 'name', type: 'string', nullable: false },
         { name: 'description', type: 'string', nullable: true },
         { name: 'sql_logic', type: 'string', nullable: false },
@@ -81,6 +93,20 @@ export const schema: Schema = {
           name: 'deleted_at',
           type: 'timestamp_ntz',
           nullable: true,
+        },
+        { name: 'custom_lower_threshold', type: 'float', nullable: true },
+        {
+          name: 'custom_lower_threshold_mode',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
+        },
+        { name: 'custom_upper_threshold', type: 'float', nullable: true },
+        {
+          name: 'custom_upper_threshold_mode',
+          type: 'string',
+          nullable: false,
+          default: 'absolute',
         },
       ],
       schemaName: 'observability',
