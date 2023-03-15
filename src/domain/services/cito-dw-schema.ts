@@ -301,7 +301,7 @@ export const schema: Schema = {
       name: 'dashboards',
       columns: [
         { name: 'id', type: 'string', nullable: false },
-        { name: 'name', type: 'string', nullable: true },
+        { name: 'name', type: 'string', nullable: false },
         { name: 'url', type: 'string', nullable: false },
       ],
       schemaName: 'lineage',
