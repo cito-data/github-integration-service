@@ -1,3 +1,5 @@
+import stripe from 'stripe';
+
 app.post('/create-checkout-session', async (req, res) => {
   const prices = await stripe.prices.list({
     lookup_keys: [req.body.lookup_key],

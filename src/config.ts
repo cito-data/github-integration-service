@@ -148,6 +148,17 @@ const getBaseUrlConfig = (): BaseUrlConfig => {
   return { integrationService, accountService, lineageAnalysisService };
 };
 
+interface PaymentConfig {
+  secretKey: string;
+}
+
+const getPaymentConfig = (): PaymentConfig => {
+  const secretKey = process.env.PAYMENT_SECRET_KEY;
+  if (!secretKey) throw new Error('Payment secret key not available');
+
+  return { secretKey };
+};
+
 export const appConfig = {
   express: {
     port,
@@ -169,4 +180,5 @@ export const appConfig = {
   },
   github: getGithubConfig(),
   baseUrl: getBaseUrlConfig(),
+  payment: getPaymentConfig(),
 };
