@@ -38,12 +38,7 @@ export const schema: Schema = {
           nullable: false,
           default: -1,
         },
-        {
-          name: 'bounds_interval_relative',
-          type: 'float',
-          nullable: false,
-          default: 0,
-        },
+
         {
           name: 'deleted_at',
           type: 'timestamp_ntz',
@@ -83,12 +78,7 @@ export const schema: Schema = {
           nullable: false,
           default: -1,
         },
-        {
-          name: 'bounds_interval_relative',
-          type: 'float',
-          nullable: false,
-          default: 0,
-        },
+
         {
           name: 'deleted_at',
           type: 'timestamp_ntz',
@@ -141,7 +131,6 @@ export const schema: Schema = {
         { name: 'test_suite_id', type: 'string', nullable: false },
         { name: 'execution_id', type: 'string', nullable: false },
         { name: 'importance', type: 'float', nullable: true },
-        { name: 'bounds_interval_relative', type: 'float', nullable: true },
       ],
       schemaName: 'observability',
     },
