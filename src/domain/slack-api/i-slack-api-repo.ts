@@ -9,6 +9,8 @@ export interface QualAlertMsgConfig {
   detectedValuePart: string;
 }
 
+type ThresholdType = 'upper' | 'lower';
+
 export interface QuantAlertMsgConfig {
   anomalyMessagePart: string;
   occurredOn: string;
@@ -18,6 +20,7 @@ export interface QuantAlertMsgConfig {
   expectedRangePart: string;
   detectedValuePart: string;
   detectedValue: number;
+  thresholdType: ThresholdType;
   testSuiteId: string;
   imageUrl: string;
 }
