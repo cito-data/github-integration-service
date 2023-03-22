@@ -33,13 +33,6 @@ export const schema: Schema = {
         { name: 'cron', type: 'string', nullable: false },
         { name: 'execution_type', type: 'string', nullable: false },
         {
-          name: 'importance_threshold',
-          type: 'float',
-          nullable: false,
-          default: -1,
-        },
-
-        {
           name: 'deleted_at',
           type: 'timestamp_ntz',
           nullable: true,
@@ -72,13 +65,6 @@ export const schema: Schema = {
         { name: 'target_resource_ids', type: 'array', nullable: false },
         { name: 'cron', type: 'string', nullable: false },
         { name: 'execution_type', type: 'string', nullable: false },
-        {
-          name: 'importance_threshold',
-          type: 'float',
-          nullable: false,
-          default: -1,
-        },
-
         {
           name: 'deleted_at',
           type: 'timestamp_ntz',

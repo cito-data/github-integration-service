@@ -111,7 +111,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
         {
           type: 'button',
           style: 'primary',
-          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&testSuiteId=${msgConfig.testSuiteId}&importance=${msgConfig.importance}&userFeedbackIsAnomaly=0`,
+          url: `${appConfig.slack.buttonBaseUrl}?alertId=${msgConfig.alertId}&testType=${msgConfig.testType}&testSuiteId=${msgConfig.testSuiteId}&detectedValue=${msgConfig.detectedValue}&userFeedbackIsAnomaly=0`,
           text: {
             type: 'plain_text',
             text: 'Mark as Normal',
