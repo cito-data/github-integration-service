@@ -1,6 +1,7 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
+import { QuantAlertMsgConfig } from '../../../domain/slack-api/i-slack-api-repo';
 import {
   SendSlackQuantAlert,
   SendSlackQuantAlertAuthDto,
@@ -34,10 +35,21 @@ export default class SendSlackQuantAlertController extends BaseController {
     this.#dbo = dbo;
   }
 
-  #buildRequestDto = (httpRequest: Request): SendSlackQuantAlertRequestDto => ({
-    targetOrgId: httpRequest.body.targetOrgId,
-    messageConfig: httpRequest.body.messageConfig,
-  });
+  #buildRequestDto = (httpRequest: Request): SendSlackQuantAlertRequestDto => {
+    const { targetOrgId, messageConfig } = httpRequest.body;
+
+    const isMsgConfig = (obj: unknown): obj is QuantAlertMsgConfig =>
+      !!obj && typeof obj === 'object' && 'anomalyMessagePart' in obj;
+
+    if (typeof targetOrgId !== 'string')
+      throw new Error('targetOrgId is required');
+    if (!isMsgConfig(messageConfig)) throw new Error('Wrong messageConfig');
+
+    return {
+      targetOrgId: httpRequest.body.targetOrgId,
+      messageConfig: httpRequest.body.messageConfig,
+    };
+  };
 
   #buildAuthDto = (
     userAccountInfo: UserAccountInfo
