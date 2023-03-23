@@ -112,7 +112,7 @@ export const schema: Schema = {
         { name: 'test_type', type: 'string', nullable: false },
         { name: 'mean_ad', type: 'float', nullable: false },
         { name: 'median_ad', type: 'float', nullable: false },
-        { name: 'modified_z_score', type: 'float', nullable: false },
+        { name: 'modified_z_score', type: 'float', nullable: true },
         { name: 'expected_value', type: 'float', nullable: false },
         { name: 'expected_value_upper_bound', type: 'float', nullable: false },
         { name: 'expected_value_lower_bound', type: 'float', nullable: false },
