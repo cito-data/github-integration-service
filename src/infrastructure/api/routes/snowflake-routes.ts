@@ -2,7 +2,6 @@ import { Router } from 'express';
 import app from '../../ioc-register';
 import CreateCitoSnowflakeEnvController from '../controllers/create-cito-snowflake-env-controller';
 import CreateSnowflakeProfileController from '../controllers/create-snowflake-profile-controller';
-import QuerySnowflakeController from '../controllers/query-snowflake-controller';
 import ReadSnowflakeProfileController from '../controllers/read-snowflake-profile-controller';
 import UpdateSnowflakeProfileController from '../controllers/update-snowflake-profile-controller';
 
@@ -19,12 +18,6 @@ const createSnowflakeProfileController = new CreateSnowflakeProfileController(
 
 const readSnowflakeProfileController = new ReadSnowflakeProfileController(
   app.resolve('readSnowflakeProfile'),
-  getAccounts,
-  dbo
-);
-
-const querySnowflakeController = new QuerySnowflakeController(
-  app.resolve('querySnowflake'),
   getAccounts,
   dbo
 );
@@ -51,10 +44,6 @@ snowflakeRoutes.get('/profile', (req, res) => {
 
 snowflakeRoutes.patch('/profile', (req, res) => {
   updateSnowflakeProfileController.execute(req, res);
-});
-
-snowflakeRoutes.post('/query', (req, res) => {
-  querySnowflakeController.execute(req, res);
 });
 
 snowflakeRoutes.post('/init', (req, res) => {

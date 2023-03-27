@@ -2,6 +2,7 @@ import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
+
 import {
   citoMaterializationNames,
   getCreateTableQuery,
