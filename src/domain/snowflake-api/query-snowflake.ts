@@ -1,14 +1,18 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
-import { SnowflakeQuery } from '../value-types/snowflake-query';
-import { ISnowflakeApiRepo } from './i-snowflake-api-repo';
+import {
+  Binds,
+  ISnowflakeApiRepo,
+  SnowflakeEntity,
+} from './i-snowflake-api-repo';
 import { ReadSnowflakeProfile } from '../snowflake-profile/read-snowflake-profile';
 import { SnowflakeProfile } from '../entities/snowflake-profile';
 import { appConfig } from '../../config';
 
 export interface QuerySnowflakeRequestDto {
   query: string;
+  binds: Binds;
   targetOrgId?: string;
 }
 
@@ -17,7 +21,7 @@ export interface QuerySnowflakeAuthDto {
   isSystemInternal: boolean;
 }
 
-export type QuerySnowflakeResponseDto = Result<SnowflakeQuery>;
+export type QuerySnowflakeResponseDto = Result<SnowflakeEntity[]>;
 
 export class QuerySnowflake
   implements
@@ -75,7 +79,7 @@ export class QuerySnowflake
         ];
       else if (auth.callerOrgId)
         snowflakeProfiles = [
-          await this.#getSnowflakeProfile(auth, request.targetOrgId),
+          await this.#getSnowflakeProfile(auth, auth.callerOrgId),
         ];
       else throw new Error('Unhandled authorization');
 
@@ -85,12 +89,10 @@ export class QuerySnowflake
         snowflakeProfiles.map(async (profile) => {
           const queryResult = await this.#snowflakeApiRepo.runQuery(
             request.query,
+            request.binds,
             {
-              account: profile.accountId,
-              username: profile.username,
-              password: profile.password,
-              warehouse: profile.warehouseName,
-              application: appConfig.snowflake.applicationName,
+              ...profile,
+              citoApplicationName: appConfig.snowflake.applicationName,
             }
           );
 

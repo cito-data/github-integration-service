@@ -1,120 +1,185 @@
-import axios, { AxiosRequestConfig } from 'axios';
 import { DbOptions } from '../../domain/services/i-db';
-import { SnowflakeQuery } from '../../domain/value-types/snowflake-query';
-import { ISnowflakeApiRepo } from '../../domain/snowflake-api/i-snowflake-api-repo';
-import { appConfig } from '../../config';
-import Result from '../../domain/value-types/transient-types/result';
+import {
+  Binds,
+  ISnowflakeApiRepo,
+  SnowflakeEntity,
+} from '../../domain/snowflake-api/i-snowflake-api-repo';
+import getApiClient from './api/api-client';
 
-interface TokenReqBodyBase {
-  redirect_uri: string;
+type SfQueryRawRow = (string | null)[];
+
+interface SfQueryResultPartition {
+  data: SfQueryRawRow[];
 }
 
-interface TokenReqBodyAuthCode extends TokenReqBodyBase {
-  grant_type: 'authorization_code';
-  code: string;
+const isSfQueryResultPartition = (obj: unknown): obj is SfQueryResult =>
+  typeof obj === 'object' &&
+  !!obj &&
+  'data' in obj &&
+  Array.isArray(obj) &&
+  'resultSetMetaData' in obj &&
+  'partitionInfo' in obj &&
+  'statementHandle' in obj;
+
+interface SfQueryResult {
+  data: SfQueryRawRow[];
+  resultSetMetaData: {
+    rowType: {
+      name: string;
+      type: string;
+    }[];
+    partitionInfo: { [key: string]: unknown }[];
+    statementHandle: string;
+  };
 }
 
-interface TokenReqBodyRefreshToken extends TokenReqBodyBase {
-  grant_type: 'refresh_token';
-  refresh_token: string;
-}
+const isSfQueryResult = (obj: unknown): obj is SfQueryResult =>
+  typeof obj === 'object' &&
+  !!obj &&
+  'data' in obj &&
+  Array.isArray(obj) &&
+  'resultSetMetaData' in obj &&
+  'partitionInfo' in obj &&
+  'statementHandle' in obj;
 
 export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
-  runQuery = async (
-    query: string,
-    options: DbOptions
-  ): Promise<Result<SnowflakeQuery[]>> => {
-    try {
-      const OAUTH_CLIENT_SECRET = '3sfxEKKfpF46pdg9vr7T/qgj27T6DnWuLFwxLAb5oM8=';
-      const OAUTH_CLIENT_ID = 'cRcdVP2/iRR/vrbvUqvuz5BStyc=';
-      const accountId = 'lx38764';
-      const region = 'eu-central-1';
-      const accountUrl = `https://${accountId}.${region}.snowflakecomputing.com`;
-    
-      const redirectUri = 'https://google.com';
-      // https://${accountId}.snowflakecomputing.com/oauth/authorize?client_id=${OAUTH_CLIENT_ID}&response_type=code&redirect_uri=${redirectUri}
-    
-      const code = undefined;
-      const refreshToken =
-        'ver:2-hint:7907450885-did:1014-ETMsDgAAAYch7JAmABRBRVMvQ0JDL1BLQ1M1UGFkZGluZwEAABAAED6UZCRrMtdltACetkn+G1oAAADweHZamnDR1HXWZZ5KSvuE5btJyMKNvKHgcshqh3eUUPkT+qaDXAzSQEaTCVI0+LoCsGc0VMnkeOCC5h+MSTUMopN1qBZMYbHSZ1n4JcQm6o7oStWs624bTkKKv9qP1kLS8wrvNdP4C9jbEzAy3bcXERIYfp0V1RphZK1o7rZIvPyWP5x2sDR7EpK2LVYCCWiCKCM6ZnoYHaMflSp4jCzVg1in1x9PVVRsjxEQy9BMyRVJ2D4iPK94hqZOgoPZ1T2R1BmrX2b12Dv4+wae2bR4VozN29X3X7r9KoNSadUZhhsb7InH3weuxTZ/tIjDJlUPABQp4/ELl/uH/qusDHCI+did4xYm1g==';
-    
-      let tokenParams: TokenReqBodyAuthCode | TokenReqBodyRefreshToken;
-      if (refreshToken) {
-        console.log('check if valid');
-        if (false) {
-          console.log('if not valid, send message to user to login again');
-          throw new Error('refresh token expired');
+  #getResultBaseMsg = (
+    stringifiedBinds: string,
+    queryText: string
+  ): string => `Binds: ${stringifiedBinds.substring(0, 1000)}${
+    stringifiedBinds.length > 1000 ? '...' : ''
+  }
+    \n${queryText.substring(0, 1000)}${queryText.length > 1000 ? '...' : ''}`;
+
+  #generateResult = (
+    baseResult: SfQueryResult,
+    partitionData: SfQueryResultPartition[]
+  ): SnowflakeEntity[] => {
+    const allData: SfQueryRawRow[] = [
+      baseResult.data,
+      ...partitionData.map((p) => p.data),
+    ].flat();
+
+    const { rowType } = baseResult.resultSetMetaData;
+
+    const rows = allData.map((row): SnowflakeEntity => {
+      const obj: { [key: string]: string | number | boolean | null } = {};
+      for (let i = 0; i < rowType.length; i += 1) {
+        const { name, type } = rowType[i];
+
+        let val: string | number | boolean | null = row[i];
+        switch (type.toLowerCase()) {
+          case 'fixed': {
+            val = Number(row[i]);
+            if (Number.isNaN(val))
+              throw new Error("Invalid value for 'fixed' type");
+
+            break;
+          }
+          case 'boolean': {
+            val = Boolean(row[i]);
+
+            break;
+          }
+          default:
+            break;
         }
-    
-        tokenParams = {
-          redirect_uri: redirectUri,
-          refresh_token: refreshToken,
-          grant_type: 'refresh_token',
-        };
-      } else if (code) {
-        tokenParams = {
-          redirect_uri: redirectUri,
-          code,
-          grant_type: 'authorization_code',
-        };
-      } else {
-        console.log('send message to user to login');
-        throw new Error('no code or refresh token');
+
+        obj[name] = val;
       }
-    
-      const token = await axios.post(
-        `${accountUrl}/oauth/token-request`,
-        encodeData({ ...tokenParams }),
+
+      return obj;
+    });
+
+    return rows;
+  };
+
+  runQuery = async (
+    queryText: string,
+    binds: Binds,
+    options: DbOptions
+  ): Promise<SnowflakeEntity[]> => {
+    try {
+      const client = getApiClient(
+        `https://${options.accountId}.${options.cloudRegion}.snowflakecomputing.com`,
         {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${Buffer.from(
-              `${OAUTH_CLIENT_ID}:${OAUTH_CLIENT_SECRET}`
-            ).toString('base64')}`,
-          },
+          redirectUri: options.redirectUri,
+          refreshToken: options.refreshToken,
+          clientId: options.clientId,
+          clientSecret: options.clientSecret,
         }
       );
-    
+
       const queryData = {
-        statement: 'select * from cito.observability.test_suites;',
-        warehouse: 'CITO_WH',
+        statement: queryText,
+        binds,
+        warehouse: options.warehouseName,
         timeout: 10,
-        // "bindings" : {
-        //   "1" : {
-        //     "type" : "FIXED",
-        //     "value" : "123"
-        //   }
-        // }
       };
-    
+
       const config = {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token.data.access_token}`,
           Accept: 'application/json',
-          'Snowflake-Account': accountId,
+          'Snowflake-Account': options.accountId,
         },
       };
-    
-      const result = await axios.post(
-        `${accountUrl}/api/v2/statements`,
+
+      const postStatementResult = await client.post(
+        `/api/v2/statements`,
         queryData,
         config
       );
-    
-      console.log(result.data);
-    
-      return result.data;
-    };
-    
-      
-      
-      
-      
-      
-      
-      if (response.status === 201) return jsonResponse;
-      throw new Error(jsonResponse.message);
+
+      const rawData = postStatementResult.data;
+
+      if (postStatementResult.status !== 200) {
+        console.error(
+          `Error (http status code: ${
+            postStatementResult.status
+          }) running query: ${this.#getResultBaseMsg(
+            JSON.stringify(binds),
+            queryText
+          )}`
+        );
+
+        const cancelStatementResult = await client.post(
+          `/api/v2/statements/${rawData.resultSetMetaData.statementHandle}/cancel`,
+          queryData,
+          config
+        );
+        throw new Error(cancelStatementResult.data.message);
+      }
+
+      if (!isSfQueryResult(rawData)) throw new Error('Invalid response data');
+
+      let partitionResponses: SfQueryResultPartition[] = [];
+      if (rawData.resultSetMetaData.partitionInfo.length > 1) {
+        partitionResponses = (
+          await Promise.all(
+            rawData.resultSetMetaData.partitionInfo.map(
+              async (
+                partition,
+                i
+              ): Promise<SfQueryResultPartition | undefined> => {
+                if (i === 0) return undefined;
+
+                const getPartitionResult = await client.get(
+                  `/api/v2/statements/${rawData.resultSetMetaData.statementHandle}?partition=${i}`,
+                  config
+                );
+                const partitionData = getPartitionResult.data;
+
+                if (!isSfQueryResultPartition(partitionData))
+                  throw new Error('Invalid partition data');
+
+                return partitionData;
+              }
+            )
+          )
+        ).filter(isSfQueryResultPartition);
+      }
+      return this.#generateResult(rawData, partitionResponses);
     } catch (error: unknown) {
       if (error instanceof Error) console.error(error.stack);
       else if (error) console.trace(error);

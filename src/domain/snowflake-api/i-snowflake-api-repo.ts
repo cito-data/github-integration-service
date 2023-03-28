@@ -1,7 +1,20 @@
 import { DbOptions } from '../services/i-db';
-import { SnowflakeQuery } from '../value-types/snowflake-query';
-import Result from '../value-types/transient-types/result';
+
+export interface SnowflakeEntity {
+  [fieldName: string]: string | number | boolean | null;
+}
+
+export interface Bind {
+  type: 'fixed' | 'text';
+  value: string;
+}
+
+export type Binds = Bind[] | Bind[][];
 
 export interface ISnowflakeApiRepo {
-  runQuery(query: string, options: DbOptions): Promise<Result<SnowflakeQuery[]>>;
+  runQuery(
+    queryText: string,
+    binds: Binds,
+    dbOptions: DbOptions
+  ): Promise<SnowflakeEntity[]>;
 }

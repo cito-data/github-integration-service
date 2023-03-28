@@ -7,5 +7,6 @@ export type DbOptions = {
   cloudRegion: string;
   refreshToken: string;
   warehouseName: string;
+  redirectUri: string;
   citoApplicationName: string;
 };
