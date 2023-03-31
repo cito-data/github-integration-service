@@ -1,22 +1,39 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const encodeData = (data: { [key: string]: string }): string =>
-  Object.entries(data)
-    .map(
-      (entry) =>
-        `${encodeURIComponent(entry[0])}=${encodeURIComponent(entry[1])}`
-    )
-    .join('&');
+interface BaseAuthConfig {
+  type: 'snowflake' | 'mongodb' | 'jwt';
+}
+
+const isBaseAuthConfig = (authConfig: unknown): authConfig is BaseAuthConfig =>
+  !!authConfig && typeof authConfig === 'object' && 'type' in authConfig;
+
+export interface SnowflakeAuthConfig extends BaseAuthConfig {
+  targetOrgId: string;
+  username: string;
+  accountId: string;
+  type: 'snowflake';
+}
+
+const isSnowflakeAuthConfig = (
+  authConfig: unknown
+): authConfig is SnowflakeAuthConfig =>
+  isBaseAuthConfig(authConfig) && authConfig.type === 'snowflake';
+
+export interface MongoAuthConfig extends BaseAuthConfig {
+  type: 'mongodb';
+}
+
+interface JwtAuthConfig extends BaseAuthConfig {
+  token: string;
+  type: 'jwt';
+}
+
+const isJwtAuthConfig = (authConfig: unknown): authConfig is JwtAuthConfig =>
+  isBaseAuthConfig(authConfig) && authConfig.type === 'jwt';
 
 const getApiClient = (
   baseURL: string,
-  authConfig: {
-    redirectUri: string;
-    refreshToken: string;
-    clientId: string;
-    clientSecret: string;
-  },
-  accessToken?: string
+  authConfig: SnowflakeAuthConfig | MongoAuthConfig | JwtAuthConfig
 ): AxiosInstance => {
   const api = axios.create({
     baseURL,
@@ -24,41 +41,35 @@ const getApiClient = (
 
   api.interceptors.request.use(async (config): Promise<AxiosRequestConfig> => {
     try {
-      if (accessToken)
+      if (isJwtAuthConfig(authConfig))
         return {
           ...config,
           headers: {
             ...config.headers,
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${authConfig.token}`,
           },
         };
 
-      const tokenParams = {
-        redirect_uri: authConfig.redirectUri,
-        refresh_token: authConfig.refreshToken,
-        grant_type: 'refresh_token',
-      };
+      let jwt: string;
+      if (isSnowflakeAuthConfig(authConfig)) {
+        const { passphrase, prefix, suffix } =
+          appConfig.snowflake.privateKeyConfig;
 
-      const result = await axios.post(
-        `${baseURL}/oauth/token-request`,
-        encodeData({ ...tokenParams }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${Buffer.from(
-              `${authConfig.clientId}:${authConfig.clientSecret}`
-            ).toString('base64')}`,
-          },
-        }
-      );
+        const keyname = `${prefix}${authConfig.targetOrgId}${suffix}`;
 
-      if (result.status !== 201) throw new Error(result.statusText);
+        jwt = await generateSfJwt(
+          passphrase,
+          authConfig.accountId,
+          authConfig.username,
+          keyname
+        );
+      } else throw new Error('mongodb auth not implemented');
 
       return {
         ...config,
         headers: {
           ...config.headers,
-          Authorization: `Bearer ${result.data.access_token}`,
+          Authorization: `Bearer ${jwt}`,
         },
       };
     } catch (e: any) {

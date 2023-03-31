@@ -165,7 +165,7 @@ export const appConfig = {
     buttonBaseUrl: getSlackMessageButtonBaseUrl(),
   },
   snowflake: {
-    applicationName: process.env.SNOWFLAKE_APPLICATION_NAME || 'Cito_CitoApp',
+    userAgent: process.env.SNOWFLAKE_APPLICATION_NAME || 'Cito_CitoApp',
     redirectUri: 'https://www.app.citodata.com/auth/snowflake',
   },
   github: getGithubConfig(),

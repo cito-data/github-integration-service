@@ -92,7 +92,7 @@ export class QuerySnowflake
             request.binds,
             {
               ...profile,
-              citoApplicationName: appConfig.snowflake.applicationName,
+              citoApplicationName: appConfig.snowflake.userAgent,
             }
           );
 

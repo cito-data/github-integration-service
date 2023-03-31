@@ -1,4 +1,4 @@
-import { DbOptions } from '../../domain/services/i-db';
+import { appConfig } from '../../config';
 import {
   Binds,
   ISnowflakeApiRepo,
@@ -94,20 +94,59 @@ export default class SnowflakeApiRepo implements ISnowflakeApiRepo {
     return rows;
   };
 
+  #formatBinds = (binds: Binds): { [key: string]: Bind } => {
+    const formattedBinds: { [key: string]: Bind } = {};
+
+    for (let i = 0; i < binds.length; i += 1) {
+      const el = binds[i];
+      formattedBinds[`${i + 1}`] = el;
+    }
+
+    return formattedBinds;
+  };
+
   runQuery = async (
-    queryText: string,
-    binds: Binds,
-    options: DbOptions
+    accountId: string,
+    authConfig: {
+      username: string;
+      targetOrgId: string;
+    },
+    query: {
+      text: string;
+      bindings: Binds;
+      warehouseName: string;
+    }
   ): Promise<SnowflakeEntity[]> => {
     try {
       const client = getApiClient(
-        `https://${options.accountId}.${options.cloudRegion}.snowflakecomputing.com`,
+        `https://${accountId}.snowflakecomputing.com`,
         {
-          redirectUri: options.redirectUri,
-          refreshToken: options.refreshToken,
-          clientId: options.clientId,
-          clientSecret: options.clientSecret,
+          ...authConfig,
+          accountId,
+          type: 'snowflake',
         }
+      );
+
+      const data = {
+        statement: query.text,
+        bindings: this.#formatBinds(query.bindings),
+        warehouse: query.warehouseName,
+        timeout: 10,
+      };
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Snowflake-Authorization-Token-Type': 'KEYPAIR_JWT',
+          'User-Agent': `${appConfig.snowflake.userAgent}`,
+        },
+      };
+
+      const postStatementResult = await client.post(
+        `/api/v2/statements`,
+        data,
+        config
       );
 
       const queryData = {
