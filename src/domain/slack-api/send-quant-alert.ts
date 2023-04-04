@@ -68,7 +68,7 @@ export class SendSlackQuantAlert
 
       await this.#slackApiRepo.sendQuantAlert(
         slackProfile.accessToken,
-        slackProfile.channelName,
+        slackProfile.channelId,
         request.messageConfig
       );
 

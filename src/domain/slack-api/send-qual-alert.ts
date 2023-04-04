@@ -68,7 +68,7 @@ export class SendSlackQualAlert
 
       await this.#slackApiRepo.sendQualAlert(
         slackProfile.accessToken,
-        slackProfile.channelName,
+        slackProfile.channelId,
         request.messageConfig
       );
 

@@ -143,7 +143,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
   sendQualAlert = async (
     accessToken: string,
-    channelName: string,
+    channelId: string,
     messageConfig: QualAlertMsgConfig
   ): Promise<void> => {
     try {
@@ -152,7 +152,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
       const blocks = this.#buildQualMsgBlock(messageConfig);
 
       await client.chat.postMessage({
-        channel: `#${channelName}`,
+        channel: channelId,
         text: 'Something went wrong',
         blocks,
       });
@@ -167,7 +167,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
 
   sendQuantAlert = async (
     accessToken: string,
-    channelName: string,
+    channelId: string,
     messageConfig: QuantAlertMsgConfig
   ): Promise<void> => {
     try {
@@ -176,7 +176,7 @@ export default class SlackApiRepo implements ISlackApiRepo {
       const blocks = this.#buildQuantMsgBlock(messageConfig);
 
       await client.chat.postMessage({
-        channel: `#${channelName}`,
+        channel: channelId,
         text: 'Something went wrong',
         blocks,
       });
