@@ -41,12 +41,14 @@ const getSlackMessageButtonBaseUrl = (): string => {
 export interface MongoDbConfig {
   url: string;
   dbName: string;
+  userEnvDbName: string;
   dataKeyId: string;
 }
 
 const getMongodbConfig = (): MongoDbConfig => ({
   url: process.env.DATABASE_URL || '',
   dbName: process.env.DATABASE_NAME || '',
+  userEnvDbName: process.env.USERENV_DATABASE_NAME || '', 
   dataKeyId: process.env.DATABASE_DATA_KEY_ID || '',
 });
 
