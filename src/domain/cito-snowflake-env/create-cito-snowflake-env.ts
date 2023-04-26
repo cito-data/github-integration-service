@@ -77,8 +77,6 @@ export class CreateCitoSnowflakeEnv
             });
       });
 
-      await clientConnection.close();
-      
       return Result.ok({
         organizationId: auth.callerOrgId,
         success: true,
