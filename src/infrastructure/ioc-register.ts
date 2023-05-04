@@ -31,6 +31,7 @@ import { PostLineage } from '../domain/lineage-api/post-lineage';
 import LineageApiRepo from './persistence/lineage-api-repo';
 import { SendSlackQualAlert } from '../domain/slack-api/send-qual-alert';
 import { CreateSlackInteraction } from '../domain/slack-interaction/create-slack-interaction';
+import CreateCitoSnowflakeEnvRepo from './persistence/create-cito-sf-env-repo';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -75,6 +76,7 @@ iocRegister.register({
 
   accountApiRepo: asClass(AccountApiRepo),
   lineageApiRepo: asClass(LineageApiRepo),
+  createCitoSnowflakeEnvRepo: asClass(CreateCitoSnowflakeEnvRepo),
 
   dbo: asClass(Dbo).singleton(),
 });

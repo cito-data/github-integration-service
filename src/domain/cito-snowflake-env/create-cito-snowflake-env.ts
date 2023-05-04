@@ -3,12 +3,11 @@ import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
-  citoMaterializationNames,
   getCreateDbSchemaQuery,
   CitoSchemaName,
 } from '../services/snowflake-materialization-creation-model';
-import { appConfig } from '../../config';
 import Dbo from '../../infrastructure/persistence/db/mongo-db';
+import CreateCitoSnowflakeEnvRepo from '../../infrastructure/persistence/create-cito-sf-env-repo';
 
 export type CreateCitoSnowflakeEnvRequestDto = null;
 
@@ -33,10 +32,16 @@ export class CreateCitoSnowflakeEnv
 {
   readonly #querySnowflake: QuerySnowflake;
 
+  readonly repo: CreateCitoSnowflakeEnvRepo;
+
   #dbConnection?: DbConnection;
 
-  constructor(querySnowflake: QuerySnowflake) {
+  constructor(
+    querySnowflake: QuerySnowflake, 
+    createCitoSnowflakeEnvRepo: CreateCitoSnowflakeEnvRepo
+  ) {
     this.#querySnowflake = querySnowflake;
+    this.repo = createCitoSnowflakeEnvRepo;
   }
 
   #createSchema = async (
@@ -66,16 +71,7 @@ export class CreateCitoSnowflakeEnv
     try {
       this.#dbConnection = dbo.dbConnection;
 
-      const clientConnection = await dbo.client.connect();
-      const userEnvConnection = clientConnection.db(appConfig.mongodb.userEnvDbName);
-
-      citoMaterializationNames.map(async (type) => {
-          await userEnvConnection.createCollection(`${type}_${auth.callerOrgId}`)
-            .then()
-            .catch((error) => {
-              console.log(`Could not create collection ${type}: ${error}`);
-            });
-      });
+      await this.repo.createCollections(dbo, auth.callerOrgId);
 
       return Result.ok({
         organizationId: auth.callerOrgId,
