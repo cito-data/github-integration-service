@@ -12,12 +12,12 @@ export default class CreateCitoSnowflakeEnvRepo {
         const clientConnection = await dbo.client.connect();
         const userEnvConnection = clientConnection.db(appConfig.mongodb.userEnvDbName);
 
-        citoMaterializationNames.map(async (type) => {
-            await userEnvConnection.createCollection(`${type}_${callerOrgId}`)
-              .then()
-              .catch((error) => {
+        await Promise.all(citoMaterializationNames.map(async (type) => {
+            try {
+                await userEnvConnection.createCollection(`${type}_${callerOrgId}`);
+            } catch (error) {
                 console.log(`Could not create collection ${type}: ${error}`);
-              });
-        });
+            }
+        }));
     };
 }

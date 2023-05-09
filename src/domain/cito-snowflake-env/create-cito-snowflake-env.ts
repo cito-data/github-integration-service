@@ -51,7 +51,7 @@ export class CreateCitoSnowflakeEnv
     if (!this.#dbConnection)
       throw new Error('Missing db connection');
     const createObservabilitySchemaResult =
-      await await this.#querySnowflake.execute(
+      await this.#querySnowflake.execute(
         {
           query: getCreateDbSchemaQuery(schemaName),
         },
