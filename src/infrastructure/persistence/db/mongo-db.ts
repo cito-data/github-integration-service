@@ -39,6 +39,12 @@ export default class Dbo {
 
   #dbConnection: Db | undefined;
 
+  get client(): MongoClient {
+    if (!this.#client)
+      throw Error('Undefined client connection. Please connect to server first');
+    return this.#client;
+  }
+
   get dbConnection(): Db {
     if (!this.#dbConnection)
       throw Error('Undefined db connection. Please connect to server first');

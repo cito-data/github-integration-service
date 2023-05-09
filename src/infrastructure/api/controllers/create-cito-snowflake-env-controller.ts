@@ -83,7 +83,7 @@ export default class CreateCitoSnowflakeEnvController extends BaseController {
         await this.#createCitoSnowflakeEnv.execute(
           requestDto,
           authDto,
-          this.#dbo.dbConnection
+          this.#dbo
         );
 
       if (!useCaseResult.success) {

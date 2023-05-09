@@ -3,11 +3,11 @@ import IUseCase from '../services/use-case';
 import { DbConnection } from '../services/i-db';
 import { QuerySnowflake } from '../snowflake-api/query-snowflake';
 import {
-  citoMaterializationNames,
-  getCreateTableQuery,
   getCreateDbSchemaQuery,
   CitoSchemaName,
 } from '../services/snowflake-materialization-creation-model';
+import Dbo from '../../infrastructure/persistence/db/mongo-db';
+import CreateCitoSnowflakeEnvRepo from '../../infrastructure/persistence/create-cito-sf-env-repo';
 
 export type CreateCitoSnowflakeEnvRequestDto = null;
 
@@ -27,23 +27,31 @@ export class CreateCitoSnowflakeEnv
       CreateCitoSnowflakeEnvRequestDto,
       CreateCitoSnowflakeEnvResponseDto,
       CreateCitoSnowflakeEnvAuthDto,
-      DbConnection
+      Dbo
     >
 {
   readonly #querySnowflake: QuerySnowflake;
 
-  #dbConnection: DbConnection;
+  readonly repo: CreateCitoSnowflakeEnvRepo;
 
-  constructor(querySnowflake: QuerySnowflake) {
+  #dbConnection?: DbConnection;
+
+  constructor(
+    querySnowflake: QuerySnowflake, 
+    createCitoSnowflakeEnvRepo: CreateCitoSnowflakeEnvRepo
+  ) {
     this.#querySnowflake = querySnowflake;
+    this.repo = createCitoSnowflakeEnvRepo;
   }
 
   #createSchema = async (
     schemaName: CitoSchemaName,
     auth: { callerOrgId: string; isSystemInternal: boolean }
   ): Promise<void> => {
+    if (!this.#dbConnection)
+      throw new Error('Missing db connection');
     const createObservabilitySchemaResult =
-      await await this.#querySnowflake.execute(
+      await this.#querySnowflake.execute(
         {
           query: getCreateDbSchemaQuery(schemaName),
         },
@@ -58,37 +66,12 @@ export class CreateCitoSnowflakeEnv
   async execute(
     request: CreateCitoSnowflakeEnvRequestDto,
     auth: CreateCitoSnowflakeEnvAuthDto,
-    dbConnection: DbConnection
+    dbo: Dbo
   ): Promise<CreateCitoSnowflakeEnvResponseDto> {
     try {
-      this.#dbConnection = dbConnection;
+      this.#dbConnection = dbo.dbConnection;
 
-      await this.#createSchema('observability', auth);
-      await this.#createSchema('lineage', auth);
-
-      const createTableResults = await Promise.all(
-        citoMaterializationNames.map(async (type) => {
-          const query = getCreateTableQuery(type);
-          const createTableResult = await this.#querySnowflake.execute(
-            {
-              query,
-            },
-            {
-              callerOrgId: auth.callerOrgId,
-              isSystemInternal: auth.isSystemInternal,
-            },
-            this.#dbConnection
-          );
-
-          return createTableResult;
-        })
-      );
-
-      if (createTableResults.some((el: any) => !el.success))
-        throw new Error(createTableResults[0].error);
-
-      // if (snowflakeCreate.organizationId !== auth.organizationId)
-      //   throw new Error('Not authorized to perform action');
+      await this.repo.createCollections(dbo, auth.callerOrgId);
 
       return Result.ok({
         organizationId: auth.callerOrgId,
